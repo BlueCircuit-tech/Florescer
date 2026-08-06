@@ -1,0 +1,18 @@
+{
+  "name": "app-marcele-florescer",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Florescer — PWA de acompanhamento de fertilidade e maternidade: ciclo menstrual, janela fértil, diário da tentante, gestação e pós-parto.",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "dev": "npx --yes serve . -l 4173",
+    "start": "npx --yes serve . -l 4173",
+    "icons": "node tools/make-icons.mjs",
+    "icons:docker": "docker run --rm -v \"%cd%:/work\" -w /work node:20-alpine sh -c \"npm i --no-save --no-audit --no-fund --loglevel=error sharp && node tools/make-icons.mjs\"",
+    "deploy": "vercel --prod"
+  },
+  "dependencies": {}
+}

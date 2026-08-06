@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-label="Florescer">
+  <!-- Badge monocromático das notificações do Android: só a silhueta, fundo transparente. -->
+  <g transform="translate(256,256) scale(1.16) translate(-252,-236)"
+     fill="none" stroke="#FFFFFF" stroke-width="18" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M243 108 C203 116 178 146 174 186 C170 228 180 268 194 300 C203 322 216 336 233 342"/>
+    <path d="M243 108 C273 104 295 123 298 153 C299 167 303 175 310 183 C314 188 312 194 305 195 L295 197 C296 209 291 220 280 223 C271 225 262 222 257 215"/>
+    <path d="M257 215 C257 230 250 240 240 246 C219 258 203 274 198 296"/>
+    <path d="M262 238 C298 246 320 272 322 304 C324 342 297 368 260 368 C224 368 200 342 198 306"/>
+  </g>
+  <path transform="translate(256,256) scale(1.16) translate(-252,-236)"
+        d="M262 352 C262 352 226 331 226 306 C226 292 236 284 247 284 C254 284 259 288 262 293 C265 288 270 284 277 284 C288 284 298 292 298 306 C298 331 262 352 262 352 Z"
+        fill="#FFFFFF"/>
+</svg>

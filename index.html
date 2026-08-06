@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Florescer — Fertilidade & Maternidade</title>
+<meta name="description" content="Florescer: acompanhamento de ciclo menstrual, período fértil, diário da tentante, gestação e pós-parto. Seus dados ficam no seu aparelho.">
+<meta name="application-name" content="Florescer">
+<meta name="color-scheme" content="light">
+<meta name="theme-color" content="#FBF7F8">
+
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png" type="image/png">
+<link rel="icon" href="icons/icon-192.png" sizes="192x192" type="image/png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Florescer">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+
+<meta property="og:type" content="website">
+<meta property="og:title" content="Florescer — Fertilidade & Maternidade">
+<meta property="og:description" content="Mais do que acompanhar ciclos, nós acompanhamos sonhos.">
+<meta property="og:image" content="icons/icon-512.png">
+
+<link rel="stylesheet" href="assets/css/app.css">
+</head>
+<body>
+
+<div class="shell">
+
+  <div class="device">
+    <div class="device__frame">
+      <div class="app" id="app">
+        <header class="appbar" id="appbar"></header>
+        <main class="view" id="view" tabindex="-1"></main>
+        <nav class="tabbar" id="tabbar" aria-label="Navegação principal"></nav>
+      </div>
+      <div class="scrim" id="scrim" hidden></div>
+      <div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheet-title" hidden></div>
+      <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    </div>
+  </div>
+
+</div>
+
+<noscript>
+  <p style="padding:24px;text-align:center;font:16px system-ui">O Florescer precisa de JavaScript ativado para funcionar.</p>
+</noscript>
+
+<script type="module" src="assets/js/app.js"></script>
+</body>
+</html>

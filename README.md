@@ -24,18 +24,20 @@ Publicar na Vercel:
 npm run deploy
 ```
 
-Regerar os ícones do PWA a partir da marca:
+Regerar os ícones do PWA a partir de `icons/logo.png` (a logo oficial):
 
 ```bash
-npm run icons
+npm run icons:docker
 ```
+
+O mesmo resultado com `npm run icons`, se você tiver `sharp` instalado (`npm i -D sharp`).
 
 ---
 
 ## Estrutura
 
 ```
-index.html                 casca do app (appbar, view, tabbar, sheet, toast)
+index.html                 casca do app (appbar, view, tabbar, sheet, toast) — só o PWA
 manifest.webmanifest       manifesto do PWA (ícones, atalhos, standalone)
 sw.js                      service worker: offline + atualização em segundo plano
 vercel.json                cabeçalhos de cache e segurança
@@ -46,13 +48,14 @@ assets/
     router.js              rotas por hash (#/rota/param?query)
     store.js               estado + persistência em localStorage + export/import
     cycle.js               motor de datas, ciclo, gestação e pós-parto
-    content.js             conteúdo editorial: sugestões, artigos, FAQ, comunidade
+    content.js             conteúdo editorial padrão: sugestões, artigos, FAQ
+    cms.js                 camada editável: o que o painel publica vence content.js
     icons.js               conjunto de ícones SVG (traço de 1.7 em grade 24)
-    ui.js                  toast, bottom sheet, gráficos SVG, helpers
+    ui.js                  toast, bottom sheet, carrossel, gráficos SVG, helpers
     notify.js              lembretes locais (Notification API)
-    screens/               uma tela por arquivo
-icons/                     SVG da marca + PNGs gerados (192, 512, maskable, badge)
-tools/make-icons.mjs       gerador de PNG sem dependências (rasteriza a flor)
+    screens/               uma tela por arquivo (inclui admin.js)
+icons/                     logo.png (marca oficial) + PNGs gerados a partir dela
+tools/make-icons.mjs       gera os ícones do PWA a partir da logo
 supabase/                  schema do banco (migrations + seed) — ver supabase/README.md
 ```
 
@@ -77,6 +80,30 @@ Cada tela exporta `{ id, tab?, render(rota) }` e devolve `{ appbar, html, mount(
 | `#/configuracoes` | Configurações | Tema, fase lútea, mudança de fase, backup e exclusão de dados |
 | `#/lembretes` | Lembretes | Permissão de notificação, tipos de aviso, horário e pré-visualização |
 | `#/privacidade`, `#/ajuda`, `#/sobre` | Institucionais | LGPD, FAQ e informações do app |
+| `#/admin` | Painel da administradora | Edita sugestões, artigos, FAQ, diretrizes, benefícios, desafio e preços; modera a comunidade; exporta o conteúdo em JSON e em SQL |
+
+---
+
+## Painel da administradora
+
+Três caminhos, todos visíveis:
+
+- **Perfil › Administração** — cartão roxo no topo da seção;
+- **Configurações › Administração** — primeira seção da tela;
+- direto em `#/admin`.
+
+Depois do primeiro login na sessão, um atalho também aparece na tela inicial.
+
+Credenciais iniciais — **troque no primeiro acesso**, em Painel › Segurança:
+
+| | |
+|---|---|
+| E-mail | `marcele@florescer.app` |
+| Senha | `Florescer@2026` |
+
+A senha não fica no código: guardamos apenas o SHA-256 de `florescer:v1:<e-mail>:<senha>`. Cada alteração feita no painel vale imediatamente no app e pode ser publicada no Supabase pelo SQL gerado em **Publicar e exportar**.
+
+Enquanto o app for local, essa senha é uma tranca de interface: protege de acesso casual, não de quem tenha domínio técnico do aparelho. A proteção real vem com o Supabase Auth — a coluna `profiles.is_admin` e as políticas de administração já estão prontas em `supabase/migrations/20260806090300_admin.sql`.
 
 ---
 
