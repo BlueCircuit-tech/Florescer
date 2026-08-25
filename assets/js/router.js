@@ -75,9 +75,11 @@ function renderAppbar({ title, sub, back: hasBack = true, actions = [] }) {
 const TABS = [
   { id: 'home', to: 'home', label: 'Início', icon: 'home' },
   { id: 'ciclo', to: 'ciclo', label: 'Ciclo', icon: 'calendar' },
+  { id: 'missoes', to: 'missoes', label: 'Missões', icon: 'flag' },
   { id: 'fab', to: 'registro', label: 'Registrar meu dia', icon: 'plus', fab: true },
   { id: 'dicas', to: 'dicas', label: 'Dicas', icon: 'sparkle' },
   { id: 'comunidade', to: 'comunidade', label: 'Comunidade', icon: 'users' },
+  { id: 'perfil', to: 'perfil', label: 'Perfil', icon: 'user' },
 ];
 
 function renderTabbar(active) {

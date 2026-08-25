@@ -14,6 +14,7 @@ import { tipOfDay, categoryLabel } from '../content.js';
 import * as cms from '../cms.js';
 import { postCard, bindPostActions, visiblePosts } from './community.js';
 import { isUnlocked } from './admin.js';
+import { missionProgress } from '../missions.js';
 
 let tipOffset = 0;
 
@@ -182,6 +183,7 @@ export default {
     const symptomLog = state.logs[todayKey] || {};
     const symptomsLoggedToday = !!symptomLog.symptoms?.length || symptomLog.systolicPressure != null ||
       symptomLog.weight != null || symptomLog.glucose != null || !!symptomLog.symptomNotes;
+    const missions = missionProgress(state, todayKey);
     const tip = tipOfDay(state, info, todayKey, tipOffset, cms.getTips());
 
     const hero = phase === 'gravida' ? heroGravida(state, preg)
@@ -242,6 +244,18 @@ export default {
               </button>
             </div>
           </article>
+
+          <button class="card card--link mt-16" data-nav="missoes">
+            <span class="floatcard__ico" style="background:${missions.done ? 'var(--leaf-50)' : 'var(--amber-50)'};color:${missions.done ? 'var(--leaf-600)' : 'var(--amber-600)'}">
+              ${icon(missions.done ? 'crown' : 'flag', 22)}
+            </span>
+            <span class="grow" style="text-align:left">
+              <b style="display:block;font-size:var(--fs-14)">Missões Diárias</b>
+              <span class="fs-12 muted" style="display:block;margin-top:3px;line-height:1.45">${missions.done ? 'Todas concluídas — parabéns! 🎉' : `${missions.count} de ${missions.total} concluídas · ${missions.remaining} pendentes`}</span>
+              <span class="homeprogress"><i style="width:${missions.count / missions.total * 100}%"></i></span>
+            </span>
+            <span style="color:var(--faint);flex:none">${icon('chevron', 18)}</span>
+          </button>
 
           <button class="card card--link mt-16" data-nav="registro">
             <span class="floatcard__ico" style="background:${loggedToday ? 'var(--leaf-50)' : 'var(--amber-50)'};color:${loggedToday ? 'var(--leaf-600)' : 'var(--amber-600)'}">

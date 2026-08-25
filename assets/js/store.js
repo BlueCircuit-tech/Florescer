@@ -33,6 +33,7 @@ export const DEFAULTS = () => ({
       period: true,
       dailyLog: true,
       tip: true,
+      missions: true,
       community: false,
       time: '09:00',
     },
@@ -47,6 +48,7 @@ export const DEFAULTS = () => ({
   postState: {},                // id -> { liked, likes, comments:[] }
   hiddenPosts: [],              // publicações ocultadas pela moderação
   challengeDays: [],            // dias marcados no desafio da semana
+  missionDays: {},              // 'YYYY-MM-DD' -> ids das missões concluídas
   journey: [],                  // marcos da jornada
   notifyLog: {},                // controle de lembretes já enviados
   lastSeen: Date.now(),

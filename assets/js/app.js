@@ -14,6 +14,7 @@ import welcome from './screens/welcome.js';
 import home from './screens/home.js';
 import calendar from './screens/calendar.js';
 import log from './screens/log.js';
+import missions from './screens/missions.js';
 import tips, { libraryScreen, articleScreen, savedScreen } from './screens/tips.js';
 import community, { postScreen, newPostScreen } from './screens/community.js';
 import insights from './screens/insights.js';
@@ -24,7 +25,7 @@ import admin from './screens/admin.js';
 
 /* ---------- telas ---------- */
 [
-  onboarding, welcome, home, calendar, log, tips, libraryScreen, articleScreen, savedScreen,
+  onboarding, welcome, home, calendar, log, missions, tips, libraryScreen, articleScreen, savedScreen,
   community, postScreen, newPostScreen, insights, profile, premium,
   settings, remindersScreen, privacyScreen, helpScreen, aboutScreen, admin,
 ].forEach(register);

@@ -5,6 +5,7 @@
  */
 import { getState, update } from './store.js';
 import { cycleInfo, isFertileReminderEligible, toKey, today, diffDays, fmtShort, addDays } from './cycle.js';
+import { missionProgress } from './missions.js';
 
 const timers = [];
 
@@ -25,7 +26,7 @@ async function show(title, body, tag) {
     icon: 'icons/icon-192.png',
     badge: 'icons/badge.png',
     lang: 'pt-BR',
-    data: { url: './#/home' },
+    data: { url: tag === 'missions' ? './#/missoes' : './#/home' },
   };
   try {
     const reg = await navigator.serviceWorker?.getRegistration();
@@ -54,11 +55,13 @@ function messages(state, info) {
     period: ['Florescer 🌷', `${oi}sua menstruação está prevista para amanhã (${info.known ? fmtShort(info.nextPeriod) : ''}).`],
     dailyLog: ['Como foi o seu dia? 📔', `${oi}dois toques para registrar humor, sintomas e fertilidade.`],
     tip: ['Sua sugestão de hoje ✨', 'Abra o Florescer para ver a dica escolhida para a sua fase.'],
+    missions: ['Suas missões esperam por você 🎯', `${oi}ainda há pequenos cuidados para concluir hoje. Cada missão vale pontos!`],
   };
 }
 
 function dispatch(kind, title, body) {
   if (kind === 'fertile' && !isFertileReminderEligible(getState())) return;
+  if (kind === 'missions' && missionProgress(getState()).done) return;
   if (!alreadySent(kind)) show(title, body, kind);
 }
 
@@ -81,6 +84,7 @@ export function scheduleReminders() {
 
   if (n.dailyLog && !state.logs[toKey(today())]) queue.push(['dailyLog', at, msg.dailyLog]);
   if (n.tip && state.settings.tipsOptIn) queue.push(['tip', at, msg.tip]);
+  if (n.missions && !missionProgress(state).done) queue.push(['missions', at, msg.missions]);
 
   if (info.known) {
     if (n.fertile && isFertileReminderEligible(state)) queue.push(['fertile', at, msg.fertile]);

@@ -20,6 +20,7 @@ const CHALLENGE = { fertil: 'Entender o período fértil', ansiedade: 'Lidar com
 
 export default {
   id: 'perfil',
+  tab: 'perfil',
   render(route) {
     const state = getState();
     const p = state.profile;
