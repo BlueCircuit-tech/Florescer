@@ -18,6 +18,15 @@ export const SYMPTOMS = [
   'Sono', 'Energia alta', 'Enjoo', 'Dor lombar', 'TPM', 'Libido alta', 'Cansaço',
 ];
 
+export const PREGNANCY_SYMPTOMS = [
+  'Enjoo', 'Azia', 'Cansaço', 'Sono', 'Dor lombar', 'Dor de cabeça',
+  'Inchaço', 'Tontura', 'Cãibras', 'Seios sensíveis', 'Falta de ar', 'Constipação',
+];
+
+export const PREGNANCY_EMOTIONS = [
+  'Feliz', 'Ansiosa', 'Sensível', 'Confiante', 'Preocupada', 'Animada', 'Cansada', 'Grata',
+];
+
 export const FLOWS = [
   { id: 'spotting', label: 'Escape', drops: 1 },
   { id: 'light', label: 'Leve', drops: 1 },
