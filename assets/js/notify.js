@@ -4,7 +4,7 @@
  * enquanto o app estiver aberto ou instalado em segundo plano no sistema.
  */
 import { getState, update } from './store.js';
-import { cycleInfo, toKey, today, diffDays, fmtShort, addDays } from './cycle.js';
+import { cycleInfo, isFertileReminderEligible, toKey, today, diffDays, fmtShort, addDays } from './cycle.js';
 
 const timers = [];
 
@@ -50,12 +50,16 @@ function messages(state, info) {
   const nome = (state.profile.name || '').split(' ')[0];
   const oi = nome ? `${nome}, ` : '';
   return {
-    fertile: ['Florescer 🌸', `${oi}sua janela fértil começa amanhã. Este é um ótimo momento para se cuidar — e sonhar. 💛`],
-    fertileToday: ['Florescer 🌿', `${oi}sua janela fértil começou hoje. Registre o seu dia quando puder.`],
+    fertile: ['Florescer 🌿', `${oi}você está na janela fértil. Um bom momento para o casal aproveitar junto, com leveza e sem pressão. 💛`],
     period: ['Florescer 🌷', `${oi}sua menstruação está prevista para amanhã (${info.known ? fmtShort(info.nextPeriod) : ''}).`],
     dailyLog: ['Como foi o seu dia? 📔', `${oi}dois toques para registrar humor, sintomas e fertilidade.`],
     tip: ['Sua sugestão de hoje ✨', 'Abra o Florescer para ver a dica escolhida para a sua fase.'],
   };
+}
+
+function dispatch(kind, title, body) {
+  if (kind === 'fertile' && !isFertileReminderEligible(getState())) return;
+  if (!alreadySent(kind)) show(title, body, kind);
 }
 
 /** Agenda os lembretes do dia. Chamado ao abrir o app e ao mudar configurações. */
@@ -79,19 +83,17 @@ export function scheduleReminders() {
   if (n.tip && state.settings.tipsOptIn) queue.push(['tip', at, msg.tip]);
 
   if (info.known) {
-    const toFertile = diffDays(info.fertileStart, today());
-    if (n.fertile && toFertile === 1) queue.push(['fertile', at, msg.fertile]);
-    if (n.fertile && toFertile === 0) queue.push(['fertileToday', at, msg.fertileToday]);
+    if (n.fertile && isFertileReminderEligible(state)) queue.push(['fertile', at, msg.fertile]);
     if (n.period && diffDays(info.nextPeriod, today()) === 1) queue.push(['period', at, msg.period]);
   }
 
   for (const [kind, when, [title, body]] of queue) {
     const delay = when - Date.now();
     if (delay > 0 && delay < 86400000) {
-      timers.push(setTimeout(() => { if (!alreadySent(kind)) show(title, body, kind); }, delay));
+      timers.push(setTimeout(() => dispatch(kind, title, body), delay));
     } else if (delay <= 0 && delay > -3600000) {
       // horário já passou há menos de 1h: envia ao abrir o app
-      if (!alreadySent(kind)) show(title, body, kind);
+      dispatch(kind, title, body);
     }
   }
 }
@@ -99,6 +101,7 @@ export function scheduleReminders() {
 /** Notificação de teste, usada na tela de lembretes. */
 export async function sendTestNotification() {
   const state = getState();
+  if (!isFertileReminderEligible(state)) return false;
   const info = cycleInfo(state);
   const [title, body] = messages(state, info).fertile;
   return show(title, body, 'teste');

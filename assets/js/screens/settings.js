@@ -5,7 +5,7 @@ import { getState, update, applyTheme, exportData, importData, resetAll } from '
 import { icon, markSvg } from '../icons.js';
 import { esc, toast, note, confirmSheet, openSheet, closeSheet, downloadFile, toggleRow, haptic } from '../ui.js';
 import { navigate } from '../router.js';
-import { cycleInfo, fmtShort, fmtLong, fmtFull, fmtWeekday, cap, today, toKey, plural } from '../cycle.js';
+import { cycleInfo, isFertileReminderEligible, fmtShort, fmtLong, fmtFull, fmtWeekday, cap, today, toKey, plural } from '../cycle.js';
 import * as cms from '../cms.js';
 import { changePhase } from './profile.js';
 import { permission, requestPermission, scheduleReminders, sendTestNotification, supported } from '../notify.js';
@@ -166,7 +166,7 @@ export const remindersScreen = {
             <span class="floatcard__ico" style="background:var(--leaf-50);color:var(--leaf-600)">${icon('check', 22)}</span>
             <div class="grow"><b class="fs-14">Lembretes ativados</b>
               <div class="fs-12 muted mt-4">Enviados às ${n.time} enquanto o app estiver instalado neste aparelho.</div></div>
-            <button class="btn btn--soft btn--sm btn--auto" data-test>Testar</button>
+            ${isFertileReminderEligible(state) ? '<button class="btn btn--soft btn--sm btn--auto" data-test>Testar</button>' : ''}
           </div>`
         : `<div class="card" style="display:flex;gap:13px;align-items:center">
             <span class="floatcard__ico" style="background:var(--amber-50);color:var(--amber-600)">${icon('bell', 22)}</span>
@@ -182,7 +182,7 @@ export const remindersScreen = {
 
         <div class="section__head"><h2>O que você quer receber</h2></div>
         <div class="card card--flush">
-          ${toggleRow('Período fértil', n.fertile, 'fertile', 'um dia antes da janela começar')}
+          ${toggleRow('Período fértil', n.fertile, 'fertile', 'somente enquanto você estiver na janela fértil')}
           ${toggleRow('Menstruação prevista', n.period, 'period', 'um dia antes da data estimada')}
           ${toggleRow('Registro diário', n.dailyLog, 'dailyLog', 'só se você ainda não registrou o dia')}
           ${toggleRow('Sugestão do dia', n.tip, 'tip', 'conteúdo escolhido para a sua fase')}
@@ -201,14 +201,14 @@ export const remindersScreen = {
             <span class="push__ico">${markSvg(22, '#fff', '#FFD34D')}</span>
             <div class="grow">
               <b>Florescer 🌸</b>
-              <p>${esc((state.profile.name || '').split(' ')[0] || 'Oi')}, sua janela fértil começa amanhã! Este é um ótimo momento para se cuidar — e sonhar. 💛</p>
+              <p>${esc((state.profile.name || '').split(' ')[0] || 'Oi')}, você está na janela fértil. Um bom momento para o casal aproveitar junto, com leveza e sem pressão. 💛</p>
             </div>
             <time>agora</time>
           </div>
         </div>
 
         ${info.known ? `<div class="card mt-16 card--flush">
-          <div class="kv"><span class="kv__k">Próximo aviso de janela fértil</span><span class="kv__v">${fmtShort(info.fertileStart)}</span></div>
+          <div class="kv"><span class="kv__k">Avisos de janela fértil</span><span class="kv__v">de ${fmtShort(info.fertileStart)} a ${fmtShort(info.fertileEnd)}</span></div>
           <div class="kv"><span class="kv__k">Próximo aviso de menstruação</span><span class="kv__v">${fmtShort(info.nextPeriod)}</span></div>
         </div>` : ''}
 
