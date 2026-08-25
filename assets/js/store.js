@@ -126,6 +126,11 @@ export const emptyLog = () => ({
   gratitude: '',
   bumpPhotos: [],        // imagens JPEG reduzidas no próprio aparelho
   examPhotos: [],
+  systolicPressure: null, // controle de sintomas e medições
+  diastolicPressure: null,
+  weight: null,           // kg
+  glucose: null,          // mg/dL
+  symptomNotes: '',
   updatedAt: null,
 });
 
@@ -134,7 +139,9 @@ export function logHasContent(log) {
     !!log.intercourse || !!log.temperature || !!log.mucus ||
     (!!log.ovTest && log.ovTest !== 'nao_fiz') || !!log.notes?.trim() ||
     !!log.emotions?.length || !!log.thoughts?.trim() || !!log.gratitude?.trim() ||
-    !!log.bumpPhotos?.length || !!log.examPhotos?.length;
+    !!log.bumpPhotos?.length || !!log.examPhotos?.length ||
+    log.systolicPressure != null || log.diastolicPressure != null ||
+    log.weight != null || log.glucose != null || !!log.symptomNotes?.trim();
 }
 
 export function getLog(key) {

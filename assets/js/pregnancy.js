@@ -89,3 +89,19 @@ export function pregnancyWeekGuide(inputWeek) {
     nextExam: prenatalStep(inputWeek),
   };
 }
+
+/** Valida medições informadas pela usuária; não interpreta nem diagnostica resultados. */
+export function validateSymptomMeasurements({ systolicPressure, diastolicPressure, weight, glucose }) {
+  const values = [systolicPressure, diastolicPressure, weight, glucose].filter((value) => value != null);
+  if (values.some((value) => !Number.isFinite(value))) return 'Use somente números válidos nas medições.';
+  const hasSystolic = systolicPressure != null;
+  const hasDiastolic = diastolicPressure != null;
+  if (hasSystolic !== hasDiastolic) return 'Informe os dois valores da pressão arterial.';
+  if (hasSystolic && (systolicPressure < 60 || systolicPressure > 250 || diastolicPressure < 40 || diastolicPressure > 150)) {
+    return 'Pressão arterial fora do intervalo aceito para registro.';
+  }
+  if (hasSystolic && systolicPressure <= diastolicPressure) return 'A pressão sistólica deve ser maior que a diastólica.';
+  if (weight != null && (weight < 25 || weight > 300)) return 'Peso fora do intervalo aceito (25–300 kg).';
+  if (glucose != null && (glucose < 20 || glucose > 600)) return 'Glicemia fora do intervalo aceito (20–600 mg/dL).';
+  return null;
+}

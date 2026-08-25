@@ -571,6 +571,10 @@ button.item:active{opacity:.6}
 .diaryphoto{position:relative;aspect-ratio:4/3;border-radius:13px;overflow:hidden;background:var(--surface-2)}
 .diaryphoto img{width:100%;height:100%;object-fit:cover}
 .diaryphoto button{position:absolute;top:6px;right:6px;width:28px;height:28px;display:grid;place-items:center;border-radius:50%;background:rgba(42,25,34,.72);color:#fff;backdrop-filter:blur(4px)}
+.measurementpair,.measurement{display:flex;align-items:center;justify-content:flex-end;gap:6px;flex:none}
+.measurementpair input{width:62px}
+.measurement input{width:82px}
+.measurement b{font-size:var(--fs-11);color:var(--muted);white-space:nowrap}
 
 /* cartão de sugestão do dia */
 .tipcard{

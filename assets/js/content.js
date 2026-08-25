@@ -18,9 +18,10 @@ export const SYMPTOMS = [
   'Sono', 'Energia alta', 'Enjoo', 'Dor lombar', 'TPM', 'Libido alta', 'Cansaço',
 ];
 
-export const PREGNANCY_SYMPTOMS = [
-  'Enjoo', 'Azia', 'Cansaço', 'Sono', 'Dor lombar', 'Dor de cabeça',
-  'Inchaço', 'Tontura', 'Cãibras', 'Seios sensíveis', 'Falta de ar', 'Constipação',
+export const CONTROL_SYMPTOMS = [
+  'Náusea', 'Vômitos', 'Azia', 'Dor nas costas', 'Cólica', 'Sangramento',
+  'Inchaço', 'Dor de cabeça', 'Tontura', 'Cansaço', 'Sono', 'Cãibras',
+  'Seios sensíveis', 'Falta de ar', 'Constipação', 'Febre', 'Contrações',
 ];
 
 export const PREGNANCY_EMOTIONS = [

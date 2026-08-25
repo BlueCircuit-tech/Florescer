@@ -7,7 +7,8 @@ import { icon } from '../icons.js';
 import { esc, toast, haptic, confirmSheet } from '../ui.js';
 import { navigate, back } from '../router.js';
 import { toKey, today, fromKey, fmtFull, relativeDay, streak, cycleInfo, diffDays, plural } from '../cycle.js';
-import { MOODS, SYMPTOMS, PREGNANCY_SYMPTOMS, PREGNANCY_EMOTIONS, FLOWS, MUCUS, OV_TESTS } from '../content.js';
+import { validateSymptomMeasurements } from '../pregnancy.js';
+import { MOODS, SYMPTOMS, CONTROL_SYMPTOMS, PREGNANCY_EMOTIONS, FLOWS, MUCUS, OV_TESTS } from '../content.js';
 
 const MAX_PHOTOS_PER_KIND = 2;
 // ponytail: fotos ficam comprimidas no localStorage; ao virar uma galeria longa, migrar os blobs para IndexedDB.
@@ -19,6 +20,45 @@ function photoGrid(photos, kind) {
       <img src="${src}" alt="${kind === 'bumpPhotos' ? 'Foto da barriga' : 'Foto de exame'} ${i + 1}">
       <button type="button" data-remove-photo="${kind}:${i}" aria-label="Remover foto">${icon('close', 16)}</button>
     </figure>`).join('');
+}
+
+function symptomControlFields(draft, standalone = false) {
+  return `
+    <section id="symptom-control" aria-label="Controle de Sintomas">
+      ${standalone ? `<div class="card diaryintro">
+        <span class="floatcard__ico">${icon('thermometer', 22)}</span>
+        <div><b>Acompanhe como você está</b><p>Registre sintomas e medições para consultar depois ou mostrar à sua equipe de saúde.</p></div>
+      </div>` : ''}
+      <div class="section__head" style="padding:0"><h2>Sintomas</h2></div>
+      <div class="chipwrap">
+        ${CONTROL_SYMPTOMS.map((symptom) => `<button class="chip" data-sym="${esc(symptom)}" aria-pressed="${draft.symptoms.includes(symptom)}">${esc(symptom)}</button>`).join('')}
+      </div>
+
+      <div class="section__head" style="padding:0"><h2>Medições</h2></div>
+      <div class="card card--flush">
+        <div class="kv">
+          <span class="kv__k">Pressão arterial<small>sistólica / diastólica, em mmHg</small></span>
+          <span class="measurementpair">
+            <input class="input input--inline" id="l-systolic" type="number" inputmode="numeric" min="60" max="250" value="${draft.systolicPressure ?? ''}" aria-label="Pressão sistólica" placeholder="120">
+            <span>/</span>
+            <input class="input input--inline" id="l-diastolic" type="number" inputmode="numeric" min="40" max="150" value="${draft.diastolicPressure ?? ''}" aria-label="Pressão diastólica" placeholder="80">
+          </span>
+        </div>
+        <div class="kv">
+          <span class="kv__k">Peso<small>em quilogramas</small></span>
+          <span class="measurement"><input class="input input--inline" id="l-weight" inputmode="decimal" value="${draft.weight ?? ''}" aria-label="Peso" placeholder="68,5"><b>kg</b></span>
+        </div>
+        <div class="kv">
+          <span class="kv__k">Glicemia<small>registre quando houver orientação</small></span>
+          <span class="measurement"><input class="input input--inline" id="l-glucose" type="number" inputmode="numeric" min="20" max="600" value="${draft.glucose ?? ''}" aria-label="Glicemia" placeholder="92"><b>mg/dL</b></span>
+        </div>
+      </div>
+      <div class="field mt-16">
+        <label for="l-symptom-notes">Observações dos sintomas</label>
+        <textarea id="l-symptom-notes" rows="3" maxlength="1000" placeholder="Intensidade, horário, duração ou algo que ajudou…">${esc(draft.symptomNotes)}</textarea>
+      </div>
+      <div class="note mb-16">${icon('info', 17)}<span>Sangramento, dor forte, falta de ar intensa, pressão muito elevada ou vômitos persistentes precisam de avaliação profissional. Em caso de urgência, procure atendimento.</span></div>
+    </section>`;
 }
 
 function pregnancyDiaryFields(draft) {
@@ -38,10 +78,7 @@ function pregnancyDiaryFields(draft) {
       ${PREGNANCY_EMOTIONS.map((emotion) => `<button class="chip" data-emotion="${esc(emotion)}" aria-pressed="${draft.emotions.includes(emotion)}">${esc(emotion)}</button>`).join('')}
     </div>
 
-    <div class="section__head" style="padding:0"><h2>Sintomas</h2></div>
-    <div class="chipwrap">
-      ${PREGNANCY_SYMPTOMS.map((symptom) => `<button class="chip" data-sym="${esc(symptom)}" aria-pressed="${draft.symptoms.includes(symptom)}">${esc(symptom)}</button>`).join('')}
-    </div>
+    ${symptomControlFields(draft)}
 
     <div class="section__head" style="padding:0"><h2>Memórias da gestação</h2></div>
     <div class="diaryuploads">
@@ -113,6 +150,7 @@ export default {
     const future = diffDays(date, today()) > 0;
     const draft = getLog(key);
     const pregnant = state.profile.phase === 'gravida';
+    const symptomControl = route.params.s === 'sintomas';
     draft.emotions = draft.emotions || [];
     draft.bumpPhotos = safePhotos(draft.bumpPhotos);
     draft.examPhotos = safePhotos(draft.examPhotos);
@@ -125,7 +163,7 @@ export default {
 
     return {
       appbar: {
-        title: pregnant ? 'Diário da Mamãe' : relativeDay(date) === 'hoje' ? 'Meu dia' : fmtFull(date),
+        title: symptomControl ? 'Controle de Sintomas' : pregnant ? 'Diário da Mamãe' : relativeDay(date) === 'hoje' ? 'Meu dia' : fmtFull(date),
         sub: `${fmtFull(date)}${!pregnant && cycleDay && cycleDay > 0 ? ` · dia ${cycleDay} do ciclo` : ''}`,
         actions: existed ? [{ icon: 'trash', label: 'Apagar registro', action: 'del' }] : [],
       },
@@ -141,7 +179,7 @@ export default {
             </div>
           </div>` : ''}
 
-        ${pregnant ? pregnancyDiaryFields(draft) : `
+        ${symptomControl ? symptomControlFields(draft, true) : pregnant ? pregnancyDiaryFields(draft) : `
         <div class="section__head" style="padding:0"><h2>Menstruação</h2></div>
         <div class="flowrow">
           <button class="flow" data-flow="" aria-pressed="${!draft.flow}">${icon('close', 19)}<span>Nenhum</span></button>
@@ -196,12 +234,12 @@ export default {
         </div>
         `}
 
-        ${pregnant ? '' : `<div class="field mt-16">
+        ${pregnant || symptomControl ? '' : `<div class="field mt-16">
           <label for="l-notes">Observações</label>
           <textarea id="l-notes" rows="3" maxlength="1000" placeholder="Como foi o seu dia? Escreva com carinho…">${esc(draft.notes)}</textarea>
         </div>`}
 
-        <button class="btn" data-save>${icon('check', 19)} ${pregnant ? 'Salvar no Diário da Mamãe' : 'Salvar meu dia'}</button>
+        <button class="btn" data-save>${icon('check', 19)} ${symptomControl ? 'Salvar controle de sintomas' : pregnant ? 'Salvar no Diário da Mamãe' : 'Salvar meu dia'}</button>
       </div>`,
 
       mount(root) {
@@ -290,10 +328,24 @@ export default {
         bindPhotoInput('#exam-photo', 'examPhotos');
 
         root.querySelector('[data-save]').onclick = () => {
-          if (pregnant) {
+          if (pregnant || symptomControl) {
+            const measurement = (selector) => {
+              const value = root.querySelector(selector)?.value.replace(',', '.').trim();
+              return value ? Number(value) : null;
+            };
+            draft.systolicPressure = measurement('#l-systolic');
+            draft.diastolicPressure = measurement('#l-diastolic');
+            draft.weight = measurement('#l-weight');
+            draft.glucose = measurement('#l-glucose');
+            draft.symptomNotes = root.querySelector('#l-symptom-notes').value.trim();
+            const error = validateSymptomMeasurements(draft);
+            if (error) { toast(error); return; }
+          }
+
+          if (pregnant && !symptomControl) {
             draft.thoughts = root.querySelector('#l-thoughts').value.trim();
             draft.gratitude = root.querySelector('#l-gratitude').value.trim();
-          } else {
+          } else if (!symptomControl) {
             const t = root.querySelector('#l-temp').value.replace(',', '.').trim();
             const temp = t ? Number(t) : null;
             if (temp !== null && (Number.isNaN(temp) || temp < 34 || temp > 42)) {
@@ -313,8 +365,9 @@ export default {
           if (s2.current === 7) addJourney('sparkle', 'Sequência de 7 dias de registro', 'constância que melhora as previsões');
           if (draft.flow) addJourney('drop', 'Primeiro fluxo registrado', 'as previsões ficam mais precisas a cada ciclo');
           if (pregnant) addJourney('heart', 'Primeiro registro no Diário da Mamãe', 'memórias da gestação guardadas com carinho');
+          if (symptomControl) addJourney('thermometer', 'Primeiro controle de sintomas', 'sintomas e medições registrados');
           haptic(14);
-          toast(pregnant ? 'Diário da Mamãe salvo com carinho 🌸' : s2.current > 1 ? `Dia salvo! Sequência de ${plural(s2.current, 'dia', 'dias')} 🌸` : 'Dia salvo com carinho 🌸');
+          toast(symptomControl ? 'Controle de sintomas salvo.' : pregnant ? 'Diário da Mamãe salvo com carinho 🌸' : s2.current > 1 ? `Dia salvo! Sequência de ${plural(s2.current, 'dia', 'dias')} 🌸` : 'Dia salvo com carinho 🌸');
           navigate('home');
         };
 
@@ -323,7 +376,7 @@ export default {
           if (!ok) return;
           update((s) => { delete s.logs[key]; });
           toast('Registro apagado.');
-          navigate(pregnant ? 'home' : 'ciclo');
+          navigate(pregnant || symptomControl ? 'home' : 'ciclo');
         });
       },
     };

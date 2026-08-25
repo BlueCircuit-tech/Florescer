@@ -179,6 +179,9 @@ export default {
     const babyName = state.profile.babyName || 'bebê';
     const todayKey = toKey(today());
     const loggedToday = !!state.logs[todayKey];
+    const symptomLog = state.logs[todayKey] || {};
+    const symptomsLoggedToday = !!symptomLog.symptoms?.length || symptomLog.systolicPressure != null ||
+      symptomLog.weight != null || symptomLog.glucose != null || !!symptomLog.symptomNotes;
     const tip = tipOfDay(state, info, todayKey, tipOffset, cms.getTips());
 
     const hero = phase === 'gravida' ? heroGravida(state, preg)
@@ -247,6 +250,17 @@ export default {
             <span class="grow" style="text-align:left">
               <b style="display:block;font-size:var(--fs-14)">${phase === 'gravida' ? 'Diário da Mamãe' : loggedToday ? 'Dia registrado 🌸' : 'Como você está hoje?'}</b>
               <span class="fs-12 muted" style="display:block;margin-top:3px;line-height:1.45">${phase === 'gravida' ? (loggedToday ? 'Seu registro de hoje está guardado 🌸' : 'Humor, emoções, sintomas, memórias e gratidão') : st.current > 0 ? `Sequência de ${plural(st.current, 'dia', 'dias')} · recorde ${st.best}` : 'Humor, sintomas e fertilidade em 30 segundos'}</span>
+            </span>
+            <span style="color:var(--faint);flex:none">${icon('chevron', 18)}</span>
+          </button>
+
+          <button class="card card--link mt-8" data-nav="registro?s=sintomas">
+            <span class="floatcard__ico" style="background:${symptomsLoggedToday ? 'var(--leaf-50)' : 'var(--rose-50)'};color:${symptomsLoggedToday ? 'var(--leaf-600)' : 'var(--rose-700)'}">
+              ${icon(symptomsLoggedToday ? 'check' : 'thermometer', 22)}
+            </span>
+            <span class="grow" style="text-align:left">
+              <b style="display:block;font-size:var(--fs-14)">Controle de Sintomas</b>
+              <span class="fs-12 muted" style="display:block;margin-top:3px;line-height:1.45">${symptomsLoggedToday ? 'Sintomas ou medições registrados hoje' : 'Sintomas, pressão arterial, peso e glicemia'}</span>
             </span>
             <span style="color:var(--faint);flex:none">${icon('chevron', 18)}</span>
           </button>

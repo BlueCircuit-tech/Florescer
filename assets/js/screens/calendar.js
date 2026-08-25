@@ -126,7 +126,11 @@ function openDay(key) {
     <div class="card card--tint mt-12">
       ${log.flow ? row('drop', 'Fluxo', FLOWS.find((f) => f.id === log.flow)?.label || log.flow) : ''}
       ${log.mood !== null ? row('heart', 'Humor', `${MOODS[log.mood].emoji} ${MOODS[log.mood].label}`) : ''}
-      ${log.symptoms.length ? row('note', 'Sintomas', log.symptoms.join(', ')) : ''}
+      ${log.symptoms?.length ? row('note', 'Sintomas', log.symptoms.join(', ')) : ''}
+      ${log.systolicPressure != null && log.diastolicPressure != null ? row('heart', 'Pressão arterial', `${log.systolicPressure}/${log.diastolicPressure} mmHg`) : ''}
+      ${log.weight != null ? row('chart', 'Peso', `${String(log.weight).replace('.', ',')} kg`) : ''}
+      ${log.glucose != null ? row('drop', 'Glicemia', `${log.glucose} mg/dL`) : ''}
+      ${log.symptomNotes ? row('note', 'Observações dos sintomas', log.symptomNotes) : ''}
       ${log.intercourse ? row('heartFill', 'Intimidade', log.protected ? 'com proteção' : 'registrada') : ''}
       ${log.temperature ? row('thermometer', 'Temperatura basal', `${log.temperature} °C`) : ''}
       ${log.notes ? row('note', 'Observações', log.notes) : ''}
