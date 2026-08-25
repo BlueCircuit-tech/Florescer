@@ -76,11 +76,58 @@ function heroPosparto(state, pp) {
   </div>`;
 }
 
+function pregnancyDashboard(preg) {
+  const g = preg.guide;
+  return `
+    <section class="pregdash" aria-label="Resumo da semana ${preg.weeks} da gestação">
+      <p class="pregdash__countdown">${icon('heartFill', 19)} <span>${esc(preg.countdown)}</span></p>
+      <article class="pregdash__baby">
+        <div class="pregdash__fruit" aria-hidden="true">${g.emoji}</div>
+        <div class="grow">
+          <span class="eyebrow">Seu bebê nesta semana</span>
+          <h2>Do tamanho de ${esc(g.fruit)}</h2>
+          <p>Valores de referência para a ${g.week}ª semana</p>
+        </div>
+        <div class="pregdash__metrics">
+          <div><span>Peso</span><b>${esc(g.weight)}</b></div>
+          <div><span>Comprimento</span><b>${esc(g.length)}</b></div>
+        </div>
+      </article>
+
+      <div class="pregdash__grid">
+        <article class="preginfo preginfo--baby">
+          <span class="preginfo__ico">${icon('baby', 19)}</span>
+          <div><span>Desenvolvimento dos órgãos</span><p>${esc(g.development)}</p></div>
+        </article>
+        <article class="preginfo preginfo--mother">
+          <span class="preginfo__ico">${icon('pregnant', 19)}</span>
+          <div><span>Seu corpo esta semana</span><p>${esc(g.mother)}</p></div>
+        </article>
+      </div>
+
+      <article class="preginfo preginfo--tip">
+        <span class="preginfo__ico">${icon('sparkle', 19)}</span>
+        <div><span>Dica da semana</span><p>${esc(g.tip)}</p></div>
+      </article>
+
+      <article class="preginfo preginfo--exam">
+        <span class="preginfo__ico">${icon('calendar', 19)}</span>
+        <div class="grow">
+          <span>Próximo acompanhamento</span>
+          <b>${esc(g.nextExam.name)}</b>
+          <p>${esc(g.nextExam.when)} · ${esc(g.nextExam.note)}</p>
+        </div>
+      </article>
+
+      <p class="pregdash__disclaimer">Peso, comprimento e marcos são referências educativas. Exames e desenvolvimento variam em cada gestação; confirme seu calendário com a equipe de pré-natal.</p>
+    </section>`;
+}
+
 /* ---------- cartão de destaque ---------- */
 function highlight(state, info, preg, pp) {
   const p = state.profile.phase;
   if (p === 'gravida' && preg.known) {
-    return card('leaf', 'var(--leaf-50)', 'var(--leaf-600)', `Semana ${preg.weeks}: ${preg.size.name}`, preg.size.note, 'biblioteca');
+    return pregnancyDashboard(preg);
   }
   if (p === 'posparto' && pp.known) {
     return card('bottle', 'var(--lilac-50)', 'var(--lilac-600)', pp.quarantine ? 'Primeiras semanas' : 'Rotina em construção',
@@ -129,6 +176,7 @@ export default {
     const st = streak(state);
     const phase = state.profile.phase;
     const firstName = (state.profile.name || 'flor').split(' ')[0];
+    const babyName = state.profile.babyName || 'bebê';
     const todayKey = toKey(today());
     const loggedToday = !!state.logs[todayKey];
     const tip = tipOfDay(state, info, todayKey, tipOffset, cms.getTips());
@@ -137,10 +185,14 @@ export default {
       : phase === 'posparto' ? heroPosparto(state, pp)
         : heroTentante(state, info);
 
+    const hello = phase === 'posparto' && pp.known
+      ? `Olá, ${babyName}!`
+      : `${greeting()}, ${firstName}`;
+
     const sub = phase === 'tentante' && info.known
       ? `Dia ${info.dayOfCycle} do seu ciclo`
       : phase === 'gravida' && preg.known ? `${preg.weeks} semanas e ${preg.days} dias`
-        : phase === 'posparto' && pp.known ? `${pp.age} de ${esc(state.profile.babyName || 'vida')}` : 'Bem-vinda ao Florescer';
+        : phase === 'posparto' && pp.known ? `Hoje você completa ${pp.age}` : 'Bem-vinda ao Florescer';
 
     const shortcuts = [
       ['calendar', 'Calendário', 'ciclo', 'var(--rose-50)', 'var(--rose-700)'],
@@ -158,7 +210,7 @@ export default {
           <div class="hero__row">
             <button class="hero__avatar" data-nav="perfil" aria-label="Meu perfil">${state.profile.phase === 'gravida' ? '🤰' : state.profile.phase === 'posparto' ? '🍼' : '🌷'}</button>
             <div class="hero__hello">
-              <span>${greeting()}, ${esc(firstName)}</span>
+              <span>${esc(hello)}</span>
               <b>${esc(sub)}</b>
             </div>
             <button class="iconbtn iconbtn--onbrand" data-nav="lembretes" aria-label="Lembretes" style="position:relative">

@@ -7,8 +7,10 @@ import { register, initRouter, render, navigate } from './router.js';
 import { $, toast, esc } from './ui.js';
 import { icon } from './icons.js';
 import { scheduleReminders, pruneNotifyLog } from './notify.js';
+import { today, toKey } from './cycle.js';
 
 import onboarding from './screens/onboarding.js';
+import welcome from './screens/welcome.js';
 import home from './screens/home.js';
 import calendar from './screens/calendar.js';
 import log from './screens/log.js';
@@ -22,7 +24,7 @@ import admin from './screens/admin.js';
 
 /* ---------- telas ---------- */
 [
-  onboarding, home, calendar, log, tips, libraryScreen, articleScreen, savedScreen,
+  onboarding, welcome, home, calendar, log, tips, libraryScreen, articleScreen, savedScreen,
   community, postScreen, newPostScreen, insights, profile, premium,
   settings, remindersScreen, privacyScreen, helpScreen, aboutScreen, admin,
 ].forEach(register);
@@ -95,6 +97,28 @@ function initConnectivity() {
   addEventListener('offline', () => toast('Você está offline — o Florescer continua funcionando 🌿'));
 }
 
+/* ---------- atualização diária ---------- */
+let renderedDay = toKey(today());
+let dailyRefreshTimer;
+
+function refreshForNewDay() {
+  const currentDay = toKey(today());
+  if (currentDay === renderedDay) return;
+  renderedDay = currentDay;
+  render();
+}
+
+function scheduleDailyRefresh() {
+  clearTimeout(dailyRefreshTimer);
+  const now = new Date();
+  const nextDay = new Date(now);
+  nextDay.setHours(24, 0, 0, 50);
+  dailyRefreshTimer = setTimeout(() => {
+    refreshForNewDay();
+    scheduleDailyRefresh();
+  }, nextDay - now);
+}
+
 /* ---------- boot ---------- */
 function boot() {
   applyTheme();
@@ -109,12 +133,17 @@ function boot() {
   initServiceWorker();
   initInstallPrompt();
   initConnectivity();
+  scheduleDailyRefresh();
   pruneNotifyLog();
   scheduleReminders();
 
   // reagenda lembretes ao voltar para o app
   document.addEventListener('visibilitychange', () => {
-    if (!document.hidden) scheduleReminders();
+    if (!document.hidden) {
+      refreshForNewDay();
+      scheduleDailyRefresh();
+      scheduleReminders();
+    }
   });
 
   // banner de instalação depois que a primeira tela renderizou
