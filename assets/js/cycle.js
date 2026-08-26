@@ -273,10 +273,11 @@ export function pregnancyInfo(state, ref = today()) {
   const trimester = weeks < 14 ? 1 : weeks < 28 ? 2 : 3;
   return {
     known: true, due, weeks, days, daysLeft, trimester,
+    multiple: p.pregnancyType === 'gemelar',
     progress: clamp(totalDays / 280, 0, 1),
     size: babySize(weeks),
     guide: pregnancyWeekGuide(weeks),
-    countdown: pregnancyCountdown(daysLeft),
+    countdown: pregnancyCountdown(daysLeft, p.pregnancyType === 'gemelar'),
   };
 }
 

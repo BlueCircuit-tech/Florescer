@@ -15,6 +15,7 @@ import * as cms from '../cms.js';
 import { postCard, bindPostActions, visiblePosts } from './community.js';
 import { isUnlocked } from './admin.js';
 import { missionProgress } from '../missions.js';
+import { babyNamesFromProfile, formatBabyNames, postpartumGreeting } from '../babies.js';
 
 let tipOffset = 0;
 
@@ -65,7 +66,8 @@ function heroGravida(state, preg) {
 }
 
 function heroPosparto(state, pp) {
-  const nome = state.profile.babyName ? esc(state.profile.babyName) : 'Seu bebê';
+  const names = babyNamesFromProfile(state.profile);
+  const nome = names.length ? esc(formatBabyNames(names)) : 'Seu bebê';
   if (!pp.known) return `<p style="font-size:15px">Informe a data de nascimento no perfil para acompanhar as semanas do bebê.</p>
     <button class="btn btn--light btn--sm btn--auto mt-12" data-nav="perfil">Completar perfil</button>`;
   return `<div class="bump">
@@ -85,8 +87,8 @@ function pregnancyDashboard(preg) {
       <article class="pregdash__baby">
         <div class="pregdash__fruit" aria-hidden="true">${g.emoji}</div>
         <div class="grow">
-          <span class="eyebrow">Seu bebê nesta semana</span>
-          <h2>Do tamanho de ${esc(g.fruit)}</h2>
+          <span class="eyebrow">${preg.multiple ? 'Seus bebês nesta semana' : 'Seu bebê nesta semana'}</span>
+          <h2>${preg.multiple ? 'Cada bebê: tamanho aproximado de' : 'Do tamanho de'} ${esc(g.fruit)}</h2>
           <p>Valores de referência para a ${g.week}ª semana</p>
         </div>
         <div class="pregdash__metrics">
@@ -177,7 +179,6 @@ export default {
     const st = streak(state);
     const phase = state.profile.phase;
     const firstName = (state.profile.name || 'flor').split(' ')[0];
-    const babyName = state.profile.babyName || 'bebê';
     const todayKey = toKey(today());
     const loggedToday = !!state.logs[todayKey];
     const symptomLog = state.logs[todayKey] || {};
@@ -190,8 +191,8 @@ export default {
       : phase === 'posparto' ? heroPosparto(state, pp)
         : heroTentante(state, info);
 
-    const hello = phase === 'posparto' && pp.known
-      ? `Olá, ${babyName}!`
+    const hello = phase === 'posparto'
+      ? postpartumGreeting(state.profile)
       : `${greeting()}, ${firstName}`;
 
     const sub = phase === 'tentante' && info.known

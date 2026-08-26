@@ -1,4 +1,6 @@
 /** Conteúdo personalizado da tela exibida ao concluir o quiz. */
+import { babyNamesFromProfile, formatBabyNames } from './babies.js';
+
 export function welcomeContent(profile = {}) {
   const firstName = String(profile.name || 'flor').trim().split(/\s+/)[0];
 
@@ -13,14 +15,14 @@ export function welcomeContent(profile = {}) {
   }
 
   if (profile.phase === 'posparto') {
-    const babyName = String(profile.babyName || '').trim();
-    const baby = babyName || 'seu bebê';
+    const names = babyNamesFromProfile(profile);
+    const baby = names.length ? formatBabyNames(names) : 'seu bebê';
     return {
       phase: 'posparto',
       icon: 'baby',
-      label: 'Um novo capítulo de amor',
+      label: 'Florescer Baby · Um novo capítulo de amor',
       title: `Bem-vinda a esta nova fase, ${firstName}!`,
-      message: `Uma nova história floresceu na sua vida. O Florescer continuará ao seu lado para acompanhar ${baby}, acolher o seu pós-parto e cuidar de você em cada descoberta. Vamos viver cada dia juntas!`,
+      message: `Uma nova história floresceu na sua vida. O Florescer Baby estará ao seu lado para acompanhar ${baby}, acolher o seu pós-parto e cuidar de você em cada descoberta. Vamos viver cada dia juntas!`,
     };
   }
 

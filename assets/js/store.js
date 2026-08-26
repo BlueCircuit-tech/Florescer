@@ -22,8 +22,11 @@ export const DEFAULTS = () => ({
     cycleLength: 28,
     periodLength: 5,
     dueDate: null,              // gestação
+    pregnancyType: null,        // unica | gemelar
+    ultrasoundPhoto: null,      // última ultrassonografia, comprimida no aparelho
     birthDate: null,            // pós-parto
     babyName: '',
+    babyNames: [],              // nomes dos bebês em gestações múltiplas
     startedTryingAt: null,
   },
   settings: {
@@ -41,6 +44,7 @@ export const DEFAULTS = () => ({
     analytics: false,
   },
   logs: {},                     // 'YYYY-MM-DD' -> registro do dia
+  pregnancyTests: [],           // testes de gravidez registrados pela tentante
   savedTips: [],
   savedArticles: [],
   readArticles: [],

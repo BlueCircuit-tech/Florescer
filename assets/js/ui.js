@@ -36,7 +36,7 @@ export function openSheet({ title, subtitle = '', body = '', onMount }) {
   sheet.innerHTML = `
     <div class="sheet__grab"></div>
     <h2 class="sheet__title" id="sheet-title">${esc(title)}</h2>
-    ${subtitle ? `<p class="sheet__sub">${subtitle}</p>` : ''}
+    ${subtitle ? `<p class="sheet__sub">${esc(subtitle)}</p>` : ''}
     <div class="sheet__body">${body}</div>`;
   sheet.hidden = false;
   scrim.hidden = false;
