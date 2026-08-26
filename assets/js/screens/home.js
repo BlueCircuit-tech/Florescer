@@ -14,6 +14,7 @@ import { tipOfDay, categoryLabel } from '../content.js';
 import * as cms from '../cms.js';
 import { postCard, bindPostActions, visiblePosts } from './community.js';
 import { isUnlocked } from './admin.js';
+import { missionProgress } from '../missions.js';
 
 let tipOffset = 0;
 
@@ -76,11 +77,58 @@ function heroPosparto(state, pp) {
   </div>`;
 }
 
+function pregnancyDashboard(preg) {
+  const g = preg.guide;
+  return `
+    <section class="pregdash" aria-label="Resumo da semana ${preg.weeks} da gestação">
+      <p class="pregdash__countdown">${icon('heartFill', 19)} <span>${esc(preg.countdown)}</span></p>
+      <article class="pregdash__baby">
+        <div class="pregdash__fruit" aria-hidden="true">${g.emoji}</div>
+        <div class="grow">
+          <span class="eyebrow">Seu bebê nesta semana</span>
+          <h2>Do tamanho de ${esc(g.fruit)}</h2>
+          <p>Valores de referência para a ${g.week}ª semana</p>
+        </div>
+        <div class="pregdash__metrics">
+          <div><span>Peso</span><b>${esc(g.weight)}</b></div>
+          <div><span>Comprimento</span><b>${esc(g.length)}</b></div>
+        </div>
+      </article>
+
+      <div class="pregdash__grid">
+        <article class="preginfo preginfo--baby">
+          <span class="preginfo__ico">${icon('baby', 19)}</span>
+          <div><span>Desenvolvimento dos órgãos</span><p>${esc(g.development)}</p></div>
+        </article>
+        <article class="preginfo preginfo--mother">
+          <span class="preginfo__ico">${icon('pregnant', 19)}</span>
+          <div><span>Seu corpo esta semana</span><p>${esc(g.mother)}</p></div>
+        </article>
+      </div>
+
+      <article class="preginfo preginfo--tip">
+        <span class="preginfo__ico">${icon('sparkle', 19)}</span>
+        <div><span>Dica da semana</span><p>${esc(g.tip)}</p></div>
+      </article>
+
+      <article class="preginfo preginfo--exam">
+        <span class="preginfo__ico">${icon('calendar', 19)}</span>
+        <div class="grow">
+          <span>Próximo acompanhamento</span>
+          <b>${esc(g.nextExam.name)}</b>
+          <p>${esc(g.nextExam.when)} · ${esc(g.nextExam.note)}</p>
+        </div>
+      </article>
+
+      <p class="pregdash__disclaimer">Peso, comprimento e marcos são referências educativas. Exames e desenvolvimento variam em cada gestação; confirme seu calendário com a equipe de pré-natal.</p>
+    </section>`;
+}
+
 /* ---------- cartão de destaque ---------- */
 function highlight(state, info, preg, pp) {
   const p = state.profile.phase;
   if (p === 'gravida' && preg.known) {
-    return card('leaf', 'var(--leaf-50)', 'var(--leaf-600)', `Semana ${preg.weeks}: ${preg.size.name}`, preg.size.note, 'biblioteca');
+    return pregnancyDashboard(preg);
   }
   if (p === 'posparto' && pp.known) {
     return card('bottle', 'var(--lilac-50)', 'var(--lilac-600)', pp.quarantine ? 'Primeiras semanas' : 'Rotina em construção',
@@ -129,22 +177,31 @@ export default {
     const st = streak(state);
     const phase = state.profile.phase;
     const firstName = (state.profile.name || 'flor').split(' ')[0];
+    const babyName = state.profile.babyName || 'bebê';
     const todayKey = toKey(today());
     const loggedToday = !!state.logs[todayKey];
+    const symptomLog = state.logs[todayKey] || {};
+    const symptomsLoggedToday = !!symptomLog.symptoms?.length || symptomLog.systolicPressure != null ||
+      symptomLog.weight != null || symptomLog.glucose != null || !!symptomLog.symptomNotes;
+    const missions = missionProgress(state, todayKey);
     const tip = tipOfDay(state, info, todayKey, tipOffset, cms.getTips());
 
     const hero = phase === 'gravida' ? heroGravida(state, preg)
       : phase === 'posparto' ? heroPosparto(state, pp)
         : heroTentante(state, info);
 
+    const hello = phase === 'posparto' && pp.known
+      ? `Olá, ${babyName}!`
+      : `${greeting()}, ${firstName}`;
+
     const sub = phase === 'tentante' && info.known
       ? `Dia ${info.dayOfCycle} do seu ciclo`
       : phase === 'gravida' && preg.known ? `${preg.weeks} semanas e ${preg.days} dias`
-        : phase === 'posparto' && pp.known ? `${pp.age} de ${esc(state.profile.babyName || 'vida')}` : 'Bem-vinda ao Florescer';
+        : phase === 'posparto' && pp.known ? `Hoje você completa ${pp.age}` : 'Bem-vinda ao Florescer';
 
     const shortcuts = [
       ['calendar', 'Calendário', 'ciclo', 'var(--rose-50)', 'var(--rose-700)'],
-      ['note', 'Registrar', 'registro', 'var(--lilac-50)', 'var(--lilac-600)'],
+      ['note', phase === 'gravida' ? 'Diário' : 'Registrar', 'registro', 'var(--lilac-50)', 'var(--lilac-600)'],
       ['chart', 'Relatórios', 'relatorios', 'var(--leaf-50)', 'var(--leaf-600)'],
       ['book', 'Biblioteca', 'biblioteca', 'var(--amber-50)', 'var(--amber-600)'],
     ];
@@ -158,7 +215,7 @@ export default {
           <div class="hero__row">
             <button class="hero__avatar" data-nav="perfil" aria-label="Meu perfil">${state.profile.phase === 'gravida' ? '🤰' : state.profile.phase === 'posparto' ? '🍼' : '🌷'}</button>
             <div class="hero__hello">
-              <span>${greeting()}, ${esc(firstName)}</span>
+              <span>${esc(hello)}</span>
               <b>${esc(sub)}</b>
             </div>
             <button class="iconbtn iconbtn--onbrand" data-nav="lembretes" aria-label="Lembretes" style="position:relative">
@@ -188,13 +245,36 @@ export default {
             </div>
           </article>
 
+          <button class="card card--link mt-16" data-nav="missoes">
+            <span class="floatcard__ico" style="background:${missions.done ? 'var(--leaf-50)' : 'var(--amber-50)'};color:${missions.done ? 'var(--leaf-600)' : 'var(--amber-600)'}">
+              ${icon(missions.done ? 'crown' : 'flag', 22)}
+            </span>
+            <span class="grow" style="text-align:left">
+              <b style="display:block;font-size:var(--fs-14)">Missões Diárias</b>
+              <span class="fs-12 muted" style="display:block;margin-top:3px;line-height:1.45">${missions.done ? 'Todas concluídas — parabéns! 🎉' : `${missions.count} de ${missions.total} concluídas · ${missions.remaining} pendentes`}</span>
+              <span class="homeprogress"><i style="width:${missions.count / missions.total * 100}%"></i></span>
+            </span>
+            <span style="color:var(--faint);flex:none">${icon('chevron', 18)}</span>
+          </button>
+
           <button class="card card--link mt-16" data-nav="registro">
             <span class="floatcard__ico" style="background:${loggedToday ? 'var(--leaf-50)' : 'var(--amber-50)'};color:${loggedToday ? 'var(--leaf-600)' : 'var(--amber-600)'}">
               ${icon(loggedToday ? 'check' : 'note', 22)}
             </span>
             <span class="grow" style="text-align:left">
-              <b style="display:block;font-size:var(--fs-14)">${loggedToday ? 'Dia registrado 🌸' : 'Como você está hoje?'}</b>
-              <span class="fs-12 muted" style="display:block;margin-top:3px;line-height:1.45">${st.current > 0 ? `Sequência de ${plural(st.current, 'dia', 'dias')} · recorde ${st.best}` : 'Humor, sintomas e fertilidade em 30 segundos'}</span>
+              <b style="display:block;font-size:var(--fs-14)">${phase === 'gravida' ? 'Diário da Mamãe' : loggedToday ? 'Dia registrado 🌸' : 'Como você está hoje?'}</b>
+              <span class="fs-12 muted" style="display:block;margin-top:3px;line-height:1.45">${phase === 'gravida' ? (loggedToday ? 'Seu registro de hoje está guardado 🌸' : 'Humor, emoções, sintomas, memórias e gratidão') : st.current > 0 ? `Sequência de ${plural(st.current, 'dia', 'dias')} · recorde ${st.best}` : 'Humor, sintomas e fertilidade em 30 segundos'}</span>
+            </span>
+            <span style="color:var(--faint);flex:none">${icon('chevron', 18)}</span>
+          </button>
+
+          <button class="card card--link mt-8" data-nav="registro?s=sintomas">
+            <span class="floatcard__ico" style="background:${symptomsLoggedToday ? 'var(--leaf-50)' : 'var(--rose-50)'};color:${symptomsLoggedToday ? 'var(--leaf-600)' : 'var(--rose-700)'}">
+              ${icon(symptomsLoggedToday ? 'check' : 'thermometer', 22)}
+            </span>
+            <span class="grow" style="text-align:left">
+              <b style="display:block;font-size:var(--fs-14)">Controle de Sintomas</b>
+              <span class="fs-12 muted" style="display:block;margin-top:3px;line-height:1.45">${symptomsLoggedToday ? 'Sintomas ou medições registrados hoje' : 'Sintomas, pressão arterial, peso e glicemia'}</span>
             </span>
             <span style="color:var(--faint);flex:none">${icon('chevron', 18)}</span>
           </button>

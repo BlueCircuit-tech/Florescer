@@ -33,6 +33,7 @@ export const DEFAULTS = () => ({
       period: true,
       dailyLog: true,
       tip: true,
+      missions: true,
       community: false,
       time: '09:00',
     },
@@ -47,6 +48,7 @@ export const DEFAULTS = () => ({
   postState: {},                // id -> { liked, likes, comments:[] }
   hiddenPosts: [],              // publicações ocultadas pela moderação
   challengeDays: [],            // dias marcados no desafio da semana
+  missionDays: {},              // 'YYYY-MM-DD' -> ids das missões concluídas
   journey: [],                  // marcos da jornada
   notifyLog: {},                // controle de lembretes já enviados
   lastSeen: Date.now(),
@@ -121,8 +123,28 @@ export const emptyLog = () => ({
   mucus: null,           // seco | pegajoso | cremoso | aquoso | clara_ovo
   ovTest: null,          // nao_fiz | positivo | negativo
   notes: '',
+  emotions: [],          // diário da gestante
+  thoughts: '',
+  gratitude: '',
+  bumpPhotos: [],        // imagens JPEG reduzidas no próprio aparelho
+  examPhotos: [],
+  systolicPressure: null, // controle de sintomas e medições
+  diastolicPressure: null,
+  weight: null,           // kg
+  glucose: null,          // mg/dL
+  symptomNotes: '',
   updatedAt: null,
 });
+
+export function logHasContent(log) {
+  return !!log.flow || log.mood != null || !!log.symptoms?.length ||
+    !!log.intercourse || !!log.temperature || !!log.mucus ||
+    (!!log.ovTest && log.ovTest !== 'nao_fiz') || !!log.notes?.trim() ||
+    !!log.emotions?.length || !!log.thoughts?.trim() || !!log.gratitude?.trim() ||
+    !!log.bumpPhotos?.length || !!log.examPhotos?.length ||
+    log.systolicPressure != null || log.diastolicPressure != null ||
+    log.weight != null || log.glucose != null || !!log.symptomNotes?.trim();
+}
 
 export function getLog(key) {
   return state.logs[key] ? { ...emptyLog(), ...state.logs[key] } : emptyLog();
@@ -130,9 +152,7 @@ export function getLog(key) {
 
 export function saveLog(key, log) {
   const clean = { ...emptyLog(), ...log, updatedAt: Date.now() };
-  const isEmpty = !clean.flow && clean.mood === null && !clean.symptoms.length &&
-    !clean.intercourse && !clean.temperature && !clean.mucus &&
-    (!clean.ovTest || clean.ovTest === 'nao_fiz') && !clean.notes.trim();
+  const isEmpty = !logHasContent(clean);
   update((s) => {
     if (isEmpty) delete s.logs[key];
     else s.logs[key] = clean;

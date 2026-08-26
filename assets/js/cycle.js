@@ -1,3 +1,5 @@
+import { pregnancyCountdown, pregnancyWeekGuide } from './pregnancy.js';
+
 /**
  * Motor de datas, ciclo, gestação e pós-parto.
  * Regras clínicas usadas (as mesmas de apps de referência):
@@ -175,6 +177,11 @@ export function cycleInfo(state, ref = today()) {
   };
 }
 
+/** Lembretes de fertilidade exclusivos de tentantes dentro da janela fértil. */
+export function isFertileReminderEligible(state, ref = today()) {
+  return state.profile.phase === 'tentante' && cycleInfo(state, ref).inFertile === true;
+}
+
 function confidenceScore(n, variance, projected) {
   if (!n) return 55;
   let score = 60 + Math.min(n, 6) * 5; // 65…90
@@ -252,22 +259,24 @@ export function streak(state) {
 }
 
 /* ---------- gestação ---------- */
-export function pregnancyInfo(state) {
+export function pregnancyInfo(state, ref = today()) {
   const p = state.profile;
   let due = p.dueDate ? fromKey(p.dueDate) : null;
   if (!due && p.lastPeriodStart) due = addDays(fromKey(p.lastPeriodStart), 280);
   if (!due) return { known: false };
 
   const conceptionRef = addDays(due, -280);
-  const totalDays = clamp(diffDays(today(), conceptionRef), 0, 300);
+  const totalDays = clamp(diffDays(ref, conceptionRef), 0, 300);
   const weeks = Math.floor(totalDays / 7);
   const days = totalDays % 7;
-  const daysLeft = diffDays(due, today());
+  const daysLeft = diffDays(due, ref);
   const trimester = weeks < 14 ? 1 : weeks < 28 ? 2 : 3;
   return {
     known: true, due, weeks, days, daysLeft, trimester,
     progress: clamp(totalDays / 280, 0, 1),
     size: babySize(weeks),
+    guide: pregnancyWeekGuide(weeks),
+    countdown: pregnancyCountdown(daysLeft),
   };
 }
 
@@ -302,17 +311,53 @@ function babySize(weeks) {
 }
 
 /* ---------- pós-parto ---------- */
-export function postpartumInfo(state) {
+function addCalendarMonths(date, amount) {
+  const target = new Date(date.getFullYear(), date.getMonth() + amount, 1);
+  const lastDay = new Date(target.getFullYear(), target.getMonth() + 1, 0).getDate();
+  target.setDate(Math.min(date.getDate(), lastDay));
+  return target;
+}
+
+/** Idade em meses completos de calendário e dias restantes. */
+export function calendarAge(birthDate, referenceDate = today()) {
+  const birth = startOfDay(fromAny(birthDate));
+  const reference = startOfDay(fromAny(referenceDate));
+  if (reference < birth) return { months: 0, days: 0, age: '0 dias' };
+
+  let months = (reference.getFullYear() - birth.getFullYear()) * 12
+    + reference.getMonth() - birth.getMonth();
+  let milestone = addCalendarMonths(birth, months);
+
+  if (milestone > reference) {
+    months--;
+    milestone = addCalendarMonths(birth, months);
+  }
+
+  const days = diffDays(reference, milestone);
+  const parts = [];
+  if (months > 0) parts.push(plural(months, 'mês', 'meses'));
+  if (days > 0 || months === 0) parts.push(plural(days, 'dia', 'dias'));
+
+  return { months, days, age: parts.join(' e ') };
+}
+
+export function postpartumInfo(state, ref = today()) {
   const b = state.profile.birthDate;
   if (!b) return { known: false };
-  const days = diffDays(today(), fromKey(b));
-  const weeks = Math.floor(days / 7);
-  const months = Math.floor(days / 30.44);
-  let age;
-  if (days < 14) age = plural(days, 'dia', 'dias');
-  else if (days < 84) age = plural(weeks, 'semana', 'semanas');
-  else age = plural(months, 'mês', 'meses');
-  return { known: true, birth: fromKey(b), days, weeks, months, age, quarantine: days <= 40 };
+  const birth = fromKey(b);
+  const totalDays = Math.max(0, diffDays(ref, birth));
+  const weeks = Math.floor(totalDays / 7);
+  const calendar = calendarAge(birth, ref);
+  return {
+    known: true,
+    birth,
+    days: totalDays,
+    weeks,
+    months: calendar.months,
+    monthDays: calendar.days,
+    age: calendar.age,
+    quarantine: totalDays <= 40,
+  };
 }
 
 /* ---------- utilitários ---------- */

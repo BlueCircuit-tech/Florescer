@@ -238,8 +238,7 @@ function finish() {
     posparto: ['baby', 'Meu bebê nasceu'],
   }[draft.phase];
   addJourney(marcos[0], marcos[1], 'registrado no cadastro');
-  toast(`Tudo pronto, ${draft.name.trim().split(' ')[0]}! Seu Florescer está personalizado 🌷`);
-  navigate('home', { replace: true });
+  navigate('boas-vindas', { replace: true });
 }
 
 function paint() {
