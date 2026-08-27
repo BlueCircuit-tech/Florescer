@@ -50,6 +50,7 @@ export const DEFAULTS = () => ({
   logs: {},                     // 'YYYY-MM-DD' -> registro do dia
   pregnancyTests: [],           // testes de gravidez registrados pela tentante
   babyStatus: [],               // medidas e próximos cuidados dos bebês
+  breastfeedingLogs: [],        // mamadas, extrações e estoque de leite
   savedTips: [],
   savedArticles: [],
   readArticles: [],
