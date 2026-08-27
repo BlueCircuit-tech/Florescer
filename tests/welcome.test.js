@@ -32,3 +32,9 @@ test('usa uma descrição genérica quando o bebê não tem nome informado', () 
 
   assert.match(content.message, /acompanhar seu bebê/);
 });
+
+test('personaliza o pós-parto com os nomes de múltiplos bebês', () => {
+  const content = welcomeContent({ name: 'Júlia', phase: 'posparto', babyNames: ['Lia', 'Liz'] });
+
+  assert.match(content.message, /acompanhar Lia e Liz/);
+});

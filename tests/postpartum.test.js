@@ -1,0 +1,25 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+
+import { registerBirth } from '../assets/js/postpartum.js';
+
+test('registro do nascimento muda automaticamente para o Florescer Baby', () => {
+  const state = {
+    profile: {
+      phase: 'gravida',
+      babyName: 'Lia',
+      babyNames: ['Lia', 'Liz'],
+    },
+  };
+
+  registerBirth(state, '2026-08-26', 123);
+
+  assert.equal(state.profile.phase, 'posparto');
+  assert.equal(state.profile.birthDate, '2026-08-26');
+  assert.equal(state.profile.birthRegisteredAt, 123);
+  assert.deepEqual(state.profile.babyNames, ['Lia', 'Liz']);
+});
+
+test('registro do nascimento exige uma data válida', () => {
+  assert.throws(() => registerBirth({ profile: {} }, ''), /data/);
+});
