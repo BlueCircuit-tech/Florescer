@@ -9,6 +9,7 @@ import { navigate, back } from '../router.js';
 import { toKey, today, fromKey, fmtFull, relativeDay, streak, cycleInfo, diffDays, plural } from '../cycle.js';
 import { validateSymptomMeasurements } from '../pregnancy.js';
 import { compressPhoto } from '../media.js';
+import { notifyAchievements } from '../notify.js';
 import { MOODS, SYMPTOMS, CONTROL_SYMPTOMS, PREGNANCY_EMOTIONS, FLOWS, MUCUS, OV_TESTS } from '../content.js';
 
 const MAX_PHOTOS_PER_KIND = 2;
@@ -323,8 +324,9 @@ export default {
             draft.notes = root.querySelector('#l-notes').value;
           }
 
-          const saved = saveLog(key, draft);
-          if (!saved) { toast('Nada para salvar neste dia ainda.'); return; }
+          const result = saveLog(key, draft);
+          if (!result.saved) { toast('Nada para salvar neste dia ainda.'); return; }
+          notifyAchievements(result.achievements);
 
           const s2 = streak(getState());
           if (s2.current === 7) addJourney('sparkle', 'Sequência de 7 dias de registro', 'constância que melhora as previsões');

@@ -18,7 +18,7 @@ export async function requestPermission() {
   try { return await Notification.requestPermission(); } catch { return 'denied'; }
 }
 
-async function show(title, body, tag) {
+async function show(title, body, tag, url = './#/home') {
   if (permission() !== 'granted') return false;
   const opts = {
     body,
@@ -26,7 +26,7 @@ async function show(title, body, tag) {
     icon: 'icons/icon-192.png',
     badge: 'icons/badge.png',
     lang: 'pt-BR',
-    data: { url: tag === 'missions' ? './#/missoes' : './#/home' },
+    data: { url: tag === 'missions' ? './#/missoes' : url },
   };
   try {
     const reg = await navigator.serviceWorker?.getRegistration();
@@ -57,6 +57,17 @@ function messages(state, info) {
     tip: ['Sua sugestão de hoje ✨', 'Abra o Florescer para ver a dica escolhida para a sua fase.'],
     missions: ['Suas missões esperam por você 🎯', `${oi}ainda há pequenos cuidados para concluir hoje. Cada missão vale pontos!`],
   };
+}
+
+/** Envia uma celebração imediata sem solicitar permissão nem expor dados sensíveis. */
+export async function notifyAchievements(achievements = []) {
+  if (!achievements.length || !getState().settings.notifications.achievements || permission() !== 'granted') return false;
+  const privateAchievement = achievements.some((item) => item.private);
+  const title = achievements.length > 1 ? 'Novas conquistas no Florescer ✨' : privateAchievement ? 'Uma nova conquista no Florescer ✨' : achievements[0].title;
+  const body = achievements.length > 1 || privateAchievement
+    ? (achievements.length > 1 ? `${achievements.length} pequenas conquistas foram adicionadas à sua jornada.` : 'Uma pequena conquista foi adicionada à sua jornada.')
+    : achievements[0].note;
+  return show(title, body, `achievement:${achievements.map((item) => item.id).join('+')}`, './#/perfil');
 }
 
 function dispatch(kind, title, body) {

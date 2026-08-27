@@ -663,14 +663,16 @@ button.item:active{opacity:.6}
 .day--fert{background:var(--c-fert-tint);color:var(--leaf-600);box-shadow:inset 0 0 0 1.5px var(--leaf-200)}
 .day--ovul{background:var(--c-ovul);color:#fff;box-shadow:0 4px 10px -6px rgba(47,110,76,.8)}
 .day--today{outline:2.5px solid var(--accent-strong);outline-offset:2px}
-.day__marks{position:absolute;bottom:4px;display:flex;gap:2px;align-items:center;height:6px}
+.day__marks{position:absolute;bottom:2px;display:flex;gap:2px;align-items:center;height:10px}
 .day__marks i{width:5px;height:5px;border-radius:99px;display:block}
-.day__marks i.love{background:var(--rose-600)}
+.day__marks i.love{width:auto;height:auto;background:none;color:var(--rose-600);font-size:10px;font-style:normal;line-height:1}
 .day__marks i.log{background:var(--lilac-500)}
-.day--menst .day__marks i,.day--ovul .day__marks i{background:rgba(255,255,255,.85)}
+.day--menst .day__marks i.log,.day--ovul .day__marks i.log{background:rgba(255,255,255,.85)}
+.day--menst .day__marks i.love,.day--ovul .day__marks i.love{color:rgba(255,255,255,.92)}
 .legend{display:flex;flex-wrap:wrap;gap:12px;padding:18px var(--gutter) 4px;font-size:var(--fs-11);font-weight:700;color:var(--ink-2)}
 .legend span{display:inline-flex;align-items:center;gap:6px}
 .legend i{width:11px;height:11px;border-radius:5px;display:block}
+.legend__heart{color:var(--rose-600);font-size:13px;line-height:1}
 
 /* carrossel horizontal com indicação de rolagem */
 .hsec{margin-bottom:4px}

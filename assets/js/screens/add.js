@@ -1,4 +1,4 @@
-import { getState, update, addJourney } from '../store.js';
+import { getState, update, addJourney, saveIntercourse } from '../store.js';
 import { recordPregnancyTest, PREGNANCY_TEST_RESULTS } from '../pregnancyTest.js';
 import { icon } from '../icons.js';
 import { esc, toast, haptic, confirmSheet } from '../ui.js';
@@ -6,6 +6,7 @@ import { navigate } from '../router.js';
 import { today, toKey, fromKey, fmtFull, diffDays } from '../cycle.js';
 import { babyNamesFromProfile, formatBabyNames } from '../babies.js';
 import { registerBirth } from '../postpartum.js';
+import { notifyAchievements } from '../notify.js';
 
 const resultOptions = [
   ['positivo', 'Positivo', 'O teste indicou gravidez.'],
@@ -48,6 +49,11 @@ export default {
               <span class="item__body"><b>Adicionar um Teste</b><span>Inclua o resultado do seu teste de gravidez.</span></span>
               <span class="item__end">${icon('chevron', 17)}</span>
             </button>
+            <button class="item" data-nav="relacao">
+              <span class="item__ico">${icon('heartFill', 20)}</span>
+              <span class="item__body"><b>Registrar Relação</b><span>Marque no calendário sem preencher o registro completo.</span></span>
+              <span class="item__end">${icon('chevron', 17)}</span>
+            </button>
             <button class="item" data-nav="registro">
               <span class="item__ico">${icon('note', 20)}</span>
               <span class="item__body"><b>Fazer um registro</b><span>Anote seu ciclo, sintomas e como foi o seu dia.</span></span>
@@ -70,6 +76,53 @@ export default {
           toast('Nascimento registrado. Bem-vinda ao Florescer Baby!');
           navigate('boas-vindas', { replace: true });
         });
+      },
+    };
+  },
+};
+
+export const relationshipScreen = {
+  id: 'relacao',
+  tab: null,
+  render() {
+    let protectedValue = false;
+    return {
+      appbar: { title: 'Registrar Relação', sub: 'Acompanhamento do ciclo' },
+      html: `<div class="section pb-24 stagger">
+        <div class="card diaryintro">
+          <span class="floatcard__ico">${icon('heartFill', 22)}</span>
+          <div><b>Um registro simples e privado</b><p>A relação aparecerá como um pequeno coração no seu calendário.</p></div>
+        </div>
+        <div class="field mt-16">
+          <label for="relationship-date">Data da relação</label>
+          <input id="relationship-date" type="date" value="${toKey(today())}" max="${toKey(today())}">
+        </div>
+        <div class="card card--flush mt-16">
+          <div class="kv">
+            <span class="kv__k">Com proteção<small>opcional</small></span>
+            <button class="toggle" role="switch" aria-checked="false" data-protected aria-label="Relação com proteção"></button>
+          </div>
+        </div>
+        <div class="note mt-16">${icon('lock', 17)}<span>Este é um dado sensível e permanece somente neste aparelho.</span></div>
+        <button class="btn mt-16" data-save-relationship>${icon('heart', 19)} Registrar relação</button>
+      </div>`,
+      mount(root) {
+        const toggle = root.querySelector('[data-protected]');
+        toggle.onclick = () => {
+          protectedValue = !protectedValue;
+          toggle.setAttribute('aria-checked', String(protectedValue));
+          haptic();
+        };
+        root.querySelector('[data-save-relationship]').onclick = () => {
+          const date = root.querySelector('#relationship-date').value;
+          if (!date) { toast('Informe a data da relação.'); return; }
+          if (diffDays(fromKey(date), today()) > 0) { toast('A data não pode estar no futuro.'); return; }
+          const result = saveIntercourse(date, { protected: protectedValue });
+          notifyAchievements(result.achievements);
+          haptic(14);
+          toast('Relação registrada no calendário.');
+          navigate('ciclo');
+        };
       },
     };
   },

@@ -2,7 +2,7 @@
  * Calendário do ciclo: menstruação registrada, previsões, janela fértil,
  * ovulação e marcações do dia. Navega por qualquer mês.
  */
-import { getState } from '../store.js';
+import { getState, saveIntercourse } from '../store.js';
 import { icon } from '../icons.js';
 import { esc, openSheet, closeSheet, haptic, toast } from '../ui.js';
 import { navigate } from '../router.js';
@@ -11,6 +11,7 @@ import {
   fmtMonth, fmtFull, fmtShort, isSameDay, diffDays, relativeDay, plural, cap,
 } from '../cycle.js';
 import { MOODS, FLOWS } from '../content.js';
+import { notifyAchievements } from '../notify.js';
 
 let cursor = null; // mês exibido
 
@@ -37,9 +38,10 @@ export default {
         if (di.future) cls.push('day--future');
         if (isSameDay(d, today())) cls.push('day--today');
         const marks = [];
-        if (di.log?.intercourse) marks.push('<i class="love"></i>');
+        if (di.log?.intercourse) marks.push('<i class="love" aria-hidden="true">♥</i>');
         if (di.log && !di.log.intercourse) marks.push('<i class="log"></i>');
-        return `<button class="${cls.join(' ')}" data-day="${di.key}" aria-label="${fmtFull(d)}">
+        const relationshipLabel = di.log?.intercourse ? ', relação registrada' : '';
+        return `<button class="${cls.join(' ')}" data-day="${di.key}" aria-label="${fmtFull(d)}${relationshipLabel}">
           ${d.getDate()}${marks.length ? `<span class="day__marks">${marks.join('')}</span>` : ''}
         </button>`;
       }).join('');
@@ -80,7 +82,7 @@ export default {
           <span><i style="background:var(--c-pred-tint);box-shadow:inset 0 0 0 1.5px var(--c-pred)"></i>Previsão</span>
           <span><i style="background:var(--leaf-200)"></i>Janela fértil</span>
           <span><i style="background:var(--c-ovul)"></i>Ovulação</span>
-          <span><i style="background:var(--rose-600);border-radius:99px;width:8px;height:8px"></i>Intimidade</span>
+          <span><b class="legend__heart" aria-hidden="true">♥</b>Relação</span>
           <span><i style="background:var(--lilac-500);border-radius:99px;width:8px;height:8px"></i>Registro</span>
         </div>
         <div class="section pb-24">
@@ -122,6 +124,7 @@ function openDay(key) {
           : 'Dia comum do ciclo';
 
   const cycleDay = info.known ? diffDays(date, info.cycleStart) + 1 : null;
+  const canRegisterRelationship = state.profile.phase === 'tentante' && !di.future && !log?.intercourse;
   const detalhes = log ? `
     <div class="card card--tint mt-12">
       ${log.flow ? row('drop', 'Fluxo', FLOWS.find((f) => f.id === log.flow)?.label || log.flow) : ''}
@@ -140,8 +143,17 @@ function openDay(key) {
     title: fmtFull(date),
     subtitle: `${status}${cycleDay && cycleDay > 0 ? ` · dia ${cycleDay} do ciclo` : ''} · ${relativeDay(date)}`,
     body: `${detalhes}
+      ${canRegisterRelationship ? `<button class="btn btn--soft mt-16" data-relationship>${icon('heartFill', 18)} Registrar relação</button>` : ''}
       <button class="btn mt-16" data-go>${icon('edit', 18)} ${log ? 'Editar registro' : 'Registrar este dia'}</button>`,
     onMount(sheet) {
+      sheet.querySelector('[data-relationship]')?.addEventListener('click', () => {
+        const result = saveIntercourse(key);
+        notifyAchievements(result.achievements);
+        closeSheet();
+        haptic(14);
+        toast('Relação registrada no calendário.');
+        import('../router.js').then((module) => module.render());
+      });
       sheet.querySelector('[data-go]').onclick = () => { closeSheet(); navigate(`registro?d=${key}`); };
     },
   });

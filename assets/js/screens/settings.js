@@ -187,6 +187,7 @@ export const remindersScreen = {
           ${toggleRow('Registro diário', n.dailyLog, 'dailyLog', 'só se você ainda não registrou o dia')}
           ${toggleRow('Sugestão do dia', n.tip, 'tip', 'conteúdo escolhido para a sua fase')}
           ${toggleRow('Missões diárias', n.missions, 'missions', 'somente quando ainda houver missões pendentes')}
+          ${toggleRow('Pequenas conquistas', n.achievements, 'achievements', 'celebrações de registros, ciclos e outros marcos')}
           ${toggleRow('Atividade da comunidade', n.community, 'community', 'respostas às suas publicações')}
           <div class="kv">
             <span class="kv__k">Horário<small>quando os lembretes do dia chegam</small></span>
