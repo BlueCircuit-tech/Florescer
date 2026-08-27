@@ -85,13 +85,13 @@ const TABS = [
 
 function renderTabbar(active) {
   const phase = getState().profile.phase;
-  const fabTarget = phase === 'posparto' ? 'registro' : 'adicionar';
+  const fabTarget = 'adicionar';
   const fabLabel = phase === 'tentante' ? 'Adicionar teste, relação ou registro'
-    : phase === 'gravida' ? 'Adicionar registro, sintoma ou nascimento' : 'Registrar meu dia';
+    : phase === 'gravida' ? 'Adicionar registro, sintoma ou nascimento' : 'Adicionar status do bebê ou registro';
   $('#tabbar').innerHTML = TABS.map((t) => t.fab
     ? `<button class="tab__fab" data-nav="${fabTarget}" aria-label="${fabLabel}">${icon(t.icon, 26, { stroke: 2 })}</button>`
     : `<button class="tab" data-nav="${t.to}" ${active === t.id ? 'aria-current="page"' : ''}>
-        <span class="tab__ico">${icon(t.icon, 22)}</span><span>${t.label}</span>
+        <span class="tab__ico">${icon(t.icon, 22)}</span><span>${phase === 'posparto' && t.id === 'ciclo' ? 'Calendário' : t.label}</span>
       </button>`).join('');
 }
 

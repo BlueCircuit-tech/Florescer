@@ -10,7 +10,7 @@ import { toKey, today, fromKey, fmtFull, relativeDay, streak, cycleInfo, diffDay
 import { validateSymptomMeasurements } from '../pregnancy.js';
 import { compressPhoto } from '../media.js';
 import { notifyAchievements } from '../notify.js';
-import { MOODS, SYMPTOMS, CONTROL_SYMPTOMS, PREGNANCY_EMOTIONS, FLOWS, MUCUS, OV_TESTS } from '../content.js';
+import { MOODS, SYMPTOMS, CONTROL_SYMPTOMS, PREGNANCY_EMOTIONS, POSTPARTUM_EMOTIONS, FLOWS, MUCUS, OV_TESTS } from '../content.js';
 
 const MAX_PHOTOS_PER_KIND = 2;
 // ponytail: fotos ficam comprimidas no localStorage; ao virar uma galeria longa, migrar os blobs para IndexedDB.
@@ -106,6 +106,37 @@ function pregnancyDiaryFields(draft) {
     </div>`;
 }
 
+function postpartumDiaryFields(draft) {
+  return `
+    <div class="card diaryintro">
+      <span class="floatcard__ico">${icon('heart', 22)}</span>
+      <div><b>Um espaço de acolhimento para você</b><p>Registre seus sentimentos, conquistas e tudo que deseja guardar desta fase.</p></div>
+    </div>
+
+    <div class="section__head" style="padding:0"><h2>Como está seu humor?</h2></div>
+    <div class="moodrow">
+      ${MOODS.map((m, i) => `<button class="mood" data-mood="${i}" aria-pressed="${draft.mood === i}"><em>${m.emoji}</em>${m.label}</button>`).join('')}
+    </div>
+
+    <div class="section__head" style="padding:0"><h2>Emoções e sentimentos</h2></div>
+    <div class="chipwrap">
+      ${POSTPARTUM_EMOTIONS.map((emotion) => `<button class="chip" data-emotion="${esc(emotion)}" aria-pressed="${draft.emotions.includes(emotion)}">${esc(emotion)}</button>`).join('')}
+    </div>
+
+    <div class="field mt-16">
+      <label for="l-accomplishments">Conquistas do dia</label>
+      <textarea id="l-accomplishments" rows="3" maxlength="1000" placeholder="Uma pequena ou grande conquista que deseja celebrar…">${esc(draft.accomplishments)}</textarea>
+    </div>
+    <div class="field">
+      <label for="l-gratitude">Gratidão do dia</label>
+      <textarea id="l-gratitude" rows="3" maxlength="1000" placeholder="Hoje sou grata por…">${esc(draft.gratitude)}</textarea>
+    </div>
+    <div class="field">
+      <label for="l-observations">Observações</label>
+      <textarea id="l-observations" rows="4" maxlength="2000" placeholder="O que você deseja guardar sobre este dia?">${esc(draft.observations || draft.notes)}</textarea>
+    </div>`;
+}
+
 export default {
   id: 'registro',
   tab: null,
@@ -116,6 +147,7 @@ export default {
     const future = diffDays(date, today()) > 0;
     const draft = getLog(key);
     const pregnant = state.profile.phase === 'gravida';
+    const postpartum = state.profile.phase === 'posparto';
     const symptomControl = route.params.s === 'sintomas';
     draft.emotions = draft.emotions || [];
     draft.bumpPhotos = safePhotos(draft.bumpPhotos);
@@ -129,8 +161,8 @@ export default {
 
     return {
       appbar: {
-        title: symptomControl ? 'Controle de Sintomas' : pregnant ? 'Diário da Mamãe' : relativeDay(date) === 'hoje' ? 'Meu dia' : fmtFull(date),
-        sub: `${fmtFull(date)}${!pregnant && cycleDay && cycleDay > 0 ? ` · dia ${cycleDay} do ciclo` : ''}`,
+        title: symptomControl ? 'Controle de Sintomas' : pregnant || postpartum ? 'Diário da Mamãe' : relativeDay(date) === 'hoje' ? 'Meu dia' : fmtFull(date),
+        sub: `${fmtFull(date)}${!pregnant && !postpartum && cycleDay && cycleDay > 0 ? ` · dia ${cycleDay} do ciclo` : ''}`,
         actions: existed ? [{ icon: 'trash', label: 'Apagar registro', action: 'del' }] : [],
       },
       html: `<div class="section pb-24 stagger">
@@ -145,7 +177,7 @@ export default {
             </div>
           </div>` : ''}
 
-        ${symptomControl ? symptomControlFields(draft, true) : pregnant ? pregnancyDiaryFields(draft) : `
+        ${symptomControl ? symptomControlFields(draft, true) : pregnant ? pregnancyDiaryFields(draft) : postpartum ? postpartumDiaryFields(draft) : `
         <div class="section__head" style="padding:0"><h2>Menstruação</h2></div>
         <div class="flowrow">
           <button class="flow" data-flow="" aria-pressed="${!draft.flow}">${icon('close', 19)}<span>Nenhum</span></button>
@@ -200,12 +232,12 @@ export default {
         </div>
         `}
 
-        ${pregnant || symptomControl ? '' : `<div class="field mt-16">
+        ${pregnant || postpartum || symptomControl ? '' : `<div class="field mt-16">
           <label for="l-notes">Observações</label>
           <textarea id="l-notes" rows="3" maxlength="1000" placeholder="Como foi o seu dia? Escreva com carinho…">${esc(draft.notes)}</textarea>
         </div>`}
 
-        <button class="btn" data-save>${icon('check', 19)} ${symptomControl ? 'Salvar controle de sintomas' : pregnant ? 'Salvar no Diário da Mamãe' : 'Salvar meu dia'}</button>
+        <button class="btn" data-save>${icon('check', 19)} ${symptomControl ? 'Salvar controle de sintomas' : pregnant || postpartum ? 'Salvar no Diário da Mamãe' : 'Salvar meu dia'}</button>
       </div>`,
 
       mount(root) {
@@ -311,6 +343,10 @@ export default {
           if (pregnant && !symptomControl) {
             draft.thoughts = root.querySelector('#l-thoughts').value.trim();
             draft.gratitude = root.querySelector('#l-gratitude').value.trim();
+          } else if (postpartum && !symptomControl) {
+            draft.accomplishments = root.querySelector('#l-accomplishments').value.trim();
+            draft.gratitude = root.querySelector('#l-gratitude').value.trim();
+            draft.observations = root.querySelector('#l-observations').value.trim();
           } else if (!symptomControl) {
             const t = root.querySelector('#l-temp').value.replace(',', '.').trim();
             const temp = t ? Number(t) : null;
@@ -331,10 +367,11 @@ export default {
           const s2 = streak(getState());
           if (s2.current === 7) addJourney('sparkle', 'Sequência de 7 dias de registro', 'constância que melhora as previsões');
           if (draft.flow) addJourney('drop', 'Primeiro fluxo registrado', 'as previsões ficam mais precisas a cada ciclo');
-          if (pregnant) addJourney('heart', 'Primeiro registro no Diário da Mamãe', 'memórias da gestação guardadas com carinho');
+          if (pregnant && !symptomControl) addJourney('heart', 'Primeiro registro no Diário da Mamãe', 'memórias da gestação guardadas com carinho');
+          if (postpartum && !symptomControl) addJourney('heart', 'Primeiro Diário da Mamãe no Florescer Baby', 'sentimentos e conquistas do puerpério acolhidos');
           if (symptomControl) addJourney('thermometer', 'Primeiro controle de sintomas', 'sintomas e medições registrados');
           haptic(14);
-          toast(symptomControl ? 'Controle de sintomas salvo.' : pregnant ? 'Diário da Mamãe salvo com carinho 🌸' : s2.current > 1 ? `Dia salvo! Sequência de ${plural(s2.current, 'dia', 'dias')} 🌸` : 'Dia salvo com carinho 🌸');
+          toast(symptomControl ? 'Controle de sintomas salvo.' : pregnant || postpartum ? 'Diário da Mamãe salvo com carinho 🌸' : s2.current > 1 ? `Dia salvo! Sequência de ${plural(s2.current, 'dia', 'dias')} 🌸` : 'Dia salvo com carinho 🌸');
           navigate('home');
         };
 
@@ -343,7 +380,7 @@ export default {
           if (!ok) return;
           update((s) => { delete s.logs[key]; });
           toast('Registro apagado.');
-          navigate(pregnant || symptomControl ? 'home' : 'ciclo');
+          navigate(pregnant || postpartum || symptomControl ? 'home' : 'ciclo');
         });
       },
     };

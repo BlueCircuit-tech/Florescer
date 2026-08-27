@@ -669,10 +669,18 @@ button.item:active{opacity:.6}
 .day__marks i.log{background:var(--lilac-500)}
 .day--menst .day__marks i.log,.day--ovul .day__marks i.log{background:rgba(255,255,255,.85)}
 .day--menst .day__marks i.love,.day--ovul .day__marks i.love{color:rgba(255,255,255,.92)}
+.day__marks i.baby-status{width:auto;height:auto;background:none;color:var(--lilac-600);font-size:8px;font-style:normal;line-height:1}
+.day__marks i.baby-care{width:10px;height:10px;border-radius:4px;color:#fff;font-size:7px;font-style:normal;font-weight:900;line-height:10px;text-align:center}
+.day__marks i.baby-care--vaccine{background:var(--leaf-500)}
+.day__marks i.baby-care--appointment{background:var(--lilac-500)}
 .legend{display:flex;flex-wrap:wrap;gap:12px;padding:18px var(--gutter) 4px;font-size:var(--fs-11);font-weight:700;color:var(--ink-2)}
 .legend span{display:inline-flex;align-items:center;gap:6px}
 .legend i{width:11px;height:11px;border-radius:5px;display:block}
 .legend__heart{color:var(--rose-600);font-size:13px;line-height:1}
+.legend__baby-status{color:var(--lilac-600);font-size:10px;line-height:1}
+.legend__baby-care{width:15px;height:15px;border-radius:5px;color:#fff;font-size:9px;line-height:15px;text-align:center}
+.legend__baby-care--vaccine{background:var(--leaf-500)}
+.legend__baby-care--appointment{background:var(--lilac-500)}
 
 /* carrossel horizontal com indicação de rolagem */
 .hsec{margin-bottom:4px}

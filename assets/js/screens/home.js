@@ -202,7 +202,7 @@ export default {
 
     const shortcuts = [
       ['calendar', 'Calendário', 'ciclo', 'var(--rose-50)', 'var(--rose-700)'],
-      ['note', phase === 'gravida' ? 'Diário' : 'Registrar', 'registro', 'var(--lilac-50)', 'var(--lilac-600)'],
+      ['note', phase === 'gravida' || phase === 'posparto' ? 'Diário' : 'Registrar', 'registro', 'var(--lilac-50)', 'var(--lilac-600)'],
       ['chart', 'Relatórios', 'relatorios', 'var(--leaf-50)', 'var(--leaf-600)'],
       ['book', 'Biblioteca', 'biblioteca', 'var(--amber-50)', 'var(--amber-600)'],
     ];
@@ -263,8 +263,8 @@ export default {
               ${icon(loggedToday ? 'check' : 'note', 22)}
             </span>
             <span class="grow" style="text-align:left">
-              <b style="display:block;font-size:var(--fs-14)">${phase === 'gravida' ? 'Diário da Mamãe' : loggedToday ? 'Dia registrado 🌸' : 'Como você está hoje?'}</b>
-              <span class="fs-12 muted" style="display:block;margin-top:3px;line-height:1.45">${phase === 'gravida' ? (loggedToday ? 'Seu registro de hoje está guardado 🌸' : 'Humor, emoções, sintomas, memórias e gratidão') : st.current > 0 ? `Sequência de ${plural(st.current, 'dia', 'dias')} · recorde ${st.best}` : 'Humor, sintomas e fertilidade em 30 segundos'}</span>
+              <b style="display:block;font-size:var(--fs-14)">${phase === 'gravida' || phase === 'posparto' ? 'Diário da Mamãe' : loggedToday ? 'Dia registrado 🌸' : 'Como você está hoje?'}</b>
+              <span class="fs-12 muted" style="display:block;margin-top:3px;line-height:1.45">${phase === 'gravida' ? (loggedToday ? 'Seu registro de hoje está guardado 🌸' : 'Humor, emoções, sintomas, memórias e gratidão') : phase === 'posparto' ? (loggedToday ? 'Seu registro de hoje está guardado 🌸' : 'Emoções, conquistas, gratidão e observações') : st.current > 0 ? `Sequência de ${plural(st.current, 'dia', 'dias')} · recorde ${st.best}` : 'Humor, sintomas e fertilidade em 30 segundos'}</span>
             </span>
             <span style="color:var(--faint);flex:none">${icon('chevron', 18)}</span>
           </button>

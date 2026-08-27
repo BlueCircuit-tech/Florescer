@@ -16,6 +16,7 @@ import calendar from './screens/calendar.js';
 import log from './screens/log.js';
 import add, { pregnancyTestScreen, relationshipScreen } from './screens/add.js';
 import pregnancySetup from './screens/pregnancySetup.js';
+import babyStatus from './screens/babyStatus.js';
 import missions from './screens/missions.js';
 import tips, { libraryScreen, articleScreen, savedScreen } from './screens/tips.js';
 import community, { postScreen, newPostScreen } from './screens/community.js';
@@ -27,7 +28,7 @@ import admin from './screens/admin.js';
 
 /* ---------- telas ---------- */
 [
-  onboarding, welcome, home, calendar, log, add, pregnancyTestScreen, relationshipScreen, pregnancySetup, missions, tips, libraryScreen, articleScreen, savedScreen,
+  onboarding, welcome, home, calendar, log, add, pregnancyTestScreen, relationshipScreen, pregnancySetup, babyStatus, missions, tips, libraryScreen, articleScreen, savedScreen,
   community, postScreen, newPostScreen, insights, profile, premium,
   settings, remindersScreen, privacyScreen, helpScreen, aboutScreen, admin,
 ].forEach(register);

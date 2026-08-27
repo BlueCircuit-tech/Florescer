@@ -20,6 +20,7 @@ export default {
   render() {
     const state = getState();
     const pregnant = state.profile.phase === 'gravida';
+    const postpartum = state.profile.phase === 'posparto';
     const names = babyNamesFromProfile(state.profile);
     const multiple = state.profile.pregnancyType === 'gemelar' || names.length > 1;
     const babies = names.length ? formatBabyNames(names) : multiple ? 'seus bebês' : 'seu bebê';
@@ -43,6 +44,15 @@ export default {
             <button class="item" data-register-birth>
               <span class="item__ico">${icon('baby', 20)}</span>
               <span class="item__body"><b>Registrar nascimento</b><span>Inicie o Florescer Baby após o nascimento.</span></span>
+              <span class="item__end">${icon('chevron', 17)}</span>
+            </button>` : postpartum ? `<button class="item" data-nav="status-bebe">
+              <span class="item__ico">${icon('baby', 20)}</span>
+              <span class="item__body"><b>Registrar status do bebê</b><span>Peso, altura, próxima vacina e consulta.</span></span>
+              <span class="item__end">${icon('chevron', 17)}</span>
+            </button>
+            <button class="item" data-nav="registro">
+              <span class="item__ico">${icon('note', 20)}</span>
+              <span class="item__body"><b>Diário da Mamãe</b><span>Emoções, conquistas, gratidão e observações.</span></span>
               <span class="item__end">${icon('chevron', 17)}</span>
             </button>` : `<button class="item" data-nav="teste-gravidez">
               <span class="item__ico">${icon('test', 20)}</span>

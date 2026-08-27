@@ -39,6 +39,8 @@ export const DEFAULTS = () => ({
       tip: true,
       missions: true,
       achievements: true,
+      babyVaccines: true,
+      babyAppointments: true,
       community: false,
       time: '09:00',
     },
@@ -47,6 +49,7 @@ export const DEFAULTS = () => ({
   },
   logs: {},                     // 'YYYY-MM-DD' -> registro do dia
   pregnancyTests: [],           // testes de gravidez registrados pela tentante
+  babyStatus: [],               // medidas e próximos cuidados dos bebês
   savedTips: [],
   savedArticles: [],
   readArticles: [],
@@ -132,7 +135,9 @@ export const emptyLog = () => ({
   notes: '',
   emotions: [],          // diário da gestante
   thoughts: '',
+  accomplishments: '',    // conquistas do Diário da Mamãe no pós-parto
   gratitude: '',
+  observations: '',       // observações do Diário da Mamãe no pós-parto
   bumpPhotos: [],        // imagens JPEG reduzidas no próprio aparelho
   examPhotos: [],
   systolicPressure: null, // controle de sintomas e medições
@@ -147,7 +152,8 @@ export function logHasContent(log) {
   return !!log.flow || log.mood != null || !!log.symptoms?.length ||
     !!log.intercourse || !!log.temperature || !!log.mucus ||
     (!!log.ovTest && log.ovTest !== 'nao_fiz') || !!log.notes?.trim() ||
-    !!log.emotions?.length || !!log.thoughts?.trim() || !!log.gratitude?.trim() ||
+    !!log.emotions?.length || !!log.thoughts?.trim() || !!log.accomplishments?.trim() ||
+    !!log.gratitude?.trim() || !!log.observations?.trim() ||
     !!log.bumpPhotos?.length || !!log.examPhotos?.length ||
     log.systolicPressure != null || log.diastolicPressure != null ||
     log.weight != null || log.glucose != null || !!log.symptomNotes?.trim();

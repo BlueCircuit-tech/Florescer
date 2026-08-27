@@ -12,6 +12,7 @@ import {
 } from '../cycle.js';
 import { MOODS, FLOWS } from '../content.js';
 import { notifyAchievements } from '../notify.js';
+import { babyCareOnDate, babyEvents } from '../babyStatus.js';
 
 let cursor = null; // mês exibido
 
@@ -21,6 +22,8 @@ export default {
   render() {
     const state = getState();
     const info = cycleInfo(state);
+    const postpartum = state.profile.phase === 'posparto';
+    const upcomingBabyEvents = postpartum ? babyEvents(state).filter((event) => event.date >= toKey(today())).slice(0, 4) : [];
     if (!cursor) cursor = new Date(today().getFullYear(), today().getMonth(), 1);
 
     const cells = monthMatrix(cursor.getFullYear(), cursor.getMonth());
@@ -30,23 +33,35 @@ export default {
       + cells.map((d) => {
         if (!d) return '<div class="day day--pad"></div>';
         const di = dayInfo(state, d, info);
+        const babyCare = postpartum ? babyCareOnDate(state, di.key) : { statuses: [], events: [] };
         const cls = ['day'];
-        if (di.menst) cls.push('day--menst');
-        else if (di.ovulation) cls.push('day--ovul');
-        else if (di.fertile) cls.push('day--fert');
-        else if (di.predPeriod) cls.push('day--pred');
+        if (!postpartum && di.menst) cls.push('day--menst');
+        else if (!postpartum && di.ovulation) cls.push('day--ovul');
+        else if (!postpartum && di.fertile) cls.push('day--fert');
+        else if (!postpartum && di.predPeriod) cls.push('day--pred');
         if (di.future) cls.push('day--future');
         if (isSameDay(d, today())) cls.push('day--today');
         const marks = [];
-        if (di.log?.intercourse) marks.push('<i class="love" aria-hidden="true">♥</i>');
-        if (di.log && !di.log.intercourse) marks.push('<i class="log"></i>');
+        if (!postpartum && di.log?.intercourse) marks.push('<i class="love" aria-hidden="true">♥</i>');
+        if (!postpartum && di.log && !di.log.intercourse) marks.push('<i class="log"></i>');
+        if (babyCare.statuses.length) marks.push('<i class="baby-status" aria-hidden="true">●</i>');
+        if (babyCare.events.some((event) => event.type === 'vaccine')) marks.push('<i class="baby-care baby-care--vaccine" aria-hidden="true">V</i>');
+        if (babyCare.events.some((event) => event.type === 'appointment')) marks.push('<i class="baby-care baby-care--appointment" aria-hidden="true">C</i>');
         const relationshipLabel = di.log?.intercourse ? ', relação registrada' : '';
-        return `<button class="${cls.join(' ')}" data-day="${di.key}" aria-label="${fmtFull(d)}${relationshipLabel}">
+        const babyLabel = babyCare.statuses.length || babyCare.events.length ? `, ${babyCare.statuses.length ? 'status do bebê' : ''}${babyCare.statuses.length && babyCare.events.length ? ', ' : ''}${babyCare.events.length ? 'cuidado agendado' : ''}` : '';
+        return `<button class="${cls.join(' ')}" data-day="${di.key}" aria-label="${fmtFull(d)}${relationshipLabel}${babyLabel}">
           ${d.getDate()}${marks.length ? `<span class="day__marks">${marks.join('')}</span>` : ''}
         </button>`;
       }).join('');
 
-    const resumo = info.known ? `
+    const resumo = postpartum ? `
+      <div class="card mt-16">
+        <b style="font-size:14px">Próximos cuidados</b>
+        ${upcomingBabyEvents.length ? `<div class="itemlist mt-8">${upcomingBabyEvents.map((event) => `<div class="item">
+          <span class="item__ico">${icon(event.type === 'vaccine' ? 'shield' : 'calendar', 18)}</span>
+          <span class="item__body"><b>${esc(event.label)} · ${esc(event.babyName)}</b><span>${fmtShort(fromKey(event.date))}</span></span>
+        </div>`).join('')}</div>` : '<p class="fs-13 muted mt-4">Nenhuma vacina ou consulta agendada.</p>'}
+      </div>` : info.known ? `
       <div class="card mt-16" style="display:flex;gap:13px;align-items:center">
         <span class="floatcard__ico" style="background:var(--lilac-50);color:var(--lilac-600)">${icon('sparkle', 22)}</span>
         <div class="grow">
@@ -65,10 +80,10 @@ export default {
 
     return {
       appbar: {
-        title: 'Meu ciclo',
-        sub: info.known ? `Dia ${info.dayOfCycle} · ciclo médio de ${info.avgLength} dias` : 'Sem dados suficientes',
+          title: postpartum ? 'Calendário do bebê' : 'Meu ciclo',
+          sub: postpartum ? plural(upcomingBabyEvents.length, 'próximo cuidado', 'próximos cuidados') : info.known ? `Dia ${info.dayOfCycle} · ciclo médio de ${info.avgLength} dias` : 'Sem dados suficientes',
         back: false,
-        actions: [{ icon: 'chart', label: 'Relatórios', to: 'relatorios' }],
+        actions: postpartum ? [] : [{ icon: 'chart', label: 'Relatórios', to: 'relatorios' }],
       },
       html: `
         <div class="cal__head">
@@ -78,12 +93,15 @@ export default {
         </div>
         <div class="cal__grid">${grid}</div>
         <div class="legend">
+          ${postpartum ? `<span><b class="legend__baby-status">●</b>Status</span>
+          <span><b class="legend__baby-care legend__baby-care--vaccine">V</b>Vacina</span>
+          <span><b class="legend__baby-care legend__baby-care--appointment">C</b>Consulta</span>` : `
           <span><i style="background:var(--c-menst)"></i>Menstruação</span>
           <span><i style="background:var(--c-pred-tint);box-shadow:inset 0 0 0 1.5px var(--c-pred)"></i>Previsão</span>
           <span><i style="background:var(--leaf-200)"></i>Janela fértil</span>
           <span><i style="background:var(--c-ovul)"></i>Ovulação</span>
           <span><b class="legend__heart" aria-hidden="true">♥</b>Relação</span>
-          <span><i style="background:var(--lilac-500);border-radius:99px;width:8px;height:8px"></i>Registro</span>
+          <span><i style="background:var(--lilac-500);border-radius:99px;width:8px;height:8px"></i>Registro</span>`}
         </div>
         <div class="section pb-24">
           ${resumo}
@@ -111,6 +129,7 @@ export default {
 
 function openDay(key) {
   const state = getState();
+  if (state.profile.phase === 'posparto') { openBabyDay(key, state); return; }
   const date = fromKey(key);
   const info = cycleInfo(state);
   const di = dayInfo(state, date, info);
@@ -155,6 +174,28 @@ function openDay(key) {
         import('../router.js').then((module) => module.render());
       });
       sheet.querySelector('[data-go]').onclick = () => { closeSheet(); navigate(`registro?d=${key}`); };
+    },
+  });
+}
+
+function openBabyDay(key, state) {
+  const date = fromKey(key);
+  const care = babyCareOnDate(state, key);
+  const statuses = care.statuses.map((status) => `<div class="card card--tint mt-12">
+    <b>${esc(status.babyName)}</b>
+    ${status.weight != null ? row('chart', 'Peso', `${String(status.weight).replace('.', ',')} kg`) : ''}
+    ${status.height != null ? row('baby', 'Altura', `${String(status.height).replace('.', ',')} cm`) : ''}
+  </div>`).join('');
+  const events = care.events.length ? `<div class="card card--tint mt-12">${care.events.map((event) =>
+    row(event.type === 'vaccine' ? 'shield' : 'calendar', event.type === 'vaccine' ? 'Vacina' : 'Consulta', `${event.label} · ${event.babyName}`)).join('')}</div>` : '';
+
+  openSheet({
+    title: fmtFull(date),
+    subtitle: care.events.length ? plural(care.events.length, 'cuidado agendado', 'cuidados agendados') : 'Calendário do Florescer Baby',
+    body: `${statuses}${events}${!statuses && !events ? '<p class="fs-13 muted mt-8">Nenhum status ou cuidado registrado neste dia.</p>' : ''}
+      <button class="btn mt-16" data-baby-status>${icon('baby', 18)} Registrar status do bebê</button>`,
+    onMount(sheet) {
+      sheet.querySelector('[data-baby-status]').onclick = () => { closeSheet(); navigate('status-bebe'); };
     },
   });
 }

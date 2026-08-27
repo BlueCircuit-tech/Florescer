@@ -6,6 +6,7 @@
 import { getState, update } from './store.js';
 import { cycleInfo, isFertileReminderEligible, toKey, today, diffDays, fmtShort, addDays } from './cycle.js';
 import { missionProgress } from './missions.js';
+import { babyReminder } from './babyStatus.js';
 
 const timers = [];
 
@@ -73,7 +74,8 @@ export async function notifyAchievements(achievements = []) {
 function dispatch(kind, title, body) {
   if (kind === 'fertile' && !isFertileReminderEligible(getState())) return;
   if (kind === 'missions' && missionProgress(getState()).done) return;
-  if (!alreadySent(kind)) show(title, body, kind);
+  const calendarUrl = kind === 'babyVaccine' || kind === 'babyAppointment' ? './#/ciclo' : './#/home';
+  if (!alreadySent(kind)) show(title, body, kind, calendarUrl);
 }
 
 /** Agenda os lembretes do dia. Chamado ao abrir o app e ao mudar configurações. */
@@ -96,6 +98,10 @@ export function scheduleReminders() {
   if (n.dailyLog && !state.logs[toKey(today())]) queue.push(['dailyLog', at, msg.dailyLog]);
   if (n.tip && state.settings.tipsOptIn) queue.push(['tip', at, msg.tip]);
   if (n.missions && !missionProgress(state).done) queue.push(['missions', at, msg.missions]);
+  const vaccineReminder = n.babyVaccines && babyReminder(state, 'vaccine');
+  const appointmentReminder = n.babyAppointments && babyReminder(state, 'appointment');
+  if (vaccineReminder) queue.push(['babyVaccine', at, vaccineReminder]);
+  if (appointmentReminder) queue.push(['babyAppointment', at, appointmentReminder]);
 
   if (info.known) {
     if (n.fertile && isFertileReminderEligible(state)) queue.push(['fertile', at, msg.fertile]);
@@ -106,7 +112,7 @@ export function scheduleReminders() {
     const delay = when - Date.now();
     if (delay > 0 && delay < 86400000) {
       timers.push(setTimeout(() => dispatch(kind, title, body), delay));
-    } else if (delay <= 0 && delay > -3600000) {
+    } else if (delay <= 0 && (delay > -3600000 || kind === 'babyVaccine' || kind === 'babyAppointment')) {
       // horário já passou há menos de 1h: envia ao abrir o app
       dispatch(kind, title, body);
     }
