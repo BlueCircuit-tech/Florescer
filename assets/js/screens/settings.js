@@ -190,6 +190,7 @@ export const remindersScreen = {
           ${toggleRow('Pequenas conquistas', n.achievements, 'achievements', 'celebrações de registros, ciclos e outros marcos')}
           ${toggleRow('Vacinas dos bebês', n.babyVaccines, 'babyVaccines', 'no dia anterior e no dia da vacina')}
           ${toggleRow('Consultas dos bebês', n.babyAppointments, 'babyAppointments', 'no dia anterior e no dia da consulta')}
+          ${toggleRow('Agenda e tratamentos', n.calendarEvents, 'calendarEvents', 'consultas, exames, vacinas, medicamentos e vitaminas')}
           ${toggleRow('Atividade da comunidade', n.community, 'community', 'respostas às suas publicações')}
           <div class="kv">
             <span class="kv__k">Horário<small>quando os lembretes do dia chegam</small></span>

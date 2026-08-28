@@ -41,6 +41,7 @@ export const DEFAULTS = () => ({
       achievements: true,
       babyVaccines: true,
       babyAppointments: true,
+      calendarEvents: true,
       community: false,
       time: '09:00',
     },
@@ -52,6 +53,7 @@ export const DEFAULTS = () => ({
   babyStatus: [],               // medidas e próximos cuidados dos bebês
   breastfeedingLogs: [],        // mamadas, extrações e estoque de leite
   babyHealthRecords: [],        // sintomas e histórico clínico dos bebês
+  calendarEvents: [],           // agenda de consultas, exames e tratamentos
   savedTips: [],
   savedArticles: [],
   readArticles: [],

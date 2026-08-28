@@ -7,6 +7,7 @@ import { getState, update } from './store.js';
 import { cycleInfo, isFertileReminderEligible, toKey, today, diffDays, fmtShort, addDays } from './cycle.js';
 import { missionProgress } from './missions.js';
 import { babyReminder } from './babyStatus.js';
+import { CALENDAR_TYPES, plannerReminders } from './planner.js';
 
 const timers = [];
 
@@ -74,7 +75,7 @@ export async function notifyAchievements(achievements = []) {
 function dispatch(kind, title, body) {
   if (kind === 'fertile' && !isFertileReminderEligible(getState())) return;
   if (kind === 'missions' && missionProgress(getState()).done) return;
-  const calendarUrl = kind === 'babyVaccine' || kind === 'babyAppointment' ? './#/ciclo' : './#/home';
+  const calendarUrl = kind === 'babyVaccine' || kind === 'babyAppointment' || kind.startsWith('calendar:') ? './#/ciclo' : './#/home';
   if (!alreadySent(kind)) show(title, body, kind, calendarUrl);
 }
 
@@ -102,17 +103,33 @@ export function scheduleReminders() {
   const appointmentReminder = n.babyAppointments && babyReminder(state, 'appointment');
   if (vaccineReminder) queue.push(['babyVaccine', at, vaccineReminder]);
   if (appointmentReminder) queue.push(['babyAppointment', at, appointmentReminder]);
+  if (n.calendarEvents) {
+    plannerReminders(state).forEach((reminder) => {
+      const { event } = reminder;
+      const when = new Date(at);
+      if (event.reminderDays === 0 && event.time) {
+        const [hours, minutes] = event.time.split(':').map(Number);
+        when.setHours(hours, minutes, 0, 0);
+      }
+      const type = CALENDAR_TYPES[event.type];
+      const person = event.person ? ` para ${event.person}` : '';
+      const whenText = event.reminderDays === 0
+        ? `é hoje${event.time ? ` às ${event.time}` : ''}`
+        : event.reminderDays === 1 ? 'é amanhã' : `será em ${event.reminderDays} dias`;
+      queue.push([`calendar:${reminder.id}`, when, [`${type.label} · Florescer`, `${event.title}${person} ${whenText}. Confira os detalhes no calendário.`], event.reminderDays > 0]);
+    });
+  }
 
   if (info.known) {
     if (n.fertile && isFertileReminderEligible(state)) queue.push(['fertile', at, msg.fertile]);
     if (n.period && diffDays(info.nextPeriod, today()) === 1) queue.push(['period', at, msg.period]);
   }
 
-  for (const [kind, when, [title, body]] of queue) {
+  for (const [kind, when, [title, body], allowLate = false] of queue) {
     const delay = when - Date.now();
     if (delay > 0 && delay < 86400000) {
       timers.push(setTimeout(() => dispatch(kind, title, body), delay));
-    } else if (delay <= 0 && (delay > -3600000 || kind === 'babyVaccine' || kind === 'babyAppointment')) {
+    } else if (delay <= 0 && (delay > -3600000 || allowLate || kind === 'babyVaccine' || kind === 'babyAppointment')) {
       // horário já passou há menos de 1h: envia ao abrir o app
       dispatch(kind, title, body);
     }
