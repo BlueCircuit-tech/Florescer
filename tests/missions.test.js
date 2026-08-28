@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { fromKey } from '../assets/js/cycle.js';
-import { DAILY_MISSIONS, completedMissions, missionProgress, missionStats, toggleMission } from '../assets/js/missions.js';
+import { DAILY_MISSIONS, POSTPARTUM_MISSIONS, completedMissions, missionsForDay, missionProgress, missionStats, toggleMission } from '../assets/js/missions.js';
 
 const all = DAILY_MISSIONS.map((mission) => mission.id);
 
@@ -37,4 +37,23 @@ test('soma pontos e mantém a sequência enquanto o dia atual está em aberto', 
   assert.equal(stats.totalPoints, 110);
   assert.equal(stats.streak, 2);
   assert.equal(stats.level, 1);
+});
+
+test('seleciona cinco missões pós-parto estáveis para cada dia', () => {
+  const state = { profile: { phase: 'posparto' }, missionDays: {} };
+  const first = missionsForDay(state, '2026-08-25');
+  const repeated = missionsForDay(state, '2026-08-25');
+
+  assert.equal(first.length, 5);
+  assert.deepEqual(first, repeated);
+  assert.equal(new Set(first.map((mission) => mission.id)).size, 5);
+  assert.ok(first.every((mission) => POSTPARTUM_MISSIONS.includes(mission)));
+});
+
+test('varia as missões pós-parto entre os dias', () => {
+  const state = { profile: { phase: 'posparto' }, missionDays: {} };
+  const first = missionsForDay(state, '2026-08-25').map((mission) => mission.id);
+  const next = missionsForDay(state, '2026-08-26').map((mission) => mission.id);
+
+  assert.notDeepEqual(first, next);
 });
