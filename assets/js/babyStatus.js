@@ -12,9 +12,10 @@ export function saveBabyStatus(state, input, now = Date.now()) {
 
   const weight = optionalNumber(input.weight, .5, 40, 'Peso') ?? existing?.weight ?? null;
   const height = optionalNumber(input.height, 20, 150, 'Altura') ?? existing?.height ?? null;
+  const headCircumference = optionalNumber(input.headCircumference, 20, 65, 'Perímetro cefálico') ?? existing?.headCircumference ?? null;
   const nextVaccineDate = optionalDate(input.nextVaccineDate, 'vacina') ?? existing?.nextVaccineDate ?? null;
   const nextAppointmentDate = optionalDate(input.nextAppointmentDate, 'consulta') ?? existing?.nextAppointmentDate ?? null;
-  if (weight == null && height == null && !nextVaccineDate && !nextAppointmentDate) {
+  if (weight == null && height == null && headCircumference == null && !nextVaccineDate && !nextAppointmentDate) {
     throw new Error('Informe uma medida, vacina ou consulta para salvar.');
   }
 
@@ -24,6 +25,7 @@ export function saveBabyStatus(state, input, now = Date.now()) {
     recordedOn,
     weight,
     height,
+    headCircumference,
     nextVaccineDate,
     nextVaccine: String(input.nextVaccine || existing?.nextVaccine || '').trim(),
     nextAppointmentDate,
@@ -34,6 +36,18 @@ export function saveBabyStatus(state, input, now = Date.now()) {
   if (index >= 0) state.babyStatus[index] = status;
   else state.babyStatus.unshift(status);
   return status;
+}
+
+export function babyGrowthSeries(state, babyName) {
+  return (state.babyStatus || [])
+    .filter((status) => status.babyName === babyName && (status.weight != null || status.height != null || status.headCircumference != null))
+    .sort((a, b) => a.recordedOn.localeCompare(b.recordedOn))
+    .map((status) => ({
+      date: status.recordedOn,
+      weight: status.weight ?? null,
+      height: status.height ?? null,
+      headCircumference: status.headCircumference ?? null,
+    }));
 }
 
 export function babyEvents(state) {

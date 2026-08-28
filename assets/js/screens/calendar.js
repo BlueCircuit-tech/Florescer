@@ -209,6 +209,7 @@ function openBabyDay(key, state) {
     <b>${esc(status.babyName)}</b>
     ${status.weight != null ? row('chart', 'Peso', `${String(status.weight).replace('.', ',')} kg`) : ''}
     ${status.height != null ? row('baby', 'Altura', `${String(status.height).replace('.', ',')} cm`) : ''}
+    ${status.headCircumference != null ? row('chart', 'Perímetro cefálico', `${String(status.headCircumference).replace('.', ',')} cm`) : ''}
   </div>`).join('');
   const events = care.events.length ? `<div class="card card--tint mt-12">${care.events.map((event) =>
     row(event.type === 'vaccine' ? 'shield' : 'calendar', event.type === 'vaccine' ? 'Vacina' : 'Consulta', `${event.label} · ${event.babyName}`)).join('')}</div>` : '';

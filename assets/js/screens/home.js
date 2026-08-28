@@ -203,7 +203,7 @@ export default {
     const shortcuts = [
       ['calendar', 'Calendário', 'ciclo', 'var(--rose-50)', 'var(--rose-700)'],
       ['note', phase === 'gravida' || phase === 'posparto' ? 'Diário' : 'Registrar', 'registro', 'var(--lilac-50)', 'var(--lilac-600)'],
-      ['chart', 'Relatórios', 'relatorios', 'var(--leaf-50)', 'var(--leaf-600)'],
+      ['chart', 'Relatórios', phase === 'posparto' ? 'crescimento-bebe' : 'relatorios', 'var(--leaf-50)', 'var(--leaf-600)'],
       ['book', 'Biblioteca', 'biblioteca', 'var(--amber-50)', 'var(--amber-600)'],
     ];
 
@@ -246,6 +246,14 @@ export default {
             </div>
           </article>
 
+          <div class="section__head" style="padding:0"><h2>Seus atalhos</h2></div>
+            <div class="shortcuts">
+              ${shortcuts.map(([ic, label, to, bg, fg]) => `
+                <button class="shortcut" data-nav="${to}">
+                  <span class="shortcut__ico" style="background:${bg};color:${fg}">${icon(ic, 19)}</span>${label}
+                </button>`).join('')}
+            </div>
+
           <button class="card card--link mt-16" data-nav="missoes">
             <span class="floatcard__ico" style="background:${missions.done ? 'var(--leaf-50)' : 'var(--amber-50)'};color:${missions.done ? 'var(--leaf-600)' : 'var(--amber-600)'}">
               ${icon(missions.done ? 'crown' : 'flag', 22)}
@@ -280,13 +288,7 @@ export default {
             <span style="color:var(--faint);flex:none">${icon('chevron', 18)}</span>
           </button>
 
-          <div class="section__head" style="padding:0"><h2>Seus atalhos</h2></div>
-          <div class="shortcuts">
-            ${shortcuts.map(([ic, label, to, bg, fg]) => `
-              <button class="shortcut" data-nav="${to}">
-                <span class="shortcut__ico" style="background:${bg};color:${fg}">${icon(ic, 19)}</span>${label}
-              </button>`).join('')}
-          </div>
+          
 
           ${sectionHead('Comunidade agora', { label: 'Ver tudo', to: 'comunidade' })}
           ${feed}

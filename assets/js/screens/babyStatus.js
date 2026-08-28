@@ -35,6 +35,8 @@ export default {
             <span class="measurement"><input class="input input--inline" id="baby-weight" inputmode="decimal" placeholder="5,2"><b>kg</b></span></div>
           <div class="kv"><span class="kv__k">Altura atual<small>em centímetros</small></span>
             <span class="measurement"><input class="input input--inline" id="baby-height" inputmode="decimal" placeholder="58"><b>cm</b></span></div>
+          <div class="kv"><span class="kv__k">Perímetro cefálico<small>medida ao redor da cabeça</small></span>
+            <span class="measurement"><input class="input input--inline" id="baby-head" inputmode="decimal" placeholder="38"><b>cm</b></span></div>
         </div>
 
         <div class="section__head" style="padding:0"><h2>Próxima vacina</h2></div>
@@ -51,9 +53,10 @@ export default {
 
         <div class="note mt-16">${icon('bell', 17)}<span>Vacinas e consultas serão exibidas no calendário e lembradas no dia anterior e no próprio dia.</span></div>
         <button class="btn mt-16" data-save-baby-status>${icon('check', 19)} Salvar status do bebê</button>
+        <button class="btn btn--soft mt-8" data-nav="crescimento-bebe">${icon('chart', 19)} Ver gráfico de crescimento</button>
 
         ${recent.length ? `<div class="section__head" style="padding:0"><h2>Registros recentes</h2></div><div class="card card--flush"><div class="itemlist">
-          ${recent.map((status) => `<div class="item"><span class="item__ico">${icon('baby', 19)}</span><span class="item__body"><b>${esc(status.babyName)}</b><span>${esc(fmtFull(fromKey(status.recordedOn)))}${status.weight != null ? ` · ${String(status.weight).replace('.', ',')} kg` : ''}${status.height != null ? ` · ${String(status.height).replace('.', ',')} cm` : ''}</span></span></div>`).join('')}
+          ${recent.map((status) => `<div class="item"><span class="item__ico">${icon('baby', 19)}</span><span class="item__body"><b>${esc(status.babyName)}</b><span>${esc(fmtFull(fromKey(status.recordedOn)))}${status.weight != null ? ` · ${String(status.weight).replace('.', ',')} kg` : ''}${status.height != null ? ` · ${String(status.height).replace('.', ',')} cm` : ''}${status.headCircumference != null ? ` · PC ${String(status.headCircumference).replace('.', ',')} cm` : ''}</span></span></div>`).join('')}
         </div></div>` : ''}
       </div>`,
       mount(root) {
@@ -73,6 +76,7 @@ export default {
               recordedOn: root.querySelector('#baby-status-date').value,
               weight: number('#baby-weight'),
               height: number('#baby-height'),
+              headCircumference: number('#baby-head'),
               nextVaccineDate,
               nextVaccine: root.querySelector('#baby-vaccine').value,
               nextAppointmentDate,
