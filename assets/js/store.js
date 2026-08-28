@@ -54,6 +54,7 @@ export const DEFAULTS = () => ({
   breastfeedingLogs: [],        // mamadas, extrações e estoque de leite
   babyHealthRecords: [],        // sintomas e histórico clínico dos bebês
   calendarEvents: [],           // agenda de consultas, exames e tratamentos
+  diaperLogs: [],               // trocas com urina, fezes e frequência diária
   savedTips: [],
   savedArticles: [],
   readArticles: [],
