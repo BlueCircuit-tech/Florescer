@@ -55,6 +55,11 @@ export default {
               <span class="item__body"><b>Registrar amamentação</b><span>Cronômetro, lado, extração e estoque de leite.</span></span>
               <span class="item__end">${icon('chevron', 17)}</span>
             </button>
+            <button class="item" data-nav="saude-bebe">
+              <span class="item__ico">${icon('shield', 20)}</span>
+              <span class="item__body"><b>Registro de Saúde</b><span>Sintomas, medicamentos, alergias, internações, consultas e exames.</span></span>
+              <span class="item__end">${icon('chevron', 17)}</span>
+            </button>
             <button class="item" data-nav="registro">
               <span class="item__ico">${icon('note', 20)}</span>
               <span class="item__body"><b>Diário da Mamãe</b><span>Emoções, conquistas, gratidão e observações.</span></span>

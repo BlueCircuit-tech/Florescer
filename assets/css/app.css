@@ -569,6 +569,13 @@ button.item:active{opacity:.6}
 .diaryupload label.btn{cursor:pointer}
 .feedtimer{text-align:center;margin-top:16px}
 .feedtimer strong{display:block;font-family:var(--font-display);font-size:48px;font-weight:600;letter-spacing:.04em;color:var(--accent-strong);margin:12px 0 18px;font-variant-numeric:tabular-nums}
+.healthfield label{display:flex;align-items:center;gap:7px}
+.healthdate{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,.75fr);gap:12px}.healthdate .field{min-width:0}.healthdate input{width:100%;min-width:0}
+.healthhistory{display:flex;flex-direction:column;gap:12px}
+.healthrecord__summary{display:block;color:var(--accent-strong);font-size:var(--fs-12);font-weight:700;margin-top:7px}
+.healthrecord__details{display:grid;gap:9px;margin-top:14px;padding-top:12px;border-top:1px solid var(--line)}
+.healthrecord__details p{margin:0}.healthrecord__details b,.healthrecord__details span{display:block;font-size:var(--fs-12)}
+.healthrecord__details span{color:var(--muted);line-height:1.5;margin-top:2px;white-space:pre-wrap;overflow-wrap:anywhere}
 .diaryphotos{grid-column:1/-1;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
 .diaryphotos:empty{display:none}
 .diaryphoto{position:relative;aspect-ratio:4/3;border-radius:13px;overflow:hidden;background:var(--surface-2)}

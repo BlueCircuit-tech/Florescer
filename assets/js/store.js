@@ -51,6 +51,7 @@ export const DEFAULTS = () => ({
   pregnancyTests: [],           // testes de gravidez registrados pela tentante
   babyStatus: [],               // medidas e próximos cuidados dos bebês
   breastfeedingLogs: [],        // mamadas, extrações e estoque de leite
+  babyHealthRecords: [],        // sintomas e histórico clínico dos bebês
   savedTips: [],
   savedArticles: [],
   readArticles: [],

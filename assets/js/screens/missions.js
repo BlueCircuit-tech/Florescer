@@ -1,7 +1,7 @@
 import { getState, update, addJourney } from '../store.js';
 import { icon } from '../icons.js';
 import { haptic, toast } from '../ui.js';
-import { DAILY_MISSIONS, missionProgress, missionStats, toggleMission } from '../missions.js';
+import { missionsForDay, missionProgress, missionStats, toggleMission } from '../missions.js';
 import { toKey, today } from '../cycle.js';
 
 export default {
@@ -10,6 +10,7 @@ export default {
   render() {
     const state = getState();
     const key = toKey(today());
+    const missions = missionsForDay(state, key);
     const progress = missionProgress(state, key);
     const stats = missionStats(state);
 
@@ -31,7 +32,7 @@ export default {
 
         <div class="section__head" style="padding:0"><h2>Missões de hoje</h2><span>${progress.points} pontos hoje</span></div>
         <div class="missionlist">
-          ${DAILY_MISSIONS.map((mission) => {
+          ${missions.map((mission) => {
             const done = progress.completed.includes(mission.id);
             return `<button class="mission ${done ? 'mission--done' : ''}" data-mission="${mission.id}" aria-pressed="${done}">
               <span class="mission__check">${done ? icon('check', 19) : icon(mission.icon, 20)}</span>
