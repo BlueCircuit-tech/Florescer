@@ -27,7 +27,7 @@ export default {
     const postpartum = phase === 'posparto';
     const pregnant = phase === 'gravida';
     const trying = phase === 'tentante';
-    const upcomingBabyEvents = postpartum ? babyEvents(state).filter((event) => event.date >= toKey(today())).slice(0, 4) : [];
+    const upcomingBabyEvents = postpartum ? babyEvents(state).filter((event) => event.status !== 'taken' && event.date >= toKey(today())).slice(0, 4) : [];
     const upcomingPlannerEvents = upcomingScheduledEvents(state, toKey(today()), 5);
     const upcoming = [
       ...upcomingPlannerEvents.map((event) => ({ ...event, date: event.occurrenceDate, source: 'planner' })),
@@ -212,7 +212,7 @@ function openBabyDay(key, state) {
     ${status.headCircumference != null ? row('chart', 'Perímetro cefálico', `${String(status.headCircumference).replace('.', ',')} cm`) : ''}
   </div>`).join('');
   const events = care.events.length ? `<div class="card card--tint mt-12">${care.events.map((event) =>
-    row(event.type === 'vaccine' ? 'shield' : 'calendar', event.type === 'vaccine' ? 'Vacina' : 'Consulta', `${event.label} · ${event.babyName}`)).join('')}</div>` : '';
+    row(event.type === 'vaccine' ? 'shield' : 'calendar', event.type === 'vaccine' ? (event.status === 'taken' ? 'Vacina tomada' : 'Vacina') : 'Consulta', `${event.label} · ${event.babyName}`)).join('')}</div>` : '';
 
   openSheet({
     title: fmtFull(date),

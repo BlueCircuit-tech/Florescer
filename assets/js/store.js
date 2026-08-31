@@ -56,6 +56,7 @@ export const DEFAULTS = () => ({
   calendarEvents: [],           // agenda de consultas, exames e tratamentos
   diaperLogs: [],               // trocas com urina, fezes e frequência diária
   sleepLogs: [],                // sono noturno, cochilos e duração total
+  babyVaccines: [],             // vacinas marcadas e tomadas por bebê
   savedTips: [],
   savedArticles: [],
   readArticles: [],

@@ -87,7 +87,7 @@ function renderTabbar(active) {
   const phase = getState().profile.phase;
   const fabTarget = 'adicionar';
   const fabLabel = phase === 'tentante' ? 'Adicionar teste, relação, sono ou registro'
-    : phase === 'gravida' ? 'Adicionar registro, sintoma, sono ou nascimento' : 'Adicionar status, saúde, amamentação, fralda, sono ou diário';
+    : phase === 'gravida' ? 'Adicionar registro, sintoma, sono ou nascimento' : 'Adicionar status, vacina, saúde, amamentação, fralda, sono ou diário';
   $('#tabbar').innerHTML = TABS.map((t) => t.fab
     ? `<button class="tab__fab" data-nav="${fabTarget}" aria-label="${fabLabel}">${icon(t.icon, 26, { stroke: 2 })}</button>`
     : `<button class="tab" data-nav="${t.to}" ${active === t.id ? 'aria-current="page"' : ''}>
