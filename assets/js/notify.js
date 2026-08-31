@@ -8,6 +8,7 @@ import { cycleInfo, isFertileReminderEligible, toKey, today, diffDays, fmtShort,
 import { missionProgress } from './missions.js';
 import { babyReminder } from './babyStatus.js';
 import { CALENDAR_TYPES, plannerReminders } from './planner.js';
+import { achievementNotification } from './achievements.js';
 
 const timers = [];
 
@@ -53,7 +54,7 @@ function messages(state, info) {
   const nome = (state.profile.name || '').split(' ')[0];
   const oi = nome ? `${nome}, ` : '';
   return {
-    fertile: ['Florescer 🌿', `${oi}você está na janela fértil. Um bom momento para o casal aproveitar junto, com leveza e sem pressão. 💛`],
+    fertile: ['Florescer 🌿', `${oi}você está na janela fértil! Um bom momento para o casal aproveitar junto, com leveza e sem pressão. 💛`],
     period: ['Florescer 🌷', `${oi}sua menstruação está prevista para amanhã (${info.known ? fmtShort(info.nextPeriod) : ''}).`],
     dailyLog: ['Como foi o seu dia? 📔', `${oi}dois toques para registrar humor, sintomas e fertilidade.`],
     tip: ['Sua sugestão de hoje ✨', 'Abra o Florescer para ver a dica escolhida para a sua fase.'],
@@ -64,11 +65,7 @@ function messages(state, info) {
 /** Envia uma celebração imediata sem solicitar permissão nem expor dados sensíveis. */
 export async function notifyAchievements(achievements = []) {
   if (!achievements.length || !getState().settings.notifications.achievements || permission() !== 'granted') return false;
-  const privateAchievement = achievements.some((item) => item.private);
-  const title = achievements.length > 1 ? 'Novas conquistas no Florescer ✨' : privateAchievement ? 'Uma nova conquista no Florescer ✨' : achievements[0].title;
-  const body = achievements.length > 1 || privateAchievement
-    ? (achievements.length > 1 ? `${achievements.length} pequenas conquistas foram adicionadas à sua jornada.` : 'Uma pequena conquista foi adicionada à sua jornada.')
-    : achievements[0].note;
+  const { title, body } = achievementNotification(getState(), achievements);
   return show(title, body, `achievement:${achievements.map((item) => item.id).join('+')}`, './#/perfil');
 }
 
