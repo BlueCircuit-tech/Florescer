@@ -197,10 +197,10 @@ export function barChart(data, { height = 130, max, unit = '', highlightLast = t
 }
 
 /** Gráfico de linha (temperatura basal): [{label, value}] com valores possivelmente nulos. */
-export function lineChart(data, { height = 140, unit = '°C', ariaLabel = 'Curva de temperatura basal' } = {}) {
+export function lineChart(data, { width = 100, height = 140, unit = '°C', ariaLabel = 'Curva de temperatura basal', preserveAspectRatio = 'none' } = {}) {
   const pts = data.filter((d) => typeof d.value === 'number');
   if (pts.length < 2) return '';
-  const w = 100, h = height, padY = 20;
+  const w = width, h = height, padY = 20;
   const vals = pts.map((p) => p.value);
   const min = Math.min(...vals) - 0.1;
   const max = Math.max(...vals) + 0.1;
@@ -209,7 +209,7 @@ export function lineChart(data, { height = 140, unit = '°C', ariaLabel = 'Curva
   const d = pts.map((p, i) => `${i ? 'L' : 'M'}${sx(i).toFixed(1)},${sy(p.value).toFixed(1)}`).join(' ');
   const area = `${d} L${sx(pts.length - 1).toFixed(1)},${h - padY} L${sx(0).toFixed(1)},${h - padY} Z`;
   const dots = pts.map((p, i) => `<circle class="dot" cx="${sx(i).toFixed(1)}" cy="${sy(p.value).toFixed(1)}" r="1.6"/>`).join('');
-  return `<svg class="chart" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" role="img" aria-label="${esc(ariaLabel)}">
+  return `<svg class="chart" viewBox="0 0 ${w} ${h}" preserveAspectRatio="${preserveAspectRatio}" role="img" aria-label="${esc(ariaLabel)}">
     <line class="grid" x1="0" y1="${padY}" x2="${w}" y2="${padY}"/>
     <line class="grid" x1="0" y1="${h - padY}" x2="${w}" y2="${h - padY}"/>
     <path class="area" d="${area}"/>
