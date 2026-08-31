@@ -55,6 +55,7 @@ export const DEFAULTS = () => ({
   babyHealthRecords: [],        // sintomas e histórico clínico dos bebês
   calendarEvents: [],           // agenda de consultas, exames e tratamentos
   diaperLogs: [],               // trocas com urina, fezes e frequência diária
+  sleepLogs: [],                // sono noturno, cochilos e duração total
   savedTips: [],
   savedArticles: [],
   readArticles: [],

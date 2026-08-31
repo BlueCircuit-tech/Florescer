@@ -21,6 +21,7 @@ import babyGrowth from './screens/babyGrowth.js';
 import breastfeeding from './screens/breastfeeding.js';
 import babyHealth from './screens/babyHealth.js';
 import diapers from './screens/diapers.js';
+import sleep from './screens/sleep.js';
 import schedule from './screens/schedule.js';
 import missions from './screens/missions.js';
 import tips, { libraryScreen, articleScreen, savedScreen } from './screens/tips.js';
@@ -33,7 +34,7 @@ import admin from './screens/admin.js';
 
 /* ---------- telas ---------- */
 [
-  onboarding, welcome, home, calendar, log, add, pregnancyTestScreen, relationshipScreen, pregnancySetup, babyStatus, babyGrowth, breastfeeding, babyHealth, diapers, schedule, missions, tips, libraryScreen, articleScreen, savedScreen,
+  onboarding, welcome, home, calendar, log, add, pregnancyTestScreen, relationshipScreen, pregnancySetup, babyStatus, babyGrowth, breastfeeding, babyHealth, diapers, sleep, schedule, missions, tips, libraryScreen, articleScreen, savedScreen,
   community, postScreen, newPostScreen, insights, profile, premium,
   settings, remindersScreen, privacyScreen, helpScreen, aboutScreen, admin,
 ].forEach(register);

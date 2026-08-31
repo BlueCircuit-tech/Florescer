@@ -43,21 +43,21 @@ export default {
             </button>
             <button class="item" data-register-birth>
               <span class="item__ico">${icon('baby', 20)}</span>
-              <span class="item__body"><b>Registrar nascimento</b><span>Inicie o Florescer Baby após o nascimento.</span></span>
+              <span class="item__body"><b>Registrar Nascimento</b><span>Inicie o Florescer Baby após o nascimento.</span></span>
               <span class="item__end">${icon('chevron', 17)}</span>
             </button>` : postpartum ? `<button class="item" data-nav="status-bebe">
               <span class="item__ico">${icon('baby', 20)}</span>
-              <span class="item__body"><b>Registrar status do bebê</b><span>Peso, altura, próxima vacina e consulta.</span></span>
+              <span class="item__body"><b>Registrar Status do Bebê</b><span>Peso, altura, próxima vacina e consulta.</span></span>
               <span class="item__end">${icon('chevron', 17)}</span>
             </button>
             <button class="item" data-nav="amamentacao">
               <span class="item__ico">${icon('heart', 20)}</span>
-              <span class="item__body"><b>Registrar amamentação</b><span>Cronômetro, lado, extração e estoque de leite.</span></span>
+              <span class="item__body"><b>Registrar Amamentação</b><span>Cronômetro, lado, extração e estoque de leite.</span></span>
               <span class="item__end">${icon('chevron', 17)}</span>
             </button>
             <button class="item" data-nav="fraldas">
               <span class="item__ico">${icon('drop', 20)}</span>
-              <span class="item__body"><b>Registrar fralda</b><span>Urina, fezes e frequência diária.</span></span>
+              <span class="item__body"><b>Registrar Fralda</b><span>Urina, fezes e frequência diária.</span></span>
               <span class="item__end">${icon('chevron', 17)}</span>
             </button>
             <button class="item" data-nav="saude-bebe">
@@ -81,9 +81,14 @@ export default {
             </button>
             <button class="item" data-nav="registro">
               <span class="item__ico">${icon('note', 20)}</span>
-              <span class="item__body"><b>Fazer um registro</b><span>Anote seu ciclo, sintomas e como foi o seu dia.</span></span>
+              <span class="item__body"><b>Fazer um Registro</b><span>Anote seu ciclo, sintomas e como foi o seu dia.</span></span>
               <span class="item__end">${icon('chevron', 17)}</span>
             </button>`}
+            <button class="item" data-nav="sono">
+              <span class="item__ico">${icon('moon', 20)}</span>
+              <span class="item__body"><b>Registrar Sono</b><span>Sono noturno, cochilos, total de horas e dicas.</span></span>
+              <span class="item__end">${icon('chevron', 17)}</span>
+            </button>
           </div>
         </div>
       </div>`,
