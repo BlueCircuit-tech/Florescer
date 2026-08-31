@@ -7,6 +7,8 @@ import { icon, markSvg } from '../icons.js';
 import { toast, esc, haptic, progress } from '../ui.js';
 import { navigate } from '../router.js';
 import { toKey, today, addDays, fromKey, diffDays } from '../cycle.js';
+import { applyPregnancyProfile, pregnancyDraft, pregnancyQuizSteps } from '../pregnancyProfile.js';
+import { applyBabyNames, babyNamesEditor, babyNamesFromProfile, bindBabyNamesEditor } from '../babies.js';
 
 let step = 0;
 let draft = null;
@@ -19,12 +21,15 @@ const initDraft = () => {
     tryingFor: p.tryingFor,
     regularity: p.regularity,
     challenge: p.challenge,
-    lastPeriodStart: p.lastPeriodStart || toKey(addDays(today(), -13)),
+    lastPeriodStart: p.lastPeriodStart || null,
     cycleLength: p.cycleLength || 28,
     periodLength: p.periodLength || 5,
     dueDate: p.dueDate,
+    pregnancyType: p.pregnancyType,
+    ultrasoundPhoto: p.ultrasoundPhoto,
     birthDate: p.birthDate,
     babyName: p.babyName || '',
+    babyNames: babyNamesFromProfile(p),
     tips: true,
   };
 };
@@ -93,7 +98,7 @@ function steps() {
       render: () => `<div class="quiz__opts">
         <div class="field">
           <label for="q-lmp">Primeiro dia da última menstruação</label>
-          <input id="q-lmp" type="date" max="${toKey(today())}" min="${toKey(addDays(today(), -120))}" value="${draft.lastPeriodStart}">
+          <input id="q-lmp" type="date" max="${toKey(today())}" min="${toKey(addDays(today(), -120))}" value="${draft.lastPeriodStart || ''}">
         </div>
         <div class="row" style="gap:12px">
           <div class="field grow"><label for="q-cycle">Duração do ciclo</label>
@@ -128,34 +133,7 @@ function steps() {
     },
   ];
 
-  const gravida = [
-    {
-      key: 'due',
-      title: 'Qual a data provável do parto?',
-      sub: 'Se ainda não souber, informe o primeiro dia da última menstruação que calculamos para você.',
-      render: () => `<div class="quiz__opts">
-        <div class="field">
-          <label for="q-due">Data provável do parto (DPP)</label>
-          <input id="q-due" type="date" value="${draft.dueDate || ''}" min="${toKey(today())}" max="${toKey(addDays(today(), 290))}">
-        </div>
-        <div class="field">
-          <label for="q-lmp2">Ou o primeiro dia da última menstruação</label>
-          <input id="q-lmp2" type="date" value="${draft.dueDate ? '' : draft.lastPeriodStart}" max="${toKey(today())}" min="${toKey(addDays(today(), -290))}">
-        </div>
-        <p class="field__hint">A DPP é calculada como a última menstruação + 280 dias (regra de Naegele).</p>
-      </div>`,
-      mount: (root) => {
-        const due = root.querySelector('#q-due');
-        const lmp = root.querySelector('#q-lmp2');
-        due.onchange = () => { draft.dueDate = due.value; if (due.value) lmp.value = toKey(addDays(fromKey(due.value), -280)); };
-        lmp.onchange = () => {
-          draft.lastPeriodStart = lmp.value;
-          if (lmp.value) { draft.dueDate = toKey(addDays(fromKey(lmp.value), 280)); due.value = draft.dueDate; }
-        };
-      },
-      valid: () => (draft.dueDate || draft.lastPeriodStart ? true : 'Informe uma das duas datas'),
-    },
-  ];
+  const gravida = pregnancyQuizSteps(draft);
 
   const posparto = [
     {
@@ -167,14 +145,11 @@ function steps() {
           <label for="q-birth">Data de nascimento</label>
           <input id="q-birth" type="date" value="${draft.birthDate || toKey(today())}" max="${toKey(today())}" min="${toKey(addDays(today(), -900))}">
         </div>
-        <div class="field">
-          <label for="q-baby">Nome do bebê (opcional)</label>
-          <input id="q-baby" type="text" maxlength="24" value="${esc(draft.babyName)}" placeholder="Ex.: Cecília">
-        </div>
+        ${babyNamesEditor(draft, { minimum: 1, allowMore: true })}
       </div>`,
       mount: (root) => {
         root.querySelector('#q-birth').onchange = (e) => { draft.birthDate = e.target.value; };
-        root.querySelector('#q-baby').oninput = (e) => { draft.babyName = e.target.value; };
+        bindBabyNamesEditor(root, draft, { minimum: 1, allowMore: true });
       },
       valid: () => (draft.birthDate ? true : 'Escolha a data de nascimento'),
     },
@@ -226,9 +201,14 @@ function finish() {
       cycleLength: +draft.cycleLength || 28,
       periodLength: +draft.periodLength || 5,
       dueDate: draft.phase === 'gravida' ? draft.dueDate : null,
+      pregnancyType: draft.phase === 'gravida' ? draft.pregnancyType : null,
+      ultrasoundPhoto: draft.phase === 'gravida' ? draft.ultrasoundPhoto : null,
       birthDate: draft.phase === 'posparto' ? draft.birthDate : null,
-      babyName: draft.babyName.trim(),
+      babyName: '',
+      babyNames: [],
     });
+    if (draft.phase === 'gravida') applyPregnancyProfile(s.profile, draft);
+    else if (draft.phase === 'posparto') applyBabyNames(s.profile, draft.babyNames);
     s.settings.tipsOptIn = !!draft.tips;
     s.settings.notifications.tip = !!draft.tips;
   });
@@ -306,6 +286,7 @@ const screen = {
           btn.onclick = () => {
             const opt = s.options[+btn.dataset.opt];
             draft[s.field] = opt[2];
+            if (s.field === 'phase' && opt[2] === 'gravida') Object.assign(draft, pregnancyDraft(draft));
             haptic();
             root.querySelectorAll('[data-opt]').forEach((b) => b.setAttribute('aria-pressed', 'false'));
             btn.setAttribute('aria-pressed', 'true');

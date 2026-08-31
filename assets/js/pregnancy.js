@@ -65,12 +65,13 @@ function prenatalStep(week) {
 const formatLength = (cm) => cm < 1 ? `${Math.round(cm * 10)} mm` : `${String(cm).replace('.', ',')} cm`;
 const formatWeight = (g) => g < 1 ? 'menos de 1 g' : g < 1000 ? `${g} g` : `${(g / 1000).toFixed(1).replace('.', ',')} kg`;
 
-export function pregnancyCountdown(daysLeft) {
+export function pregnancyCountdown(daysLeft, multiple = false) {
   const days = Math.trunc(Number(daysLeft));
-  if (days > 1) return `Faltam ${days} dias para você conhecer o amor da sua vida!`;
-  if (days === 1) return 'Falta 1 dia para você conhecer o amor da sua vida!';
-  if (days === 0) return 'Hoje é a data prevista para você conhecer o amor da sua vida!';
-  return 'A data prevista chegou — seu bebê pode chegar a qualquer momento!';
+  const love = multiple ? 'os amores da sua vida' : 'o amor da sua vida';
+  if (days > 1) return `Faltam ${days} dias para você conhecer ${love}!`;
+  if (days === 1) return `Falta 1 dia para você conhecer ${love}!`;
+  if (days === 0) return `Hoje é a data prevista para você conhecer ${love}!`;
+  return multiple ? 'A data prevista chegou — seus bebês podem chegar a qualquer momento!' : 'A data prevista chegou — seu bebê pode chegar a qualquer momento!';
 }
 
 export function pregnancyWeekGuide(inputWeek) {

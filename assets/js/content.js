@@ -28,6 +28,10 @@ export const PREGNANCY_EMOTIONS = [
   'Feliz', 'Ansiosa', 'Sensível', 'Confiante', 'Preocupada', 'Animada', 'Cansada', 'Grata',
 ];
 
+export const POSTPARTUM_EMOTIONS = [
+  'Feliz', 'Sensível', 'Cansada', 'Sobrecarregada', 'Confiante', 'Ansiosa', 'Acolhida', 'Grata',
+];
+
 export const FLOWS = [
   { id: 'spotting', label: 'Escape', drops: 1 },
   { id: 'light', label: 'Leve', drops: 1 },

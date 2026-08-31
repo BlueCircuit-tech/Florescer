@@ -15,6 +15,7 @@ import * as cms from '../cms.js';
 import { postCard, bindPostActions, visiblePosts } from './community.js';
 import { isUnlocked } from './admin.js';
 import { missionProgress } from '../missions.js';
+import { babyNamesFromProfile, formatBabyNames, postpartumGreeting } from '../babies.js';
 
 let tipOffset = 0;
 
@@ -65,7 +66,8 @@ function heroGravida(state, preg) {
 }
 
 function heroPosparto(state, pp) {
-  const nome = state.profile.babyName ? esc(state.profile.babyName) : 'Seu bebê';
+  const names = babyNamesFromProfile(state.profile);
+  const nome = names.length ? esc(formatBabyNames(names)) : 'Seu bebê';
   if (!pp.known) return `<p style="font-size:15px">Informe a data de nascimento no perfil para acompanhar as semanas do bebê.</p>
     <button class="btn btn--light btn--sm btn--auto mt-12" data-nav="perfil">Completar perfil</button>`;
   return `<div class="bump">
@@ -85,8 +87,8 @@ function pregnancyDashboard(preg) {
       <article class="pregdash__baby">
         <div class="pregdash__fruit" aria-hidden="true">${g.emoji}</div>
         <div class="grow">
-          <span class="eyebrow">Seu bebê nesta semana</span>
-          <h2>Do tamanho de ${esc(g.fruit)}</h2>
+          <span class="eyebrow">${preg.multiple ? 'Seus bebês nesta semana' : 'Seu bebê nesta semana'}</span>
+          <h2>${preg.multiple ? 'Cada bebê: tamanho aproximado de' : 'Do tamanho de'} ${esc(g.fruit)}</h2>
           <p>Valores de referência para a ${g.week}ª semana</p>
         </div>
         <div class="pregdash__metrics">
@@ -177,7 +179,6 @@ export default {
     const st = streak(state);
     const phase = state.profile.phase;
     const firstName = (state.profile.name || 'flor').split(' ')[0];
-    const babyName = state.profile.babyName || 'bebê';
     const todayKey = toKey(today());
     const loggedToday = !!state.logs[todayKey];
     const symptomLog = state.logs[todayKey] || {};
@@ -190,8 +191,8 @@ export default {
       : phase === 'posparto' ? heroPosparto(state, pp)
         : heroTentante(state, info);
 
-    const hello = phase === 'posparto' && pp.known
-      ? `Olá, ${babyName}!`
+    const hello = phase === 'posparto'
+      ? postpartumGreeting(state.profile)
       : `${greeting()}, ${firstName}`;
 
     const sub = phase === 'tentante' && info.known
@@ -201,8 +202,8 @@ export default {
 
     const shortcuts = [
       ['calendar', 'Calendário', 'ciclo', 'var(--rose-50)', 'var(--rose-700)'],
-      ['note', phase === 'gravida' ? 'Diário' : 'Registrar', 'registro', 'var(--lilac-50)', 'var(--lilac-600)'],
-      ['chart', 'Relatórios', 'relatorios', 'var(--leaf-50)', 'var(--leaf-600)'],
+      ['note', phase === 'gravida' || phase === 'posparto' ? 'Diário' : 'Registrar', 'registro', 'var(--lilac-50)', 'var(--lilac-600)'],
+      ['chart', 'Relatórios', phase === 'posparto' ? 'crescimento-bebe' : 'relatorios', 'var(--leaf-50)', 'var(--leaf-600)'],
       ['book', 'Biblioteca', 'biblioteca', 'var(--amber-50)', 'var(--amber-600)'],
     ];
 
@@ -245,6 +246,14 @@ export default {
             </div>
           </article>
 
+          <div class="section__head" style="padding:0"><h2>Seus atalhos</h2></div>
+            <div class="shortcuts">
+              ${shortcuts.map(([ic, label, to, bg, fg]) => `
+                <button class="shortcut" data-nav="${to}">
+                  <span class="shortcut__ico" style="background:${bg};color:${fg}">${icon(ic, 19)}</span>${label}
+                </button>`).join('')}
+            </div>
+
           <button class="card card--link mt-16" data-nav="missoes">
             <span class="floatcard__ico" style="background:${missions.done ? 'var(--leaf-50)' : 'var(--amber-50)'};color:${missions.done ? 'var(--leaf-600)' : 'var(--amber-600)'}">
               ${icon(missions.done ? 'crown' : 'flag', 22)}
@@ -262,8 +271,8 @@ export default {
               ${icon(loggedToday ? 'check' : 'note', 22)}
             </span>
             <span class="grow" style="text-align:left">
-              <b style="display:block;font-size:var(--fs-14)">${phase === 'gravida' ? 'Diário da Mamãe' : loggedToday ? 'Dia registrado 🌸' : 'Como você está hoje?'}</b>
-              <span class="fs-12 muted" style="display:block;margin-top:3px;line-height:1.45">${phase === 'gravida' ? (loggedToday ? 'Seu registro de hoje está guardado 🌸' : 'Humor, emoções, sintomas, memórias e gratidão') : st.current > 0 ? `Sequência de ${plural(st.current, 'dia', 'dias')} · recorde ${st.best}` : 'Humor, sintomas e fertilidade em 30 segundos'}</span>
+              <b style="display:block;font-size:var(--fs-14)">${phase === 'gravida' || phase === 'posparto' ? 'Diário da Mamãe' : loggedToday ? 'Dia registrado 🌸' : 'Como você está hoje?'}</b>
+              <span class="fs-12 muted" style="display:block;margin-top:3px;line-height:1.45">${phase === 'gravida' ? (loggedToday ? 'Seu registro de hoje está guardado 🌸' : 'Humor, emoções, sintomas, memórias e gratidão') : phase === 'posparto' ? (loggedToday ? 'Seu registro de hoje está guardado 🌸' : 'Emoções, conquistas, gratidão e observações') : st.current > 0 ? `Sequência de ${plural(st.current, 'dia', 'dias')} · recorde ${st.best}` : 'Humor, sintomas e fertilidade em 30 segundos'}</span>
             </span>
             <span style="color:var(--faint);flex:none">${icon('chevron', 18)}</span>
           </button>
@@ -279,13 +288,7 @@ export default {
             <span style="color:var(--faint);flex:none">${icon('chevron', 18)}</span>
           </button>
 
-          <div class="section__head" style="padding:0"><h2>Seus atalhos</h2></div>
-          <div class="shortcuts">
-            ${shortcuts.map(([ic, label, to, bg, fg]) => `
-              <button class="shortcut" data-nav="${to}">
-                <span class="shortcut__ico" style="background:${bg};color:${fg}">${icon(ic, 19)}</span>${label}
-              </button>`).join('')}
-          </div>
+          
 
           ${sectionHead('Comunidade agora', { label: 'Ver tudo', to: 'comunidade' })}
           ${feed}

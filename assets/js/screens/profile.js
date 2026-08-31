@@ -11,6 +11,7 @@ import {
 } from '../cycle.js';
 import { PHASE_LABELS } from '../content.js';
 import { restartQuiz } from './onboarding.js';
+import { applyBabyNames, babyNamesFromProfile, formatBabyNames } from '../babies.js';
 
 const rerender = () => import('../router.js').then((m) => m.render());
 
@@ -29,6 +30,7 @@ export default {
     const pp = postpartumInfo(state);
     const st = streak(state);
     const meta = PHASE_LABELS[p.phase];
+    const babyNames = babyNamesFromProfile(p);
 
     if (route.arg === 'ciclo') setTimeout(() => editCycle(), 60);
 
@@ -42,11 +44,13 @@ export default {
       : p.phase === 'gravida' ? `
         ${kv('Data provável do parto', preg.known ? fmtLong(preg.due) : '—')}
         ${kv('Semanas', preg.known ? `${preg.weeks} semanas e ${preg.days} dias` : '—')}
-        ${kv('Trimestre', preg.known ? `${preg.trimester}º` : '—')}`
+        ${kv('Trimestre', preg.known ? `${preg.trimester}º` : '—')}
+        ${kv('Tipo de gestação', p.pregnancyType === 'gemelar' ? 'Gemelar ou múltipla' : p.pregnancyType === 'unica' ? 'Única' : '—')}
+        ${kv(babyNames.length > 1 ? 'Nomes dos bebês' : 'Nome do bebê', formatBabyNames(babyNames, '—'))}`
       : `
         ${kv('Nascimento', pp.known ? fmtLong(pp.birth) : '—')}
-        ${kv('Idade do bebê', pp.known ? pp.age : '—')}
-        ${kv('Nome do bebê', p.babyName || '—')}`;
+        ${kv(babyNames.length > 1 ? 'Idade dos bebês' : 'Idade do bebê', pp.known ? pp.age : '—')}
+        ${kv(babyNames.length > 1 ? 'Nomes dos bebês' : 'Nome do bebê', formatBabyNames(babyNames, '—'))}`;
 
     const journey = state.journey.length ? state.journey : [
       { icon: 'flower', title: 'Entrei no Florescer', note: 'sua jornada começa aqui', at: state.createdAt },
@@ -94,17 +98,7 @@ export default {
                 </div>`).join('')}
             </div>
           </div>
-
-          <div class="section__head"><h2>Administração</h2></div>
-          <button class="card card--link" data-nav="admin" style="background:var(--grad-lilac);color:#fff;border:0">
-            <span class="challenge__ico">${icon('settings', 21)}</span>
-            <span class="grow" style="text-align:left">
-              <b style="display:block;font-family:var(--font-display);font-size:var(--fs-15)">Painel da administradora</b>
-              <span class="fs-12" style="display:block;color:rgba(255,255,255,.85);margin-top:2px">Editar conteúdo, moderar a comunidade e publicar</span>
-            </span>
-            <span style="flex:none">${icon('chevron', 18)}</span>
-          </button>
-
+        
           <div class="section__head"><h2>Conta</h2></div>
           <div class="card card--flush">
             ${link('crown', state.premium ? 'Gerenciar assinatura' : 'Florescer Premium', state.premium ? 'Ativa desde ' + fmtShort(new Date(state.premiumSince || Date.now())) : 'R$ 19,90/mês', 'premium')}
@@ -112,7 +106,7 @@ export default {
             ${link('settings', 'Configurações', 'Tema, ciclo, privacidade e dados', 'configuracoes')}
             ${link('bookmark', 'Meus salvos', 'Artigos e sugestões guardadas', 'salvos')}
             ${link('help', 'Ajuda e perguntas frequentes', '', 'ajuda')}
-          </div>
+          </div>  
 
           <button class="btn btn--ghost mt-16" data-requiz>${icon('refresh', 18)} Refazer o quiz</button>
           ${note('Seus dados ficam apenas neste aparelho. Faça a exportação em Configurações para não perdê-los.')}
@@ -174,26 +168,36 @@ export function editCycle() {
 function editPhaseData() {
   const p = getState().profile;
   const gravida = p.phase === 'gravida';
+  const names = babyNamesFromProfile(p);
   openSheet({
     title: gravida ? 'Minha gestação' : 'Meu bebê',
     subtitle: gravida ? 'Usamos a DPP para calcular as semanas.' : 'Acompanhamos a idade do bebê e a sua recuperação.',
     body: gravida
       ? `<div class="field"><label for="e-due">Data provável do parto</label>
           <input id="e-due" type="date" value="${p.dueDate || ''}"></div>
+         <div class="field"><label for="e-type">Tipo de gestação</label><select id="e-type">
+           <option value="unica" ${p.pregnancyType === 'unica' ? 'selected' : ''}>Única</option>
+           <option value="gemelar" ${p.pregnancyType === 'gemelar' ? 'selected' : ''}>Gemelar ou múltipla</option>
+         </select></div>
+         <div class="field"><label for="e-baby">Nome(s) dos bebês</label><input id="e-baby" type="text" maxlength="160" value="${esc(names.join(', '))}" placeholder="Separe os nomes por vírgulas"></div>
          <div class="field"><label for="e-name2">Meu nome</label><input id="e-name2" type="text" maxlength="32" value="${esc(p.name)}"></div>
          <button class="btn" data-save>Salvar</button>`
       : `<div class="field"><label for="e-birth">Data de nascimento</label>
           <input id="e-birth" type="date" value="${p.birthDate || ''}" max="${toKey(today())}"></div>
-         <div class="field"><label for="e-baby">Nome do bebê</label><input id="e-baby" type="text" maxlength="24" value="${esc(p.babyName)}"></div>
+         <div class="field"><label for="e-baby">Nome(s) dos bebês</label><input id="e-baby" type="text" maxlength="160" value="${esc(names.join(', '))}" placeholder="Separe os nomes por vírgulas"></div>
          <div class="field"><label for="e-name2">Meu nome</label><input id="e-name2" type="text" maxlength="32" value="${esc(p.name)}"></div>
          <button class="btn" data-save>Salvar</button>`,
     onMount(sheet) {
       sheet.querySelector('[data-save]').onclick = () => {
         update((s) => {
-          if (gravida) s.profile.dueDate = sheet.querySelector('#e-due').value || null;
-          else {
+          const editedNames = sheet.querySelector('#e-baby').value.split(',');
+          if (gravida) {
+            s.profile.dueDate = sheet.querySelector('#e-due').value || null;
+            s.profile.pregnancyType = sheet.querySelector('#e-type').value;
+            applyBabyNames(s.profile, editedNames, { multiple: s.profile.pregnancyType === 'gemelar' });
+          } else {
             s.profile.birthDate = sheet.querySelector('#e-birth').value || null;
-            s.profile.babyName = sheet.querySelector('#e-baby').value.trim();
+            applyBabyNames(s.profile, editedNames);
           }
           s.profile.name = sheet.querySelector('#e-name2').value.trim();
         });

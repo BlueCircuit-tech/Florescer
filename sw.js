@@ -3,7 +3,7 @@
  * Estratégia: cache-first para a casca do app (funciona 100% offline),
  * network-first para o HTML (para pegar atualizações quando houver rede).
  */
-const VERSION = 'florescer-v1.5.0';
+const VERSION = 'florescer-v1.19.0';
 const SHELL = [
   './',
   './index.html',
@@ -16,6 +16,17 @@ const SHELL = [
   './assets/js/icons.js',
   './assets/js/cycle.js',
   './assets/js/pregnancy.js',
+  './assets/js/pregnancyTest.js',
+  './assets/js/pregnancyProfile.js',
+  './assets/js/media.js',
+  './assets/js/babies.js',
+  './assets/js/postpartum.js',
+  './assets/js/achievements.js',
+  './assets/js/babyStatus.js',
+  './assets/js/breastfeeding.js',
+  './assets/js/babyHealth.js',
+  './assets/js/planner.js',
+  './assets/js/diapers.js',
   './assets/js/missions.js',
   './assets/js/welcome.js',
   './assets/js/content.js',
@@ -26,6 +37,14 @@ const SHELL = [
   './assets/js/screens/home.js',
   './assets/js/screens/calendar.js',
   './assets/js/screens/log.js',
+  './assets/js/screens/add.js',
+  './assets/js/screens/pregnancySetup.js',
+  './assets/js/screens/babyStatus.js',
+  './assets/js/screens/babyGrowth.js',
+  './assets/js/screens/breastfeeding.js',
+  './assets/js/screens/babyHealth.js',
+  './assets/js/screens/schedule.js',
+  './assets/js/screens/diapers.js',
   './assets/js/screens/missions.js',
   './assets/js/screens/tips.js',
   './assets/js/screens/community.js',

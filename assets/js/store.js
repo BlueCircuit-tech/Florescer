@@ -2,6 +2,7 @@
  * Estado da aplicação + persistência local (localStorage).
  * Tudo fica no aparelho da usuária: nenhum dado sai daqui.
  */
+import { achievementStats, unlockAchievements } from './achievements.js';
 
 const KEY = 'florescer:v1';
 const SCHEMA = 1;
@@ -22,8 +23,11 @@ export const DEFAULTS = () => ({
     cycleLength: 28,
     periodLength: 5,
     dueDate: null,              // gestação
+    pregnancyType: null,        // unica | gemelar
+    ultrasoundPhoto: null,      // última ultrassonografia, comprimida no aparelho
     birthDate: null,            // pós-parto
     babyName: '',
+    babyNames: [],              // nomes dos bebês em gestações múltiplas
     startedTryingAt: null,
   },
   settings: {
@@ -34,6 +38,10 @@ export const DEFAULTS = () => ({
       dailyLog: true,
       tip: true,
       missions: true,
+      achievements: true,
+      babyVaccines: true,
+      babyAppointments: true,
+      calendarEvents: true,
       community: false,
       time: '09:00',
     },
@@ -41,6 +49,12 @@ export const DEFAULTS = () => ({
     analytics: false,
   },
   logs: {},                     // 'YYYY-MM-DD' -> registro do dia
+  pregnancyTests: [],           // testes de gravidez registrados pela tentante
+  babyStatus: [],               // medidas e próximos cuidados dos bebês
+  breastfeedingLogs: [],        // mamadas, extrações e estoque de leite
+  babyHealthRecords: [],        // sintomas e histórico clínico dos bebês
+  calendarEvents: [],           // agenda de consultas, exames e tratamentos
+  diaperLogs: [],               // trocas com urina, fezes e frequência diária
   savedTips: [],
   savedArticles: [],
   readArticles: [],
@@ -50,6 +64,7 @@ export const DEFAULTS = () => ({
   challengeDays: [],            // dias marcados no desafio da semana
   missionDays: {},              // 'YYYY-MM-DD' -> ids das missões concluídas
   journey: [],                  // marcos da jornada
+  achievements: [],             // conquistas desbloqueadas, com deduplicação permanente
   notifyLog: {},                // controle de lembretes já enviados
   lastSeen: Date.now(),
 });
@@ -125,7 +140,9 @@ export const emptyLog = () => ({
   notes: '',
   emotions: [],          // diário da gestante
   thoughts: '',
+  accomplishments: '',    // conquistas do Diário da Mamãe no pós-parto
   gratitude: '',
+  observations: '',       // observações do Diário da Mamãe no pós-parto
   bumpPhotos: [],        // imagens JPEG reduzidas no próprio aparelho
   examPhotos: [],
   systolicPressure: null, // controle de sintomas e medições
@@ -140,7 +157,8 @@ export function logHasContent(log) {
   return !!log.flow || log.mood != null || !!log.symptoms?.length ||
     !!log.intercourse || !!log.temperature || !!log.mucus ||
     (!!log.ovTest && log.ovTest !== 'nao_fiz') || !!log.notes?.trim() ||
-    !!log.emotions?.length || !!log.thoughts?.trim() || !!log.gratitude?.trim() ||
+    !!log.emotions?.length || !!log.thoughts?.trim() || !!log.accomplishments?.trim() ||
+    !!log.gratitude?.trim() || !!log.observations?.trim() ||
     !!log.bumpPhotos?.length || !!log.examPhotos?.length ||
     log.systolicPressure != null || log.diastolicPressure != null ||
     log.weight != null || log.glucose != null || !!log.symptomNotes?.trim();
@@ -151,13 +169,21 @@ export function getLog(key) {
 }
 
 export function saveLog(key, log) {
+  const before = achievementStats(state);
   const clean = { ...emptyLog(), ...log, updatedAt: Date.now() };
   const isEmpty = !logHasContent(clean);
+  let achievements = [];
   update((s) => {
     if (isEmpty) delete s.logs[key];
     else s.logs[key] = clean;
+    if (!isEmpty) achievements = unlockAchievements(s, before);
   });
-  return !isEmpty;
+  return { saved: !isEmpty, achievements };
+}
+
+/** Registra intimidade sem substituir os outros dados já salvos no dia. */
+export function saveIntercourse(key, { protected: protectedValue = false } = {}) {
+  return saveLog(key, { ...getLog(key), intercourse: true, protected: !!protectedValue });
 }
 
 export function hasLog(key) { return !!state.logs[key]; }

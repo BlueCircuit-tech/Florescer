@@ -135,6 +135,14 @@ test('pregnancyInfo calcula semana, dias restantes e guia semanal', () => {
   assert.equal(info.guide.weight, '1,3 kg');
 });
 
+test('pregnancyInfo usa mensagem plural na gestação múltipla', () => {
+  const state = { profile: { dueDate: '2026-10-29', pregnancyType: 'gemelar' } };
+  const info = pregnancyInfo(state, fromKey('2026-08-20'));
+
+  assert.equal(info.multiple, true);
+  assert.equal(info.countdown, 'Faltam 70 dias para você conhecer os amores da sua vida!');
+});
+
 test('postpartumInfo calcula meses completos e dias restantes', () => {
   const state = { profile: { birthDate: '2026-01-14' } };
 
