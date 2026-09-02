@@ -49,6 +49,7 @@ export function listBabyVaccines(state, babyName = null) {
 
 export function markVaccineTaken(state, id, date, now = Date.now()) {
   if (!validDate(date)) throw new Error('Informe a data em que a vacina foi tomada.');
+  if (diffDays(fromKey(date), today()) > 0) throw new Error('A data de uma vacina tomada não pode estar no futuro.');
   const vaccine = (state.babyVaccines || []).find((item) => item.id === id);
   if (!vaccine) return false;
   vaccine.status = 'taken';
