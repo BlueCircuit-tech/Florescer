@@ -55,6 +55,11 @@ export default {
               <span class="item__body"><b>Vacinas do Bebê</b><span>Vacinas marcadas, tomadas e próximos lembretes.</span></span>
               <span class="item__end">${icon('chevron', 17)}</span>
             </button>
+            <button class="item" data-nav="desenvolvimento-bebe">
+              <span class="item__ico">${icon('sparkle', 20)}</span>
+              <span class="item__body"><b>Registro de Desenvolvimento</b><span>Primeiro sorriso, primeiros passos e outras descobertas.</span></span>
+              <span class="item__end">${icon('chevron', 17)}</span>
+            </button>
             <button class="item" data-nav="amamentacao">
               <span class="item__ico">${icon('heart', 20)}</span>
               <span class="item__body"><b>Registrar Amamentação</b><span>Cronômetro, lado, extração e estoque de leite.</span></span>

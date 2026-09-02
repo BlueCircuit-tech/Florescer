@@ -57,6 +57,7 @@ export const DEFAULTS = () => ({
   diaperLogs: [],               // trocas com urina, fezes e frequência diária
   sleepLogs: [],                // sono noturno, cochilos e duração total
   babyVaccines: [],             // vacinas marcadas e tomadas por bebê
+  babyDevelopmentRecords: [],   // marcos afetivos e motores por bebê
   savedTips: [],
   savedArticles: [],
   readArticles: [],

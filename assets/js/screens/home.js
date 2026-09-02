@@ -147,6 +147,8 @@ function postpartumDashboard(state, pp) {
         <div><span>Descobertas desta fase</span><p>${esc(g.detail)}</p></div>
       </article>
 
+      <button class="btn btn--soft" data-nav="desenvolvimento-bebe">${icon('sparkle', 18)} Registrar uma descoberta</button>
+
       <p class="pregdash__disclaimer">Marcos são referências, não prazos. Cada bebê se desenvolve no próprio ritmo; converse com o pediatra se tiver dúvidas.</p>
     </section>`;
 }
