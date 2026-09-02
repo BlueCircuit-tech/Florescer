@@ -38,10 +38,9 @@ export default {
           { label: 'Registrar medidas', to: 'status-bebe' },
         )}
 
-        ${series.length ? `<div class="card card--flush"><div class="kv"><span class="kv__k">Histórico utilizado</span><span class="kv__v">${plural(series.length, 'registro', 'registros')}</span></div>
+${series.length ? `<div class="card card--flush"><div class="kv"><span class="kv__k">Histórico utilizado</span><span class="kv__v">${plural(series.length, 'registro', 'registros')}</span></div>
           <div class="kv"><span class="kv__k">Primeira medição</span><span class="kv__v">${fmtShort(fromKey(series[0].date))}</span></div>
-          <div class="kv"><span class="kv__k">Última medição</span><span class="kv__v">${fmtShort(fromKey(series.at(-1).date))}</span></div></div>` : ''}
-        <div class="note mt-16">${icon('info', 17)}<span>Os gráficos mostram somente a evolução das medidas registradas. A avaliação de curvas de crescimento e percentis deve ser realizada pelo pediatra.</span></div>
+          <div class="kv"><span class="kv__k">Última medição</span><span class="kv__v">${fmtShort(fromKey(series[series.length - 1].date))}</span></div></div>` : ''}
       </div>`,
       mount(root) {
         root.querySelector('#growth-baby')?.addEventListener('change', (event) => {
