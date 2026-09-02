@@ -58,7 +58,13 @@ function growthCard(series, metric) {
   if (!latest) return `<section class="card growthcard"><div class="growthcard__head"><span>${icon(metric.icon, 19)}</span><div><b>${metric.title}</b><small>Nenhuma medição</small></div></div><p class="fs-12 muted mt-12">Inclua esta medida no próximo registro do bebê.</p></section>`;
   const values = series.map((entry) => ({ label: fmtShort(fromKey(entry.date)), value: entry[metric.field] }));
   const difference = latest[metric.field] - first[metric.field];
-  const chart = lineChart(values, { unit: metric.unit, ariaLabel: `Evolução de ${metric.title.toLowerCase()}` });
+  const chart = lineChart(values, {
+    width: 320,
+    height: 130,
+    unit: metric.unit,
+    ariaLabel: `Evolução de ${metric.title.toLowerCase()}`,
+    preserveAspectRatio: 'xMidYMid meet',
+  });
   return `<section class="card growthcard">
     <div class="growthcard__head"><span>${icon(metric.icon, 19)}</span><div><b>${metric.title}</b><small>${plural(measured.length, 'medição', 'medições')}</small></div>
       <strong>${formatValue(latest[metric.field], metric.decimals)}${metric.unit}</strong></div>

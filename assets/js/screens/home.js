@@ -202,7 +202,9 @@ export default {
 
     const shortcuts = [
       ['calendar', 'Calendário', 'ciclo', 'var(--rose-50)', 'var(--rose-700)'],
-      ['note', phase === 'gravida' || phase === 'posparto' ? 'Diário' : 'Registrar', 'registro', 'var(--lilac-50)', 'var(--lilac-600)'],
+      phase === 'posparto'
+        ? ['shield', 'Vacinas', 'vacinas-bebe', 'var(--lilac-50)', 'var(--lilac-600)']
+        : ['note', phase === 'gravida' ? 'Diário' : 'Registrar', 'registro', 'var(--lilac-50)', 'var(--lilac-600)'],
       ['chart', 'Relatórios', phase === 'posparto' ? 'crescimento-bebe' : 'relatorios', 'var(--leaf-50)', 'var(--leaf-600)'],
       ['book', 'Biblioteca', 'biblioteca', 'var(--amber-50)', 'var(--amber-600)'],
     ];

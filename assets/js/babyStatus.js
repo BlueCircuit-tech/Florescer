@@ -51,13 +51,15 @@ export function babyGrowthSeries(state, babyName) {
 }
 
 export function babyEvents(state) {
-  return (state.babyStatus || []).flatMap((status) => [
-    status.nextVaccineDate ? {
+  const explicitVaccineKeys = new Set((state.babyVaccines || []).map((vaccine) => `${vaccine.babyName}|${vaccine.date}|${vaccine.name}`.toLocaleLowerCase('pt-BR')));
+  const statusEvents = (state.babyStatus || []).flatMap((status) => [
+    status.nextVaccineDate && !explicitVaccineKeys.has(`${status.babyName}|${status.nextVaccineDate}|${status.nextVaccine || 'Vacina'}`.toLocaleLowerCase('pt-BR')) ? {
       id: `vaccine:${status.id}`,
       type: 'vaccine',
       date: status.nextVaccineDate,
       babyName: status.babyName,
       label: status.nextVaccine || 'Vacina',
+      status: 'scheduled',
     } : null,
     status.nextAppointmentDate ? {
       id: `appointment:${status.id}`,
@@ -66,7 +68,17 @@ export function babyEvents(state) {
       babyName: status.babyName,
       label: status.nextAppointment || 'Consulta',
     } : null,
-  ].filter(Boolean)).sort((a, b) => a.date.localeCompare(b.date));
+  ].filter(Boolean));
+  const vaccineEvents = (state.babyVaccines || []).map((vaccine) => ({
+    id: `vaccine-event:${vaccine.id}`,
+    recordId: vaccine.id,
+    type: 'vaccine',
+    date: vaccine.date,
+    babyName: vaccine.babyName,
+    label: vaccine.dose ? `${vaccine.name} · ${vaccine.dose}` : vaccine.name,
+    status: vaccine.status,
+  }));
+  return [...statusEvents, ...vaccineEvents].sort((a, b) => a.date.localeCompare(b.date));
 }
 
 export function babyCareOnDate(state, key) {
@@ -77,7 +89,7 @@ export function babyCareOnDate(state, key) {
 }
 
 export function babyReminder(state, type, ref = today()) {
-  const matching = babyEvents(state).filter((event) => event.type === type && [0, 1].includes(diffDays(fromKey(event.date), ref)));
+  const matching = babyEvents(state).filter((event) => event.type === type && event.status !== 'taken' && [0, 1].includes(diffDays(fromKey(event.date), ref)));
   const todayEvents = matching.filter((event) => diffDays(fromKey(event.date), ref) === 0);
   const events = todayEvents.length ? todayEvents : matching;
   if (!events.length) return null;
