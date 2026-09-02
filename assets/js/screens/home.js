@@ -126,6 +126,31 @@ function pregnancyDashboard(preg) {
     </section>`;
 }
 
+function postpartumDashboard(state, pp) {
+  const names = babyNamesFromProfile(state.profile);
+  const babies = names.length > 1;
+  const subject = names.length ? esc(formatBabyNames(names)) : babies ? 'Seus bebês' : 'Seu bebê';
+  const g = pp.guide;
+  return `
+    <section class="pregdash" aria-label="Fase de desenvolvimento do bebê">
+      <article class="pregdash__baby">
+        <div class="pregdash__fruit" aria-hidden="true">${g.emoji}</div>
+        <div class="grow">
+          <span class="eyebrow">${subject} nesta fase</span>
+          <h2>${babies ? 'Podem' : 'Pode'} ${esc(g.action)}</h2>
+          <p>${esc(g.period)} · ${esc(pp.age)} de vida</p>
+        </div>
+      </article>
+
+      <article class="preginfo preginfo--baby">
+        <span class="preginfo__ico">${icon('baby', 19)}</span>
+        <div><span>Descobertas desta fase</span><p>${esc(g.detail)}</p></div>
+      </article>
+
+      <p class="pregdash__disclaimer">Marcos são referências, não prazos. Cada bebê se desenvolve no próprio ritmo; converse com o pediatra se tiver dúvidas.</p>
+    </section>`;
+}
+
 /* ---------- cartão de destaque ---------- */
 function highlight(state, info, preg, pp) {
   const p = state.profile.phase;
@@ -133,8 +158,7 @@ function highlight(state, info, preg, pp) {
     return pregnancyDashboard(preg);
   }
   if (p === 'posparto' && pp.known) {
-    return card('bottle', 'var(--lilac-50)', 'var(--lilac-600)', pp.quarantine ? 'Primeiras semanas' : 'Rotina em construção',
-      pp.quarantine ? 'Descanse sempre que puder e aceite ajuda.' : 'Registre sono, humor e amamentação no seu diário.', 'registro');
+    return postpartumDashboard(state, pp);
   }
   if (!info.known) return '';
   if (info.inFertile || info.isOvulation) {
