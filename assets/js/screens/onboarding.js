@@ -13,6 +13,8 @@ import { applyBabyNames, babyNamesEditor, babyNamesFromProfile, bindBabyNamesEdi
 let step = 0;
 let draft = null;
 
+export const initialBirthDate = (value, ref = today()) => value || toKey(ref);
+
 const initDraft = () => {
   const p = getState().profile;
   return {
@@ -27,7 +29,7 @@ const initDraft = () => {
     dueDate: p.dueDate,
     pregnancyType: p.pregnancyType,
     ultrasoundPhoto: p.ultrasoundPhoto,
-    birthDate: p.birthDate,
+    birthDate: initialBirthDate(p.birthDate),
     babyName: p.babyName || '',
     babyNames: babyNamesFromProfile(p),
     tips: true,
@@ -143,7 +145,7 @@ function steps() {
       render: () => `<div class="quiz__opts">
         <div class="field">
           <label for="q-birth">Data de nascimento</label>
-          <input id="q-birth" type="date" value="${draft.birthDate || toKey(today())}" max="${toKey(today())}" min="${toKey(addDays(today(), -900))}">
+          <input id="q-birth" type="date" value="${draft.birthDate}" max="${toKey(today())}" min="${toKey(addDays(today(), -900))}">
         </div>
         ${babyNamesEditor(draft, { minimum: 1, allowMore: true })}
       </div>`,
@@ -151,7 +153,11 @@ function steps() {
         root.querySelector('#q-birth').onchange = (e) => { draft.birthDate = e.target.value; };
         bindBabyNamesEditor(root, draft, { minimum: 1, allowMore: true });
       },
-      valid: () => (draft.birthDate ? true : 'Escolha a data de nascimento'),
+      valid: () => {
+        if (!draft.birthDate) return 'Escolha a data de nascimento';
+        if (diffDays(fromKey(draft.birthDate), today()) > 0) return 'A data de nascimento não pode estar no futuro';
+        return true;
+      },
     },
   ];
 

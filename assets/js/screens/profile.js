@@ -19,6 +19,12 @@ const TRYING = { nao_comecei: 'Ainda não comecei', ate_6m: 'Menos de 6 meses', 
 const REGULARITY = { regular: 'Regular', irregular: 'Irregular', nao_sei: 'Não sei informar' };
 const CHALLENGE = { fertil: 'Entender o período fértil', ansiedade: 'Lidar com a ansiedade', informacao: 'Falta de informação', organizar: 'Organizar as tentativas', outro: 'Outro' };
 
+const journeyItems = (items) => items.map((j) => `
+  <div class="item">
+    <span class="item__ico">${icon(j.icon, 19)}</span>
+    <span class="item__body"><b>${esc(j.title)}</b><span>${esc(j.note || '')} · ${fmtShort(new Date(j.at))}</span></span>
+  </div>`).join('');
+
 export default {
   id: 'perfil',
   tab: 'perfil',
@@ -55,6 +61,8 @@ export default {
     const journey = state.journey.length ? state.journey : [
       { icon: 'flower', title: 'Entrei no Florescer', note: 'sua jornada começa aqui', at: state.createdAt },
     ];
+    const journeyPreview = journey.slice(0, 3);
+    const journeyRemaining = journey.slice(3);
 
     return {
       appbar: null,
@@ -89,15 +97,17 @@ export default {
           </div>
 
           <div class="section__head"><h2>Minha jornada</h2></div>
-          <div class="card">
-            <div class="itemlist">
-              ${journey.map((j) => `
-                <div class="item">
-                  <span class="item__ico">${icon(j.icon, 19)}</span>
-                  <span class="item__body"><b>${esc(j.title)}</b><span>${esc(j.note || '')} · ${fmtShort(new Date(j.at))}</span></span>
-                </div>`).join('')}
-            </div>
+          <div class="card card--flush journey-preview" data-journey-preview>
+            <div class="itemlist">${journeyItems(journeyPreview)}</div>
           </div>
+          ${journeyRemaining.length ? `<details class="journey-more" data-journey-more>
+            <summary>
+              <span class="journey-more__ico">${icon('sparkle', 18)}</span>
+              <span class="grow"><b class="journey-more__expand">Expandir jornada</b><b class="journey-more__collapse">Recolher jornada</b><small>${plural(journeyRemaining.length, 'detalhe anterior', 'detalhes anteriores')}</small></span>
+              ${icon('chevronDown', 18)}
+            </summary>
+            <div class="card card--flush journey-more__content"><div class="itemlist">${journeyItems(journeyRemaining)}</div></div>
+          </details>` : ''}
         
           <div class="section__head"><h2>Conta</h2></div>
           <div class="card card--flush">

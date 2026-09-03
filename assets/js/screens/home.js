@@ -15,6 +15,7 @@ import * as cms from '../cms.js';
 import { isUnlocked } from './admin.js';
 import { babyNamesFromProfile, formatBabyNames, postpartumGreeting } from '../babies.js';
 import { FEATURE_TONES, featureLabel, featureTarget, resolveHomeShortcuts } from '../features.js';
+import { cyclePhaseGuide } from '../fertility.js';
 
 let tipOffset = 0;
 
@@ -89,6 +90,7 @@ function pregnancyDashboard(preg) {
           <span class="eyebrow">${preg.multiple ? 'Seus bebês nesta semana' : 'Seu bebê nesta semana'}</span>
           <h2>${preg.multiple ? 'Cada bebê: tamanho aproximado de' : 'Do tamanho de'} ${esc(g.fruit)}</h2>
           <p>Valores de referência para a ${g.week}ª semana</p>
+          <button class="pregdash__weeklink" data-nav="semana-a-semana">Ver Semana a Semana ${icon('chevron', 14)}</button>
         </div>
         <div class="pregdash__metrics">
           <div><span>Peso</span><b>${esc(g.weight)}</b></div>
@@ -107,21 +109,44 @@ function pregnancyDashboard(preg) {
         </article>
       </div>
 
-      <article class="preginfo preginfo--tip">
-        <span class="preginfo__ico">${icon('sparkle', 19)}</span>
-        <div><span>Dica da semana</span><p>${esc(g.tip)}</p></div>
-      </article>
+      <details class="pregdash__more">
+        <summary>
+          <span class="pregdash__moreico">${icon('chevronDown', 18)}</span>
+          <span class="grow"><b class="pregdash__expand">Expandir informações</b><b class="pregdash__collapse">Recolher informações</b><small>Sintomas, hormônios, barriga e cuidados</small></span>
+        </summary>
+        <div class="pregdash__morebody">
+          <div class="pregdash__grid pregdash__maternal">
+            <article class="preginfo preginfo--symptoms">
+              <span class="preginfo__ico">${icon('thermometer', 19)}</span>
+              <div><span>Sintomas que podem aparecer</span><p>${esc(g.symptoms)}</p></div>
+            </article>
+            <article class="preginfo preginfo--hormones">
+              <span class="preginfo__ico">${icon('sparkle', 19)}</span>
+              <div><span>Alterações hormonais</span><p>${esc(g.hormones)}</p></div>
+            </article>
+            <article class="preginfo preginfo--belly">
+              <span class="preginfo__ico">${icon('pregnant', 19)}</span>
+              <div><span>Desenvolvimento da barriga</span><p>${esc(g.belly)}</p></div>
+            </article>
+          </div>
 
-      <article class="preginfo preginfo--exam">
-        <span class="preginfo__ico">${icon('calendar', 19)}</span>
-        <div class="grow">
-          <span>Próximo acompanhamento</span>
-          <b>${esc(g.nextExam.name)}</b>
-          <p>${esc(g.nextExam.when)} · ${esc(g.nextExam.note)}</p>
+          <article class="preginfo preginfo--tip">
+            <span class="preginfo__ico">${icon('sparkle', 19)}</span>
+            <div><span>Dica da semana</span><p>${esc(g.tip)}</p></div>
+          </article>
+
+          <article class="preginfo preginfo--exam">
+            <span class="preginfo__ico">${icon('calendar', 19)}</span>
+            <div class="grow">
+              <span>Próximo acompanhamento</span>
+              <b>${esc(g.nextExam.name)}</b>
+              <p>${esc(g.nextExam.when)} · ${esc(g.nextExam.note)}</p>
+            </div>
+          </article>
         </div>
-      </article>
+      </details>
 
-      <p class="pregdash__disclaimer">Peso, comprimento e marcos são referências educativas. Exames e desenvolvimento variam em cada gestação; confirme seu calendário com a equipe de pré-natal.</p>
+      <p class="pregdash__disclaimer">Peso, comprimento, sintomas e mudanças da barriga são referências educativas e variam em cada gestação. Sangramento, perda de líquido, dor forte, desmaio, falta de ar intensa, dor de cabeça forte com alteração visual ou redução dos movimentos do bebê precisam de avaliação.</p>
     </section>`;
 }
 
@@ -147,8 +172,55 @@ function postpartumDashboard(state, pp) {
       </article>
 
       <button class="btn btn--soft" data-nav="desenvolvimento-bebe">${icon('sparkle', 18)} Registrar uma descoberta</button>
+      <button class="btn btn--soft" data-nav="alimentacao-bebe">${icon('leaf', 18)} Alimentação do bebê</button>
 
       <p class="pregdash__disclaimer">Marcos são referências, não prazos. Cada bebê se desenvolve no próprio ritmo; converse com o pediatra se tiver dúvidas.</p>
+    </section>`;
+}
+
+function cycleDashboard(info) {
+  const phase = PHASES[info.phase];
+  const guide = cyclePhaseGuide(info.phase);
+  const next = info.inPeriod
+    ? `Janela fértil prevista de ${fmtShort(info.fertileStart)} a ${fmtShort(info.fertileEnd)}`
+    : info.daysToOvulation >= 0
+      ? `Ovulação prevista ${relativeDay(info.ovulation)}, em ${fmtShort(info.ovulation)}`
+      : `Próxima menstruação prevista para ${fmtShort(info.nextPeriod)} (${relativeDay(info.nextPeriod)})`;
+
+  return `
+    <section class="pregdash cycledash" aria-label="O que acontece no seu corpo durante a ${esc(phase.label)}">
+      <article class="pregdash__baby">
+        <div class="pregdash__fruit cycledash__symbol" aria-hidden="true">${icon(phase.icon, 28)}</div>
+        <div class="grow">
+          <span class="eyebrow">Seu corpo hoje</span>
+          <h2>${esc(guide.title)}</h2>
+          <p>Dia ${info.dayOfCycle} do ciclo · ${esc(phase.label)}</p>
+        </div>
+      </article>
+
+      <div class="pregdash__grid">
+        <article class="preginfo preginfo--baby">
+          <span class="preginfo__ico">${icon('flower', 19)}</span>
+          <div><span>O que acontece por dentro</span><p>${esc(guide.body)}</p></div>
+        </article>
+        <article class="preginfo preginfo--mother">
+          <span class="preginfo__ico">${icon('heart', 19)}</span>
+          <div><span>O que você pode notar</span><p>${esc(guide.notice)}</p></div>
+        </article>
+      </div>
+
+      <article class="preginfo preginfo--tip">
+        <span class="preginfo__ico">${icon('sparkle', 19)}</span>
+        <div><span>Para lembrar</span><p>${esc(guide.care)}</p></div>
+      </article>
+
+      <article class="preginfo preginfo--exam">
+        <span class="preginfo__ico">${icon('calendar', 19)}</span>
+        <div><span>Próxima etapa estimada</span><p>${esc(next)}</p></div>
+      </article>
+
+      <button class="btn btn--soft" data-nav="ciclo">${icon('calendar', 18)} Ver meu calendário</button>
+      <p class="pregdash__disclaimer">Fases, datas e sinais são estimativas educativas. Eles variam entre ciclos e não confirmam ovulação ou gravidez.</p>
     </section>`;
 }
 
@@ -161,29 +233,9 @@ function highlight(state, info, preg, pp) {
   if (p === 'posparto' && pp.known) {
     return postpartumDashboard(state, pp);
   }
-  if (!info.known) return '';
-  if (info.inFertile || info.isOvulation) {
-    return card('leaf', 'var(--leaf-50)', 'var(--leaf-600)', info.isOvulation ? 'Hoje é o dia estimado da ovulação' : 'Você está no período fértil',
-      `${fmtShort(info.fertileStart)} a ${fmtShort(info.fertileEnd)} · maior chance nos próximos dias`, 'ciclo');
-  }
-  if (info.inPeriod) {
-    return card('drop', 'var(--rose-50)', 'var(--rose-700)', 'Menstruação em curso',
-      `Dia ${info.dayOfCycle} · registre o fluxo para melhorar as previsões`, 'registro');
-  }
-  if (info.daysToOvulation > 0) {
-    return card('flower', 'var(--amber-50)', 'var(--amber-600)', `Janela fértil ${relativeDay(info.fertileStart)}`,
-      `De ${fmtShort(info.fertileStart)} a ${fmtShort(info.fertileEnd)} · avisaremos você`, 'ciclo');
-  }
-  return card('moon', 'var(--lilac-50)', 'var(--lilac-600)', 'Fase lútea',
-    `Menstruação prevista para ${fmtShort(info.nextPeriod)} (${relativeDay(info.nextPeriod)})`, 'ciclo');
+  if (p !== 'tentante' || !info.known) return '';
+  return cycleDashboard(info);
 }
-
-const card = (ic, bg, fg, title, sub, to) => `
-  <button class="floatcard" data-nav="${to}">
-    <span class="floatcard__ico" style="background:${bg};color:${fg}">${icon(ic, 22)}</span>
-    <span class="grow" style="text-align:left"><b>${esc(title)}</b><span>${esc(sub)}</span></span>
-    <span style="color:var(--faint)">${icon('chevron', 18)}</span>
-  </button>`;
 
 /* ---------- tela ---------- */
 export default {

@@ -62,6 +62,7 @@ export const FEATURES = [
   feature('breastfeeding', ['posparto'], 'babyRoutine', 'amamentacao', 'heart', 'Amamentação', 'Cronômetro, lado, extração e estoque de leite.', ['home', 'add', 'resources'], 'rose', {
     addLabel: 'Registrar Amamentação',
   }),
+  feature('baby-feeding', ['posparto'], 'babyRoutine', 'alimentacao-bebe', 'leaf', 'Alimentação do bebê', 'Introdução alimentar, receitas e alimentos adequados para a idade.', ['home', 'resources'], 'leaf'),
   feature('diapers', ['posparto'], 'babyRoutine', 'fraldas', 'drop', 'Fraldas', 'Urina, fezes e frequência diária de trocas.', ['home', 'add', 'resources'], 'amber', {
     addLabel: 'Registrar Fralda',
   }),

@@ -2,6 +2,10 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { babyPhaseGuide, registerBirth } from '../assets/js/postpartum.js';
+import { fromKey, toKey } from '../assets/js/cycle.js';
+
+globalThis.localStorage = { getItem: () => null, setItem: () => {} };
+const { initialBirthDate } = await import('../assets/js/screens/onboarding.js');
 
 test('registro do nascimento muda automaticamente para o Florescer Baby', () => {
   const state = {
@@ -22,6 +26,17 @@ test('registro do nascimento muda automaticamente para o Florescer Baby', () => 
 
 test('registro do nascimento exige uma data válida', () => {
   assert.throws(() => registerBirth({ profile: {} }, ''), /data/);
+});
+
+test('data de hoje exibida no cadastro também é gravada no rascunho', () => {
+  const ref = fromKey('2026-09-03');
+  const date = initialBirthDate(null, ref);
+  const state = { profile: { phase: 'gravida' } };
+
+  assert.equal(date, toKey(ref));
+  assert.doesNotThrow(() => registerBirth(state, date));
+  assert.equal(state.profile.birthDate, '2026-09-03');
+  assert.equal(state.profile.phase, 'posparto');
 });
 
 test('guia do bebê seleciona marcos conforme a idade em dias', () => {
