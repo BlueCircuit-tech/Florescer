@@ -559,6 +559,9 @@ button.item:active{opacity:.6}
 .preginfo--exam{background:var(--leaf-50);border-color:var(--leaf-200);box-shadow:none}
 .preginfo--exam .preginfo__ico{background:#fff;color:var(--leaf-600)}
 .pregdash__disclaimer{font-size:10.5px;line-height:1.5;text-align:center;color:var(--muted);padding:1px 8px 0}
+.cycledash .pregdash__baby{background:linear-gradient(145deg,#fff 10%,var(--leaf-50));border-color:var(--leaf-200)}
+.cycledash__symbol{color:var(--leaf-600)}
+.cycledash__symbol svg{width:28px;height:28px}
 .diaryintro{display:flex;align-items:center;gap:13px;background:linear-gradient(135deg,var(--rose-50),var(--lilac-50))}
 .diaryintro .floatcard__ico{background:#fff;color:var(--rose-700)}
 .diaryintro b{display:block;font-family:var(--font-display);font-size:var(--fs-15)}

@@ -15,6 +15,7 @@ import * as cms from '../cms.js';
 import { isUnlocked } from './admin.js';
 import { babyNamesFromProfile, formatBabyNames, postpartumGreeting } from '../babies.js';
 import { FEATURE_TONES, featureLabel, featureTarget, resolveHomeShortcuts } from '../features.js';
+import { cyclePhaseGuide } from '../fertility.js';
 
 let tipOffset = 0;
 
@@ -152,6 +153,52 @@ function postpartumDashboard(state, pp) {
     </section>`;
 }
 
+function cycleDashboard(info) {
+  const phase = PHASES[info.phase];
+  const guide = cyclePhaseGuide(info.phase);
+  const next = info.inPeriod
+    ? `Janela fértil prevista de ${fmtShort(info.fertileStart)} a ${fmtShort(info.fertileEnd)}`
+    : info.daysToOvulation >= 0
+      ? `Ovulação prevista ${relativeDay(info.ovulation)}, em ${fmtShort(info.ovulation)}`
+      : `Próxima menstruação prevista para ${fmtShort(info.nextPeriod)} (${relativeDay(info.nextPeriod)})`;
+
+  return `
+    <section class="pregdash cycledash" aria-label="O que acontece no seu corpo durante a ${esc(phase.label)}">
+      <article class="pregdash__baby">
+        <div class="pregdash__fruit cycledash__symbol" aria-hidden="true">${icon(phase.icon, 28)}</div>
+        <div class="grow">
+          <span class="eyebrow">Seu corpo hoje</span>
+          <h2>${esc(guide.title)}</h2>
+          <p>Dia ${info.dayOfCycle} do ciclo · ${esc(phase.label)}</p>
+        </div>
+      </article>
+
+      <div class="pregdash__grid">
+        <article class="preginfo preginfo--baby">
+          <span class="preginfo__ico">${icon('flower', 19)}</span>
+          <div><span>O que acontece por dentro</span><p>${esc(guide.body)}</p></div>
+        </article>
+        <article class="preginfo preginfo--mother">
+          <span class="preginfo__ico">${icon('heart', 19)}</span>
+          <div><span>O que você pode notar</span><p>${esc(guide.notice)}</p></div>
+        </article>
+      </div>
+
+      <article class="preginfo preginfo--tip">
+        <span class="preginfo__ico">${icon('sparkle', 19)}</span>
+        <div><span>Para lembrar</span><p>${esc(guide.care)}</p></div>
+      </article>
+
+      <article class="preginfo preginfo--exam">
+        <span class="preginfo__ico">${icon('calendar', 19)}</span>
+        <div><span>Próxima etapa estimada</span><p>${esc(next)}</p></div>
+      </article>
+
+      <button class="btn btn--soft" data-nav="ciclo">${icon('calendar', 18)} Ver meu calendário</button>
+      <p class="pregdash__disclaimer">Fases, datas e sinais são estimativas educativas. Eles variam entre ciclos e não confirmam ovulação ou gravidez.</p>
+    </section>`;
+}
+
 /* ---------- cartão de destaque ---------- */
 function highlight(state, info, preg, pp) {
   const p = state.profile.phase;
@@ -161,29 +208,9 @@ function highlight(state, info, preg, pp) {
   if (p === 'posparto' && pp.known) {
     return postpartumDashboard(state, pp);
   }
-  if (!info.known) return '';
-  if (info.inFertile || info.isOvulation) {
-    return card('leaf', 'var(--leaf-50)', 'var(--leaf-600)', info.isOvulation ? 'Hoje é o dia estimado da ovulação' : 'Você está no período fértil',
-      `${fmtShort(info.fertileStart)} a ${fmtShort(info.fertileEnd)} · maior chance nos próximos dias`, 'ciclo');
-  }
-  if (info.inPeriod) {
-    return card('drop', 'var(--rose-50)', 'var(--rose-700)', 'Menstruação em curso',
-      `Dia ${info.dayOfCycle} · registre o fluxo para melhorar as previsões`, 'registro');
-  }
-  if (info.daysToOvulation > 0) {
-    return card('flower', 'var(--amber-50)', 'var(--amber-600)', `Janela fértil ${relativeDay(info.fertileStart)}`,
-      `De ${fmtShort(info.fertileStart)} a ${fmtShort(info.fertileEnd)} · avisaremos você`, 'ciclo');
-  }
-  return card('moon', 'var(--lilac-50)', 'var(--lilac-600)', 'Fase lútea',
-    `Menstruação prevista para ${fmtShort(info.nextPeriod)} (${relativeDay(info.nextPeriod)})`, 'ciclo');
+  if (p !== 'tentante' || !info.known) return '';
+  return cycleDashboard(info);
 }
-
-const card = (ic, bg, fg, title, sub, to) => `
-  <button class="floatcard" data-nav="${to}">
-    <span class="floatcard__ico" style="background:${bg};color:${fg}">${icon(ic, 22)}</span>
-    <span class="grow" style="text-align:left"><b>${esc(title)}</b><span>${esc(sub)}</span></span>
-    <span style="color:var(--faint)">${icon('chevron', 18)}</span>
-  </button>`;
 
 /* ---------- tela ---------- */
 export default {

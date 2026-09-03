@@ -16,6 +16,7 @@ const SHELL = [
   './assets/js/icons.js',
   './assets/js/cycle.js',
   './assets/js/pregnancy.js',
+  './assets/js/fertility.js',
   './assets/js/pregnancyTest.js',
   './assets/js/pregnancyProfile.js',
   './assets/js/media.js',
