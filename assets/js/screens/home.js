@@ -127,7 +127,7 @@ function pregnancyDashboard(preg) {
 
 function postpartumDashboard(state, pp) {
   const names = babyNamesFromProfile(state.profile);
-  const babies = names.length > 1;
+  const babies = state.profile.pregnancyType === 'gemelar' || names.length > 1;
   const subject = names.length ? esc(formatBabyNames(names)) : babies ? 'Seus bebês' : 'Seu bebê';
   const g = pp.guide;
   return `
