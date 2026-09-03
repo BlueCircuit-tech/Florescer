@@ -172,6 +172,7 @@ function postpartumDashboard(state, pp) {
       </article>
 
       <button class="btn btn--soft" data-nav="desenvolvimento-bebe">${icon('sparkle', 18)} Registrar uma descoberta</button>
+      <button class="btn btn--soft" data-nav="alimentacao-bebe">${icon('leaf', 18)} Alimentação do bebê</button>
 
       <p class="pregdash__disclaimer">Marcos são referências, não prazos. Cada bebê se desenvolve no próprio ritmo; converse com o pediatra se tiver dúvidas.</p>
     </section>`;
