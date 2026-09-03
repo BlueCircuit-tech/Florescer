@@ -42,6 +42,7 @@ const SHELL = [
   './assets/js/screens/onboarding.js',
   './assets/js/screens/welcome.js',
   './assets/js/screens/home.js',
+  './assets/js/screens/weekByWeek.js',
   './assets/js/screens/calendar.js',
   './assets/js/screens/log.js',
   './assets/js/screens/add.js',

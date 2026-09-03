@@ -90,6 +90,7 @@ function pregnancyDashboard(preg) {
           <span class="eyebrow">${preg.multiple ? 'Seus bebês nesta semana' : 'Seu bebê nesta semana'}</span>
           <h2>${preg.multiple ? 'Cada bebê: tamanho aproximado de' : 'Do tamanho de'} ${esc(g.fruit)}</h2>
           <p>Valores de referência para a ${g.week}ª semana</p>
+          <button class="pregdash__weeklink" data-nav="semana-a-semana">Ver Semana a Semana ${icon('chevron', 14)}</button>
         </div>
         <div class="pregdash__metrics">
           <div><span>Peso</span><b>${esc(g.weight)}</b></div>
@@ -108,21 +109,44 @@ function pregnancyDashboard(preg) {
         </article>
       </div>
 
-      <article class="preginfo preginfo--tip">
-        <span class="preginfo__ico">${icon('sparkle', 19)}</span>
-        <div><span>Dica da semana</span><p>${esc(g.tip)}</p></div>
-      </article>
+      <details class="pregdash__more">
+        <summary>
+          <span class="pregdash__moreico">${icon('chevronDown', 18)}</span>
+          <span class="grow"><b class="pregdash__expand">Expandir informações</b><b class="pregdash__collapse">Recolher informações</b><small>Sintomas, hormônios, barriga e cuidados</small></span>
+        </summary>
+        <div class="pregdash__morebody">
+          <div class="pregdash__grid pregdash__maternal">
+            <article class="preginfo preginfo--symptoms">
+              <span class="preginfo__ico">${icon('thermometer', 19)}</span>
+              <div><span>Sintomas que podem aparecer</span><p>${esc(g.symptoms)}</p></div>
+            </article>
+            <article class="preginfo preginfo--hormones">
+              <span class="preginfo__ico">${icon('sparkle', 19)}</span>
+              <div><span>Alterações hormonais</span><p>${esc(g.hormones)}</p></div>
+            </article>
+            <article class="preginfo preginfo--belly">
+              <span class="preginfo__ico">${icon('pregnant', 19)}</span>
+              <div><span>Desenvolvimento da barriga</span><p>${esc(g.belly)}</p></div>
+            </article>
+          </div>
 
-      <article class="preginfo preginfo--exam">
-        <span class="preginfo__ico">${icon('calendar', 19)}</span>
-        <div class="grow">
-          <span>Próximo acompanhamento</span>
-          <b>${esc(g.nextExam.name)}</b>
-          <p>${esc(g.nextExam.when)} · ${esc(g.nextExam.note)}</p>
+          <article class="preginfo preginfo--tip">
+            <span class="preginfo__ico">${icon('sparkle', 19)}</span>
+            <div><span>Dica da semana</span><p>${esc(g.tip)}</p></div>
+          </article>
+
+          <article class="preginfo preginfo--exam">
+            <span class="preginfo__ico">${icon('calendar', 19)}</span>
+            <div class="grow">
+              <span>Próximo acompanhamento</span>
+              <b>${esc(g.nextExam.name)}</b>
+              <p>${esc(g.nextExam.when)} · ${esc(g.nextExam.note)}</p>
+            </div>
+          </article>
         </div>
-      </article>
+      </details>
 
-      <p class="pregdash__disclaimer">Peso, comprimento e marcos são referências educativas. Exames e desenvolvimento variam em cada gestação; confirme seu calendário com a equipe de pré-natal.</p>
+      <p class="pregdash__disclaimer">Peso, comprimento, sintomas e mudanças da barriga são referências educativas e variam em cada gestação. Sangramento, perda de líquido, dor forte, desmaio, falta de ar intensa, dor de cabeça forte com alteração visual ou redução dos movimentos do bebê precisam de avaliação.</p>
     </section>`;
 }
 
