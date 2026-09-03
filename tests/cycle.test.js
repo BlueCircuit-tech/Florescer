@@ -151,6 +151,7 @@ test('postpartumInfo calcula meses completos e dias restantes', () => {
   assert.equal(info.months, 2);
   assert.equal(info.monthDays, 3);
   assert.equal(info.age, '2 meses e 3 dias');
+  assert.match(info.guide.action, /sustentar melhor a cabeça/);
 });
 
 test('postpartumInfo apresenta somente dias antes do primeiro mês', () => {

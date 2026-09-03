@@ -11,31 +11,46 @@ test('Tentante pode escolher Registrar Relação no botão principal', () => {
   update((state) => { state.profile.phase = 'tentante'; });
   const output = addScreen.render();
 
-  assert.match(output.html, /Registrar Relação/);
+  assert.match(output.html, /Registrar Relação/i);
   assert.match(output.html, /data-nav="relacao"/);
+  assert.match(output.html, /data-nav="sono"/);
+  assert.match(output.html, /Ciclo e tentativas/);
+  assert.match(output.html, /Meu cuidado/);
+  assert.equal((output.html.match(/<details class="resource-group" open>/g) || []).length, 1);
 });
 
 test('gestante escolhe entre registro, sintoma e nascimento no botão principal', () => {
   update((state) => { state.profile.phase = 'gravida'; });
   const output = addScreen.render();
 
-  assert.match(output.html, /Adicionar um Registro/);
-  assert.match(output.html, /Adicionar um Sintoma/);
-  assert.match(output.html, /Registrar nascimento/);
+  assert.match(output.html, /Adicionar um Registro/i);
+  assert.match(output.html, /Adicionar um Sintoma/i);
+  assert.match(output.html, /Registrar nascimento/i);
+  assert.match(output.html, /data-nav="sono"/);
+  assert.match(output.html, /Meu cuidado/);
+  assert.match(output.html, /Gestação/);
+  assert.match(output.html, /data-register-birth/);
 });
 
 test('puérpera pode registrar o status do bebê no botão principal', () => {
   update((state) => { state.profile.phase = 'posparto'; });
   const output = addScreen.render();
 
-  assert.match(output.html, /Registrar status do bebê/);
+  assert.match(output.html, /Registrar status do bebê/i);
   assert.match(output.html, /data-nav="status-bebe"/);
-  assert.match(output.html, /Registrar amamentação/);
+  assert.match(output.html, /data-nav="vacinas-bebe"/);
+  assert.match(output.html, /Registro de Desenvolvimento/i);
+  assert.match(output.html, /data-nav="desenvolvimento-bebe"/);
+  assert.match(output.html, /Registrar amamentação/i);
   assert.match(output.html, /data-nav="amamentacao"/);
-  assert.match(output.html, /Registrar fralda/);
+  assert.match(output.html, /Registrar fralda/i);
   assert.match(output.html, /data-nav="fraldas"/);
-  assert.match(output.html, /Registro de Saúde/);
+  assert.match(output.html, /Registro de Saúde/i);
   assert.match(output.html, /data-nav="saude-bebe"/);
+  assert.match(output.html, /data-nav="sono"/);
+  assert.match(output.html, /Rotina do bebê/);
+  assert.match(output.html, /Saúde e desenvolvimento/);
+  assert.match(output.html, /Meu cuidado/);
 });
 
 test('sintomas ficam separados do Diário da Mamãe', () => {
