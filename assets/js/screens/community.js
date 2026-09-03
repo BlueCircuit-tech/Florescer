@@ -9,9 +9,15 @@ import { navigate, back } from '../router.js';
 import { relativeTime } from '../cycle.js';
 import { SEED_POSTS, PHASE_LABELS } from '../content.js';
 import * as cms from '../cms.js';
+import {
+  canAccessCommunityPost,
+  communityForPhase,
+  communityPath,
+  createCommunityPost,
+  postsForCommunity,
+} from '../communities.js';
 
 const BOOT = Date.now();
-let filter = 'todas';
 
 /** Junta posts semeados e os da usuária, aplicando curtidas/comentários salvos. */
 export function allPosts(state) {
@@ -43,6 +49,15 @@ export function visiblePosts(state) {
 }
 
 export function findPost(state, id) { return allPosts(state).find((p) => p.id === id); }
+
+export function communityPosts(state, phase = state.profile.phase) {
+  return postsForCommunity(visiblePosts(state), phase);
+}
+
+export function findAccessiblePost(state, id) {
+  const post = findPost(state, id);
+  return canAccessCommunityPost(state, post) ? post : null;
+}
 
 /* ---------- cartão de post ---------- */
 export function postCard(p, state, { full = false } = {}) {
@@ -77,6 +92,7 @@ export function bindPostActions(root, onChange) {
       const id = b.dataset.like;
       haptic();
       update((s) => {
+        if (!findAccessiblePost(s, id)) return;
         const st = s.postState[id] || (s.postState[id] = {});
         st.liked = !st.liked;
       });
@@ -85,32 +101,46 @@ export function bindPostActions(root, onChange) {
   });
   root.querySelectorAll('[data-open]').forEach((b) => { b.onclick = () => navigate(`post/${b.dataset.open}`); });
   root.querySelectorAll('[data-report]').forEach((b) => {
-    b.onclick = () => openSheet({
+    b.onclick = () => {
+      if (!findAccessiblePost(getState(), b.dataset.report)) { toast('Esta publicação não está disponível nesta comunidade.'); return; }
+      openSheet({
       title: 'Reportar publicação',
-      subtitle: 'A moderação analisa todos os relatos em até 24 horas.',
+      subtitle: 'Escolha o motivo para revisar esta publicação neste aparelho.',
       body: ['Conteúdo ofensivo', 'Venda de produtos ou serviços', 'Indicação de medicamentos', 'Conteúdo sensível sem aviso']
         .map((r) => `<button class="item" data-reason="${esc(r)}"><span class="item__ico">${icon('flag', 19)}</span><span class="item__body"><b>${esc(r)}</b></span>${icon('chevron', 16)}</button>`).join(''),
       onMount(sheet) {
         sheet.querySelectorAll('[data-reason]').forEach((r) => {
-          r.onclick = () => { closeSheet(); toast('Obrigada. A moderação vai analisar essa publicação.'); };
+          r.onclick = () => { closeSheet(); toast('Obrigada por ajudar a manter este espaço acolhedor.'); };
         });
       },
     });
+    };
   });
   root.querySelectorAll('[data-del]').forEach((b) => {
     b.onclick = async () => {
       const ok = await confirmSheet({ title: 'Excluir publicação?', message: 'Ela sai da comunidade e não pode ser recuperada.', confirmLabel: 'Excluir', danger: true });
       if (!ok) return;
-      update((s) => { s.posts = s.posts.filter((p) => p.id !== b.dataset.del); delete s.postState[b.dataset.del]; });
+      let deleted = false;
+      update((s) => {
+        const post = findAccessiblePost(s, b.dataset.del);
+        if (!post?.mine) return;
+        const nextPosts = s.posts.filter((p) => p.id !== b.dataset.del);
+        if (nextPosts.length === s.posts.length) return;
+        s.posts = nextPosts;
+        delete s.postState[b.dataset.del];
+        s.hiddenPosts = (s.hiddenPosts || []).filter((id) => id !== b.dataset.del);
+        deleted = true;
+      });
+      if (!deleted) return;
       toast('Publicação excluída.');
-      onChange ? onChange() : navigate('comunidade');
+      onChange ? onChange() : navigate(communityPath(getState().profile.phase));
     };
   });
 }
 
 function refreshCard(root, id) {
   const state = getState();
-  const p = findPost(state, id);
+  const p = findAccessiblePost(state, id);
   const el = root.querySelector(`[data-post="${id}"]`);
   if (!p || !el) return;
   el.outerHTML = postCard(p, state);
@@ -118,37 +148,33 @@ function refreshCard(root, id) {
 }
 
 /* ---------- tela: comunidade ---------- */
-const FILTERS = [
-  ['todas', 'Todas', 'flower'],
-  ['tentante', 'Tentantes', 'seed'],
-  ['gravida', 'Grávidas', 'pregnant'],
-  ['posparto', 'Pós-parto', 'baby'],
-];
-
 export default {
   id: 'comunidade',
   tab: 'comunidade',
   render() {
     const state = getState();
-    const posts = visiblePosts(state).filter((p) => filter === 'todas' || p.phase === filter);
+    const phase = state.profile.phase;
+    const community = communityForPhase(phase);
+    const posts = communityPosts(state, phase);
     const ch = cms.getChallenge();
     const total = ch.days || 7;
     const done = state.challengeDays.filter((d) => d < total).length;
 
     return {
       appbar: {
-        title: 'Comunidade', back: false,
+        title: community.title, back: false,
         actions: [
           { icon: 'help', label: 'Diretrizes', action: 'rules' },
-          { icon: 'plus', label: 'Criar publicação', to: 'novo-post' },
+          { icon: 'plus', label: `Publicar em ${community.title}`, to: 'novo-post' },
         ],
       },
       html: `
-        <div class="chiprow">
-          ${FILTERS.map(([id, label, ic]) => `
-            <button class="chip" data-filter="${id}" aria-pressed="${filter === id}">${icon(ic, 16)} ${label}</button>`).join('')}
-        </div>
         <div class="section pb-24">
+          <section class="community-intro community-intro--${phase}">
+            <span class="community-intro__ico">${icon(community.icon, 23)}</span>
+            <div><span class="eyebrow">${esc(community.eyebrow)}</span><h1>${esc(community.title)}</h1><p>${esc(community.description)}</p></div>
+            <button class="btn btn--sm btn--auto" data-nav="novo-post">${icon('edit', 17)} Compartilhar</button>
+          </section>
           <section class="challenge">
             <div class="challenge__top">
               <span class="challenge__ico">${icon('sparkle', 21)}</span>
@@ -172,12 +198,9 @@ export default {
             </div>
           </section>
           ${posts.length ? posts.map((p) => postCard(p, state)).join('')
-            : emptyState('users', 'Ainda sem publicações aqui', 'Seja a primeira a compartilhar a sua história nesta fase.', { label: 'Escrever publicação', to: 'novo-post' })}
+            : emptyState('users', `A ${community.title} está começando`, 'Seja a primeira a compartilhar o que está vivendo nesta fase.', { label: 'Escrever publicação', to: 'novo-post' })}
         </div>`,
       mount(root) {
-        root.querySelectorAll('[data-filter]').forEach((b) => {
-          b.onclick = () => { filter = b.dataset.filter; haptic(); rerender(); };
-        });
         root.querySelectorAll('[data-day]').forEach((b) => {
           b.onclick = () => {
             const i = +b.dataset.day;
@@ -216,8 +239,9 @@ export const postScreen = {
   tab: 'comunidade',
   render(route) {
     const state = getState();
-    const p = findPost(state, route.arg);
-    if (!p) return { appbar: { title: 'Publicação' }, html: emptyState('message', 'Publicação não encontrada', 'Ela pode ter sido removida.', { label: 'Voltar à comunidade', to: 'comunidade' }) };
+    const p = findAccessiblePost(state, route.arg);
+    const community = communityForPhase(state.profile.phase);
+    if (!p) return { appbar: { title: 'Publicação' }, html: emptyState('message', 'Publicação não disponível', 'Ela pode ter sido removida ou pertencer a outra comunidade.', { label: `Voltar à ${community.title}`, to: communityPath(state.profile.phase) }) };
 
     return {
       appbar: { title: 'Publicação', sub: `${p.comments.length} comentário${p.comments.length === 1 ? '' : 's'}` },
@@ -244,7 +268,9 @@ export const postScreen = {
           const ta = root.querySelector('#c-text');
           const text = ta.value.trim();
           if (text.length < 2) { toast('Escreva o seu comentário 💛'); return; }
-          const author = getState().profile.name || 'Você';
+          const current = getState();
+          if (!findAccessiblePost(current, p.id)) { toast('Esta publicação não está disponível nesta comunidade.'); return; }
+          const author = current.profile.name || 'Você';
           update((s) => {
             const st = s.postState[p.id] || (s.postState[p.id] = {});
             (st.comments || (st.comments = [])).push({ author, avatar: '🌷', text, ts: Date.now(), mine: true });
@@ -263,21 +289,19 @@ export const newPostScreen = {
   render() {
     const state = getState();
     const phase = state.profile.phase;
+    const community = communityForPhase(phase);
     return {
-      appbar: { title: 'Nova publicação' },
+      appbar: { title: 'Nova publicação', sub: community.title },
       html: `<div class="section pb-24">
-        ${note('Sua publicação aparece com o nome do seu perfil. Nada de dados médicos sensíveis ou indicação de medicamentos.')}
+        <div class="card diaryintro">
+          <span class="floatcard__ico">${icon(community.icon, 22)}</span>
+          <div><b>Publicando em ${esc(community.title)}</b><p>Este relato será compartilhado somente com mulheres desta mesma fase.</p></div>
+        </div>
+        <div class="mt-16">${note('Sua publicação aparece com o nome do seu perfil. Nada de dados médicos sensíveis ou indicação de medicamentos.')}</div>
         <div class="field mt-16">
           <label for="np-text">O que você quer compartilhar?</label>
-          <textarea id="np-text" rows="6" maxlength="800" placeholder="Uma vitória, uma dúvida, um desabafo…"></textarea>
+          <textarea id="np-text" rows="7" maxlength="800" placeholder="${esc(community.prompt)}"></textarea>
           <p class="field__hint"><span id="np-count">0</span>/800</p>
-        </div>
-        <div class="field">
-          <span class="field__label">Publicar como</span>
-          <div class="chipwrap">
-            ${Object.entries(PHASE_LABELS).map(([id, m]) => `
-              <button class="chip" data-phase="${id}" aria-pressed="${phase === id}">${m.emoji} ${m.label}</button>`).join('')}
-          </div>
         </div>
         <label class="kv" style="border:0">
           <span class="kv__k">Li e concordo com as diretrizes<small>Acolhimento, sem venda e sem indicação de remédios.</small></span>
@@ -286,29 +310,23 @@ export const newPostScreen = {
         <button class="btn mt-12" data-publish>${icon('send', 18)} Publicar</button>
       </div>`,
       mount(root) {
-        let chosen = phase;
         const ta = root.querySelector('#np-text');
         ta.oninput = () => { root.querySelector('#np-count').textContent = ta.value.length; };
         ta.focus();
-        root.querySelectorAll('[data-phase]').forEach((b) => {
-          b.onclick = () => {
-            chosen = b.dataset.phase;
-            root.querySelectorAll('[data-phase]').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
-          };
-        });
         root.querySelector('[data-publish]').onclick = () => {
           const text = ta.value.trim();
           if (text.length < 5) { toast('Escreva um pouco mais para publicar 💛'); return; }
           if (!root.querySelector('#np-ok').checked) { toast('Confirme as diretrizes da comunidade para publicar'); return; }
-          const id = `u${Date.now()}`;
-          update((s) => {
-            s.posts.push({
-              id, author: s.profile.name || 'Você', avatar: '🌷', phase: chosen,
-              text, likes: 0, comments: [], ts: Date.now(),
-            });
-          });
+          let post;
+          try {
+            update((s) => { post = createCommunityPost(s, { text, expectedPhase: phase }); });
+          } catch (error) {
+            toast(error.message);
+            if (getState().profile.phase !== phase) navigate(communityPath(getState().profile.phase), { replace: true });
+            return;
+          }
           toast('Publicado! Obrigada por compartilhar 🌸');
-          navigate(`post/${id}`, { replace: true });
+          navigate(`post/${post.id}`, { replace: true });
         };
       },
     };

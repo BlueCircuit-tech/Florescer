@@ -3,7 +3,7 @@
  * Estratégia: cache-first para a casca do app (funciona 100% offline),
  * network-first para o HTML (para pegar atualizações quando houver rede).
  */
-const VERSION = 'florescer-v1.21.0';
+const VERSION = 'florescer-v1.22.0';
 const SHELL = [
   './',
   './index.html',
@@ -31,7 +31,9 @@ const SHELL = [
   './assets/js/vaccines.js',
   './assets/js/development.js',
   './assets/js/features.js',
+  './assets/js/communities.js',
   './assets/js/missions.js',
+  './assets/js/libraries.js',
   './assets/js/welcome.js',
   './assets/js/content.js',
   './assets/js/cms.js',

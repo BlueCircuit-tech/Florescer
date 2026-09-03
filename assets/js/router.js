@@ -6,6 +6,7 @@ import { icon } from './icons.js';
 import { $, closeSheet, esc } from './ui.js';
 import { getState } from './store.js';
 import { featureLabel, featuresFor } from './features.js';
+import { communityForPhase, communityPath } from './communities.js';
 
 const routes = new Map();
 let current = null;
@@ -84,13 +85,14 @@ const TABS = [
 
 function renderTabbar(active) {
   const phase = getState().profile.phase;
+  const community = communityForPhase(phase);
   const fabTarget = 'adicionar';
   const addLabels = featuresFor(phase, 'add').map((item) => featureLabel(item, phase, 'add').toLocaleLowerCase('pt-BR'));
   const fabLabel = `Adicionar: ${addLabels.join(', ')}`;
   $('#tabbar').innerHTML = TABS.map((t) => t.fab
     ? `<button class="tab__fab" data-nav="${fabTarget}" aria-label="${fabLabel}">${icon(t.icon, 26, { stroke: 2 })}</button>`
-    : `<button class="tab" data-nav="${t.to}" ${active === t.id ? 'aria-current="page"' : ''}>
-        <span class="tab__ico">${icon(t.icon, 22)}</span><span>${phase === 'posparto' && t.id === 'ciclo' ? 'Calendário' : t.label}</span>
+    : `<button class="tab" data-nav="${t.id === 'comunidade' ? communityPath(phase) : t.to}" ${active === t.id ? 'aria-current="page"' : ''}>
+        <span class="tab__ico">${icon(t.icon, 22)}</span><span>${t.id === 'comunidade' ? community.shortLabel : phase === 'posparto' && t.id === 'ciclo' ? 'Calendário' : t.label}</span>
       </button>`).join('');
 }
 

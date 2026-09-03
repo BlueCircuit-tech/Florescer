@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import { registerBirth } from '../assets/js/postpartum.js';
+import { babyPhaseGuide, registerBirth } from '../assets/js/postpartum.js';
 
 test('registro do nascimento muda automaticamente para o Florescer Baby', () => {
   const state = {
@@ -22,4 +22,17 @@ test('registro do nascimento muda automaticamente para o Florescer Baby', () => 
 
 test('registro do nascimento exige uma data válida', () => {
   assert.throws(() => registerBirth({ profile: {} }, ''), /data/);
+});
+
+test('guia do bebê seleciona marcos conforme a idade em dias', () => {
+  assert.match(babyPhaseGuide(41).action, /acompanhar seu rosto/);
+  assert.match(babyPhaseGuide(42).action, /sorrir/);
+  assert.match(babyPhaseGuide(180).action, /sentar sem apoio/);
+  assert.match(babyPhaseGuide(210).action, /se deslocar/);
+  assert.match(babyPhaseGuide(365).action, /primeiros passos/);
+});
+
+test('guia do bebê usa os primeiros dias para idades inválidas ou negativas', () => {
+  assert.equal(babyPhaseGuide(-10).from, 0);
+  assert.equal(babyPhaseGuide(Number.NaN).from, 0);
 });

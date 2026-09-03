@@ -4,6 +4,17 @@ import assert from 'node:assert/strict';
 globalThis.localStorage = { getItem: () => null, setItem: () => {} };
 const { emptyLog, getState, logHasContent, saveIntercourse, saveLog } = await import('../assets/js/store.js');
 
+test('estado inicial inclui a coleção de desenvolvimento do bebê', () => {
+  assert.deepEqual(getState().babyDevelopmentRecords, []);
+});
+
+test('estado inicial inclui quatro atalhos por fase', () => {
+  for (const shortcuts of Object.values(getState().settings.homeShortcuts)) {
+    assert.equal(shortcuts.length, 4);
+    assert.equal(new Set(shortcuts).size, 4);
+  }
+});
+
 test('registro da gestante é reconhecido por qualquer campo do Diário da Mamãe', () => {
   assert.equal(logHasContent(emptyLog()), false);
   assert.equal(logHasContent({ ...emptyLog(), emotions: ['Feliz'] }), true);

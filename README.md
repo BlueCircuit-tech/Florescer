@@ -71,6 +71,9 @@ assets/
     breastfeeding.js       mamadas, extração e estoque de leite
     babyHealth.js          sintomas e histórico clínico dos bebês
     planner.js             agenda por fase, recorrências e notificações
+    diapers.js             trocas com urina, fezes e frequência diária
+    sleep.js               sono noturno, cochilos, médias e dicas contextuais
+    vaccines.js            vacinas marcadas e tomadas por bebê
     content.js             conteúdo editorial padrão: sugestões, artigos, FAQ
     cms.js                 camada editável: o que o painel publica vence content.js
     icons.js               conjunto de ícones SVG (traço de 1.7 em grade 24)
@@ -91,14 +94,18 @@ Cada tela exporta `{ id, tab?, render(rota) }` e devolve `{ appbar, html, mount(
 | Rota | Tela | O que faz |
 |---|---|---|
 | `#/inicio` | Boas-vindas + quiz | Questionário contextual que define fase, dados do ciclo, gestação ou pós-parto e preferências |
-| `#/home` | Início | Adapta-se à fase: anel do ciclo, semanas de gestação ou idade do bebê |
+| `#/home` | Início | Adapta-se à fase: anel do ciclo, semanas de gestação ou idade do bebê; no pós-parto, oferece atalhos para crescimento e vacinas |
 | `#/ciclo` | Calendário contextual | Ciclo e fertilidade para Tentantes; status, vacinas e consultas no Florescer Baby |
 | `#/adicionar` | Ações do botão central | Tentante escolhe teste ou registro; Gestante escolhe registro, sintoma ou nascimento |
 | `#/teste-gravidez` | Teste de gravidez | Salva data e resultado positivo, negativo ou inconclusivo e mantém o histórico recente |
 | `#/relacao` | Registrar Relação | Registro privado de data e proteção, sem exigir o preenchimento do diário completo |
 | `#/gestacao-inicio` | Configuração da gestação | DUM/DPP, tipo de gestação, nomes dos bebês e última ultrassonografia |
 | `#/status-bebe` | Status do bebê | Peso, altura, próxima vacina e próxima consulta, com seleção do bebê |
+| `#/crescimento-bebe` | Gráfico de crescimento | Evolução de peso, altura e perímetro cefálico por bebê |
 | `#/amamentacao` | Amamentação | Cronômetro da mamada, lado utilizado, extração e estoque de leite |
+| `#/fraldas` | Fraldas | Registro de urina e fezes com frequência diária por bebê |
+| `#/sono` | Meu sono | Sono noturno, cochilos, total diário, médias e dicas por fase |
+| `#/vacinas-bebe` | Vacinas do bebê | Histórico de vacinas marcadas e tomadas, doses e lembretes |
 | `#/saude-bebe` | Registro de Saúde | Sintomas, medicamentos, alergias, internações, consultas e exames do bebê |
 | `#/agenda` | Novo compromisso | Consultas, pré-natal, ultrassons, exames, vacinas, medicamentos e vitaminas |
 | `#/boas-vindas` | Transição de fase | Celebra a entrada no Florescer escolhido e encaminha para a Home |
@@ -183,17 +190,24 @@ Ao confirmar o nascimento, o app:
 
 O quiz inicial de pós-parto também permite cadastrar vários bebês. A Home usa os nomes em uma frase natural: `Olá, Lia e Liz!` ou `Olá, Lia, Liz e Theo!`. Dados antigos que possuem somente `babyName` continuam compatíveis; o novo modelo mantém `babyNames` e sincroniza o primeiro nome com o campo legado.
 
-No Florescer Baby, o botão `+` oferece **Registrar status do bebê**, **Registrar amamentação**, **Registro de Saúde** e **Diário da Mamãe**. O status permite:
+No Florescer Baby, o botão `+` oferece **Registrar status do bebê**, **Registrar amamentação**, **Registrar fralda**, **Registro de Saúde** e **Diário da Mamãe**. O status permite:
 
 - selecionar qual bebê será acompanhado quando houver múltiplos nomes;
-- registrar peso atual em quilogramas e altura em centímetros;
+- registrar peso atual em quilogramas, altura e perímetro cefálico em centímetros;
 - informar a próxima vacina, sua data e descrição opcional;
 - informar a próxima consulta, sua data e descrição opcional;
 - atualizar o mesmo bebê na mesma data sem criar duplicatas.
+- visualizar gráficos individuais da evolução de peso, altura e perímetro cefálico.
 
 O **Diário da Mamãe** do pós-parto é diferente do diário gestacional e registra somente humor, emoções/sentimentos, conquistas, gratidão e observações. Sintomas permanecem no Controle de Sintomas, e medidas ou cuidados dos bebês permanecem no Status do bebê.
 
 O registro de **Amamentação** possui cronômetro com iniciar, pausar, continuar e reiniciar; seleção do lado esquerdo, direito ou ambos; volume extraído na sessão; e total do estoque de leite guardado. Cada mamada é preservada como um item independente e pode ser associada a um bebê específico.
+
+O registro de **Fraldas** guarda cada troca com data, horário, urina, fezes e observações opcionais. A frequência diária de trocas, urina e fezes é calculada automaticamente e separada por bebê.
+
+A tela **Vacinas do bebê** reúne vacinas marcadas e tomadas, dose e observações. Agendamentos antigos do Status do bebê aparecem automaticamente e sem duplicação; vacinas marcadas alimentam o calendário e os lembretes do dia anterior e do próprio dia.
+
+O registro de **Sono**, disponível nas três fases pelo botão central, soma sono noturno e cochilos, calcula a média dos sete registros mais recentes e apresenta dicas diferentes para Tentante, Gestação e pós-parto.
 
 O **Registro de Saúde** mantém um histórico separado por bebê, data e horário. Cada entrada pode reunir sintomas, medicamentos administrados, alergias, internações, consultas e exames, sem substituir os registros anteriores.
 
@@ -226,7 +240,7 @@ Quando um ciclo passa muito do previsto sem registro, o app projeta ciclos teór
 - Lembretes locais via Notification API — janela fértil, menstruação, registro diário, missões pendentes e sugestão do dia, no horário escolhido. Não há push de servidor: os avisos são agendados no próprio aparelho.
 - Agenda inteligente por fase: tentantes organizam consultas, exames e tratamentos; gestantes também recebem pré-natal e ultrassons; no pós-parto entram vacinas e compromissos associados à mãe ou a cada bebê.
 - Medicamentos e vitaminas aceitam recorrência diária por até um ano. Cada compromisso pode avisar no mesmo dia, um, dois ou sete dias antes.
-- Pequenas conquistas são notificadas imediatamente quando a permissão já está concedida. Relações usam mensagens discretas para não expor dados sensíveis na tela bloqueada.
+- Pequenas conquistas são notificadas imediatamente quando a permissão já está concedida. As mensagens são específicas para Tentante, Gestação e Florescer Baby; relações usam textos discretos para não expor dados sensíveis na tela bloqueada.
 - No Florescer Baby, vacinas e consultas são lembradas no dia anterior e no próprio dia; tocar na notificação abre o calendário do bebê.
 
 ### Pequenas conquistas
@@ -236,6 +250,8 @@ O avaliador em `assets/js/achievements.js` é executado sempre que um registro d
 - primeiro registro, 7 registros e 30 registros;
 - primeira relação, 5 relações e 10 relações;
 - primeiro ciclo completo e 3 ciclos acompanhados.
+
+Conquistas de ciclos e relações são exclusivas da fase Tentante. Marcos de registros usam mensagens próprias para acompanhamento do ciclo, memórias da gestação ou rotina de cuidado no pós-parto.
 
 Um ciclo é considerado completo quando um novo início de menstruação confirma o intervalo do ciclo anterior. A configuração **Lembretes › Pequenas conquistas** permite desativar apenas essas notificações, sem remover os marcos da jornada.
 
@@ -254,6 +270,9 @@ Hoje o app é local. O schema-base planejado para o Supabase (tabelas, RLS, fun�
 - Mamadas, extrações e estoque ficam em `breastfeedingLogs`, em ordem cronológica.
 - Informações clínicas dos bebês ficam em `babyHealthRecords`, preservadas como eventos independentes.
 - Compromissos e tratamentos ficam em `calendarEvents`, com fase, categoria, pessoa, recorrência e antecedência do lembrete.
+- Trocas de fralda ficam em `diaperLogs`, permitindo calcular a frequência diária por bebê.
+- Sono noturno, cochilos e totais diários ficam em `sleepLogs`.
+- Vacinas marcadas e tomadas ficam em `babyVaccines`; agendamentos antigos em `babyStatus` continuam compatíveis.
 - Fotos da ultrassonografia, barriga e exames são comprimidas como JPEG antes de serem armazenadas localmente.
 - **Exportar** gera um `.json` completo; **Importar** restaura em qualquer aparelho; **Apagar tudo** remove de forma definitiva (Configurações › Privacidade e dados).
 - Nenhuma requisição sai do dispositivo — não há analytics, rastreamento ou contas.
@@ -273,7 +292,7 @@ Hoje o app é local. O schema-base planejado para o Supabase (tabelas, RLS, fun�
 
 ## Testes
 
-A suíte usa `node:test` e cobre atualmente 76 cenários, incluindo:
+A suíte usa `node:test` e cobre atualmente 92 cenários, incluindo:
 
 - datas, ciclo, janela fértil, gestação e pós-parto;
 - cálculo entre DUM e DPP;
@@ -286,11 +305,16 @@ A suíte usa `node:test` e cobre atualmente 76 cenários, incluindo:
 - opção Registrar Relação para Tentantes e preservação dos dados do dia;
 - coração acessível no calendário;
 - limiares e deduplicação das pequenas conquistas;
+- notificações de conquistas contextualizadas por fase e privacidade das relações;
 - registro do nascimento e mudança para o Florescer Baby;
 - status individual dos bebês, atualização sem duplicidade e validação das medidas;
+- evolução de peso, altura e perímetro cefálico separada por bebê;
 - eventos de vacina e consulta no calendário pós-parto;
 - mensagens de lembrete para o dia anterior às vacinas e consultas;
 - tempo, lado, extração e estoque dos registros de amamentação;
+- urina, fezes e frequência diária das trocas de fralda;
+- totais, médias e dicas contextuais dos registros de sono;
+- histórico, calendário e lembretes das vacinas dos bebês;
 - sintomas, medicamentos, alergias, internações, consultas e exames dos bebês;
 - categorias por fase, recorrências e notificações da agenda inteligente;
 - missões diárias, mensagens de boas-vindas e conteúdo dos registros.

@@ -4,6 +4,7 @@ import {
   HOME_SHORTCUT_DEFAULTS,
   featureDescription,
   featureLabel,
+  featureTarget,
   featuresFor,
   groupFeatures,
   normalizeHomeShortcutIds,
@@ -94,7 +95,7 @@ function resourceGroup(group, phase, customizing, selected, open) {
 
 function resourceLink(item, phase) {
   const tone = FEATURE_TONES[item.tone] || FEATURE_TONES.rose;
-  return `<button class="item" data-nav="${esc(item.to)}">
+  return `<button class="item" data-nav="${esc(featureTarget(item, phase))}">
     <span class="item__ico" style="background:${tone.bg};color:${tone.fg}">${icon(item.icon, 20)}</span>
     <span class="item__body"><b>${esc(featureLabel(item, phase))}</b><span>${esc(featureDescription(item, phase))}</span></span>
     <span class="item__end">${icon('chevron', 17)}</span>
