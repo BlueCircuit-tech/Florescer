@@ -4,18 +4,17 @@
  */
 import { getState, update } from '../store.js';
 import { icon } from '../icons.js';
-import { esc, cycleRing, toast, sectionHead } from '../ui.js';
+import { esc, cycleRing, toast, openSheet } from '../ui.js';
 import { navigate } from '../router.js';
 import {
-  cycleInfo, pregnancyInfo, postpartumInfo, streak, PHASES,
+  cycleInfo, pregnancyInfo, postpartumInfo, PHASES,
   today, toKey, fmtShort, relativeDay, plural, fmtFull,
 } from '../cycle.js';
 import { tipOfDay, categoryLabel } from '../content.js';
 import * as cms from '../cms.js';
-import { postCard, bindPostActions, visiblePosts } from './community.js';
 import { isUnlocked } from './admin.js';
-import { missionProgress } from '../missions.js';
 import { babyNamesFromProfile, formatBabyNames, postpartumGreeting } from '../babies.js';
+import { FEATURE_TONES, featureLabel, resolveHomeShortcuts } from '../features.js';
 
 let tipOffset = 0;
 
@@ -202,15 +201,9 @@ export default {
     const info = cycleInfo(state);
     const preg = pregnancyInfo(state);
     const pp = postpartumInfo(state);
-    const st = streak(state);
     const phase = state.profile.phase;
     const firstName = (state.profile.name || 'flor').split(' ')[0];
     const todayKey = toKey(today());
-    const loggedToday = !!state.logs[todayKey];
-    const symptomLog = state.logs[todayKey] || {};
-    const symptomsLoggedToday = !!symptomLog.symptoms?.length || symptomLog.systolicPressure != null ||
-      symptomLog.weight != null || symptomLog.glucose != null || !!symptomLog.symptomNotes;
-    const missions = missionProgress(state, todayKey);
     const tip = tipOfDay(state, info, todayKey, tipOffset, cms.getTips());
 
     const hero = phase === 'gravida' ? heroGravida(state, preg)
@@ -226,16 +219,7 @@ export default {
       : phase === 'gravida' && preg.known ? `${preg.weeks} semanas e ${preg.days} dias`
         : phase === 'posparto' && pp.known ? `Hoje você completa ${pp.age}` : 'Bem-vinda ao Florescer';
 
-    const shortcuts = [
-      ['calendar', 'Calendário', 'ciclo', 'var(--rose-50)', 'var(--rose-700)'],
-      phase === 'posparto'
-        ? ['shield', 'Vacinas', 'vacinas-bebe', 'var(--lilac-50)', 'var(--lilac-600)']
-        : ['note', phase === 'gravida' ? 'Diário' : 'Registrar', 'registro', 'var(--lilac-50)', 'var(--lilac-600)'],
-      ['chart', 'Relatórios', phase === 'posparto' ? 'crescimento-bebe' : 'relatorios', 'var(--leaf-50)', 'var(--leaf-600)'],
-      ['book', 'Biblioteca', 'biblioteca', 'var(--amber-50)', 'var(--amber-600)'],
-    ];
-
-    const feed = visiblePosts(state).slice(0, 1).map((p) => postCard(p, state)).join('');
+    const shortcuts = resolveHomeShortcuts(state.settings, phase);
 
     return {
       appbar: null,
@@ -247,9 +231,14 @@ export default {
               <span>${esc(hello)}</span>
               <b>${esc(sub)}</b>
             </div>
-            <button class="iconbtn iconbtn--onbrand" data-nav="lembretes" aria-label="Lembretes" style="position:relative">
-              ${icon('bell', 20)}${state.settings.notifications.fertile ? '<i class="iconbtn__dot"></i>' : ''}
-            </button>
+            <div class="hero__actions">
+              <button class="iconbtn iconbtn--onbrand" data-nav="lembretes" aria-label="Lembretes" style="position:relative">
+                ${icon('bell', 20)}${state.settings.notifications.fertile ? '<i class="iconbtn__dot"></i>' : ''}
+              </button>
+              <button class="iconbtn iconbtn--onbrand" data-nav="missoes" aria-label="Missões diárias">
+                ${icon('flag', 20)}
+              </button>
+            </div>
           </div>
           ${hero}
         </header>
@@ -274,52 +263,16 @@ export default {
             </div>
           </article>
 
-          <div class="section__head" style="padding:0"><h2>Seus atalhos</h2></div>
+          <div class="section__head" style="padding:0"><h2>Seus atalhos</h2><button class="link" data-nav="recursos?modo=atalhos">Personalizar</button></div>
             <div class="shortcuts">
-              ${shortcuts.map(([ic, label, to, bg, fg]) => `
-                <button class="shortcut" data-nav="${to}">
-                  <span class="shortcut__ico" style="background:${bg};color:${fg}">${icon(ic, 19)}</span>${label}
-                </button>`).join('')}
+              ${shortcuts.map((item) => {
+                const tone = FEATURE_TONES[item.tone] || FEATURE_TONES.rose;
+                return `<button class="shortcut" data-nav="${item.to}">
+                  <span class="shortcut__ico" style="background:${tone.bg};color:${tone.fg}">${icon(item.icon, 19)}</span>${esc(featureLabel(item, phase, 'home'))}
+                </button>`;
+              }).join('')}
             </div>
-
-          <button class="card card--link mt-16" data-nav="missoes">
-            <span class="floatcard__ico" style="background:${missions.done ? 'var(--leaf-50)' : 'var(--amber-50)'};color:${missions.done ? 'var(--leaf-600)' : 'var(--amber-600)'}">
-              ${icon(missions.done ? 'crown' : 'flag', 22)}
-            </span>
-            <span class="grow" style="text-align:left">
-              <b style="display:block;font-size:var(--fs-14)">Missões Diárias</b>
-              <span class="fs-12 muted" style="display:block;margin-top:3px;line-height:1.45">${missions.done ? 'Todas concluídas — parabéns! 🎉' : `${missions.count} de ${missions.total} concluídas · ${missions.remaining} pendentes`}</span>
-              <span class="homeprogress"><i style="width:${missions.count / missions.total * 100}%"></i></span>
-            </span>
-            <span style="color:var(--faint);flex:none">${icon('chevron', 18)}</span>
-          </button>
-
-          <button class="card card--link mt-16" data-nav="registro">
-            <span class="floatcard__ico" style="background:${loggedToday ? 'var(--leaf-50)' : 'var(--amber-50)'};color:${loggedToday ? 'var(--leaf-600)' : 'var(--amber-600)'}">
-              ${icon(loggedToday ? 'check' : 'note', 22)}
-            </span>
-            <span class="grow" style="text-align:left">
-              <b style="display:block;font-size:var(--fs-14)">${phase === 'gravida' || phase === 'posparto' ? 'Diário da Mamãe' : loggedToday ? 'Dia registrado 🌸' : 'Como você está hoje?'}</b>
-              <span class="fs-12 muted" style="display:block;margin-top:3px;line-height:1.45">${phase === 'gravida' ? (loggedToday ? 'Seu registro de hoje está guardado 🌸' : 'Humor, emoções, sintomas, memórias e gratidão') : phase === 'posparto' ? (loggedToday ? 'Seu registro de hoje está guardado 🌸' : 'Emoções, conquistas, gratidão e observações') : st.current > 0 ? `Sequência de ${plural(st.current, 'dia', 'dias')} · recorde ${st.best}` : 'Humor, sintomas e fertilidade em 30 segundos'}</span>
-            </span>
-            <span style="color:var(--faint);flex:none">${icon('chevron', 18)}</span>
-          </button>
-
-          <button class="card card--link mt-8" data-nav="registro?s=sintomas">
-            <span class="floatcard__ico" style="background:${symptomsLoggedToday ? 'var(--leaf-50)' : 'var(--rose-50)'};color:${symptomsLoggedToday ? 'var(--leaf-600)' : 'var(--rose-700)'}">
-              ${icon(symptomsLoggedToday ? 'check' : 'thermometer', 22)}
-            </span>
-            <span class="grow" style="text-align:left">
-              <b style="display:block;font-size:var(--fs-14)">Controle de Sintomas</b>
-              <span class="fs-12 muted" style="display:block;margin-top:3px;line-height:1.45">${symptomsLoggedToday ? 'Sintomas ou medições registrados hoje' : 'Sintomas, pressão arterial, peso e glicemia'}</span>
-            </span>
-            <span style="color:var(--faint);flex:none">${icon('chevron', 18)}</span>
-          </button>
-
-          
-
-          ${sectionHead('Comunidade agora', { label: 'Ver tudo', to: 'comunidade' })}
-          ${feed}
+          <button class="link center" style="width:100%;margin-top:12px" data-nav="recursos">Ver todos os recursos</button>
 
           ${isUnlocked() ? `
             <button class="card card--link mt-8" data-nav="admin">
@@ -331,10 +284,12 @@ export default {
               <span style="color:var(--faint);flex:none">${icon('chevron', 18)}</span>
             </button>` : ''}
 
-          ${state.premium ? '' : `
-            <button class="btn btn--lilac mt-8" data-nav="premium">
-              ${icon('crown', 19)} Conhecer o Florescer Premium
-            </button>`}
+          <button class="btn btn--lilac mt-8" data-nav="premium">
+            ${icon('crown', 19)} ${state.premium ? 'Gerenciar Florescer Premium' : 'Conhecer o Florescer Premium'}
+          </button>
+          <button class="btn btn--soft mt-8" data-tempo-de-deus>
+            ${icon('book', 19)} Florescer no Tempo de Deus
+          </button>
 
           <p class="center fs-11 faint mt-16" style="line-height:1.6">
             As previsões são estimativas com base nos seus registros.<br>O Florescer não substitui acompanhamento médico.
@@ -342,6 +297,16 @@ export default {
         </div>`,
 
       mount(root) {
+        root.querySelector('[data-tempo-de-deus]').onclick = () => openSheet({
+          title: 'Florescer no Tempo de Deus',
+          subtitle: 'Cuidado para a sua jornada de maternidade',
+          body: `<div class="card diaryintro">
+              <span class="floatcard__ico">${icon('heart', 22)}</span>
+              <div><b>Um curso completo para você</b><p>Acolhimento emocional e cuidado físico para viver cada etapa da maternidade com mais consciência, equilíbrio e confiança.</p></div>
+            </div>
+            <div class="note mt-16">${icon('sparkle', 17)}<span>Conteúdo pensado para apoiar a mulher em suas emoções, em seu corpo e nos desafios reais dessa jornada.</span></div>
+            <a class="btn mt-16" href="https://payfast.greenn.com.br/zgk8dm5" target="_blank" rel="noopener noreferrer">${icon('heart', 19)} Quero conhecer o curso</a>`,
+        });
         const saveBtn = root.querySelector('[data-savetip]');
         const syncSave = (txt) => {
           const on = getState().savedTips.includes(txt);
@@ -367,7 +332,6 @@ export default {
           syncSave(t.txt);
           toast(getState().savedTips.includes(t.txt) ? 'Sugestão salva nas suas favoritas 💛' : 'Removida das favoritas');
         });
-        bindPostActions(root);
       },
     };
   },

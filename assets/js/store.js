@@ -3,9 +3,10 @@
  * Tudo fica no aparelho da usuária: nenhum dado sai daqui.
  */
 import { achievementStats, unlockAchievements } from './achievements.js';
+import { normalizeAllHomeShortcuts } from './features.js';
 
 const KEY = 'florescer:v1';
-const SCHEMA = 1;
+const SCHEMA = 2;
 
 export const DEFAULTS = () => ({
   schema: SCHEMA,
@@ -47,6 +48,7 @@ export const DEFAULTS = () => ({
     },
     tipsOptIn: true,
     analytics: false,
+    homeShortcuts: normalizeAllHomeShortcuts(),
   },
   logs: {},                     // 'YYYY-MM-DD' -> registro do dia
   pregnancyTests: [],           // testes de gravidez registrados pela tentante
@@ -80,7 +82,12 @@ function load() {
     const raw = localStorage.getItem(KEY);
     if (!raw) return DEFAULTS();
     const parsed = JSON.parse(raw);
-    return migrate(deepMerge(DEFAULTS(), parsed));
+    const migrated = migrate(deepMerge(DEFAULTS(), parsed));
+    if ((Number(parsed.schema) || 0) < SCHEMA) {
+      try { localStorage.setItem(KEY, JSON.stringify(migrated)); }
+      catch (err) { console.warn('[florescer] não foi possível persistir a migração:', err); }
+    }
+    return migrated;
   } catch (err) {
     console.warn('[florescer] não foi possível ler os dados salvos:', err);
     return DEFAULTS();
@@ -88,7 +95,7 @@ function load() {
 }
 
 function migrate(s) {
-  // ponto de extensão para versões futuras do schema
+  s.settings.homeShortcuts = normalizeAllHomeShortcuts(s.settings.homeShortcuts);
   s.schema = SCHEMA;
   return s;
 }
