@@ -73,6 +73,10 @@ self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(VERSION)
       .then((cache) => cache.addAll(SHELL))
+      .catch((error) => {
+        console.error('[SW] Falha ao pré-cachear SHELL no install:', error);
+        throw error;
+      })
       .then(() => self.skipWaiting()),
   );
 });
