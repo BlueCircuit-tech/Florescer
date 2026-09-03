@@ -515,7 +515,7 @@ function moderationScreen() {
           <div class="item">
             <span class="post__av" style="width:38px;height:38px;font-size:17px">${p.avatar}</span>
             <span class="item__body">
-              <b style="font-weight:600">${esc(p.author)}</b>
+              <b style="font-weight:600">${esc(p.author)} · ${esc(PHASE_LABELS[p.phase]?.label || 'Sem comunidade')}</b>
               <span>${esc(p.text.slice(0, 70))}${p.text.length > 70 ? '…' : ''}</span>
             </span>
             <span class="item__end">

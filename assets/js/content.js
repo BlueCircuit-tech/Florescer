@@ -384,6 +384,27 @@ export const SEED_POSTS = [
     text: 'Ciclo 7 acompanhando aqui. Ainda sem positivo, mas hoje quero registrar outra coisa: aprendi a não me culpar. Isso também é avanço.',
     likes: 121, comments: [],
   },
+  {
+    id: 'p6', author: 'Marina C.', avatar: '🤰', phase: 'gravida', hoursAgo: 6,
+    text: 'Hoje ouvi o coração do meu bebê e ainda estou tentando colocar em palavras o que senti. Foi uma mistura linda de alívio, amor e gratidão. Como foi esse momento para vocês?',
+    likes: 174,
+    comments: [
+      { author: 'Bianca T.', avatar: '🌷', text: 'Também chorei muito! Parece que naquele instante tudo fica mais real. 💛', hoursAgo: 4.5 },
+    ],
+  },
+  {
+    id: 'p7', author: 'Bianca T.', avatar: '🌷', phase: 'gravida', hoursAgo: 12,
+    text: 'Estou no segundo trimestre e tenho vivido dias de muita energia e outros de puro cansaço. Estou aprendendo a respeitar o meu ritmo sem culpa.',
+    likes: 97, comments: [],
+  },
+  {
+    id: 'p8', author: 'Nath S.', avatar: '🌼', phase: 'gravida', hoursAgo: 20,
+    text: 'Alguém mais fica ansiosa antes das consultas? O que tem ajudado vocês a chegar mais tranquilas e lembrar das perguntas que querem fazer?',
+    likes: 68,
+    comments: [
+      { author: 'Marina C.', avatar: '🤰', text: 'Eu anoto tudo durante a semana e levo a lista no celular. Tem me ajudado bastante.', hoursAgo: 18 },
+    ],
+  },
 ];
 
 export const COMMUNITY_RULES = [

@@ -70,7 +70,15 @@ export const FEATURES = [
   feature('missions', ALL_PHASES, 'daily', 'missoes', 'flag', 'Missões diárias', 'Pequenos cuidados para manter uma rotina possível.', ['home', 'resources'], 'amber'),
   feature('tips', ALL_PHASES, 'content', 'dicas', 'sparkle', 'Sugestões', 'Orientações curtas escolhidas para a sua fase.', ['resources'], 'rose'),
   feature('library', ALL_PHASES, 'content', 'biblioteca', 'book', 'Biblioteca', 'Artigos para acompanhar cada etapa da jornada.', ['home', 'resources'], 'amber'),
-  feature('community', ALL_PHASES, 'content', 'comunidade', 'users', 'Comunidade', 'Troque experiências com outras mulheres.', ['home', 'resources'], 'lilac'),
+  feature('community', ALL_PHASES, 'content', {
+    tentante: 'comunidade/tentantes', gravida: 'comunidade/gestantes', posparto: 'comunidade/pos-parto',
+  }, 'users', {
+    tentante: 'Comunidade Tentantes', gravida: 'Comunidade Gestantes', posparto: 'Comunidade Pós-parto',
+  }, {
+    tentante: 'Troque experiências com outras mulheres que estão tentando.',
+    gravida: 'Relatos, dúvidas e trocas exclusivas entre gestantes.',
+    posparto: 'Maternidade real, apoio e experiências do pós-parto.',
+  }, ['home', 'resources'], 'lilac'),
   feature('premium', ALL_PHASES, 'content', 'premium', 'crown', 'Florescer Premium', 'Conheça conteúdos e recursos exclusivos.', ['resources'], 'lilac'),
 ];
 
@@ -101,6 +109,10 @@ export function featureLabel(item, phase, surface = 'resources') {
 
 export function featureDescription(item, phase, surface = 'resources') {
   return phaseValue(surface === 'add' && item.addDescription ? item.addDescription : item.description, phase) || '';
+}
+
+export function featureTarget(item, phase) {
+  return phaseValue(item.to, phase) || '';
 }
 
 export function featuresFor(phase, surface) {

@@ -14,7 +14,7 @@ import { tipOfDay, categoryLabel } from '../content.js';
 import * as cms from '../cms.js';
 import { isUnlocked } from './admin.js';
 import { babyNamesFromProfile, formatBabyNames, postpartumGreeting } from '../babies.js';
-import { FEATURE_TONES, featureLabel, resolveHomeShortcuts } from '../features.js';
+import { FEATURE_TONES, featureLabel, featureTarget, resolveHomeShortcuts } from '../features.js';
 
 let tipOffset = 0;
 
@@ -267,7 +267,7 @@ export default {
             <div class="shortcuts">
               ${shortcuts.map((item) => {
                 const tone = FEATURE_TONES[item.tone] || FEATURE_TONES.rose;
-                return `<button class="shortcut" data-nav="${item.to}">
+                return `<button class="shortcut" data-nav="${featureTarget(item, phase)}">
                   <span class="shortcut__ico" style="background:${tone.bg};color:${tone.fg}">${icon(item.icon, 19)}</span>${esc(featureLabel(item, phase, 'home'))}
                 </button>`;
               }).join('')}
