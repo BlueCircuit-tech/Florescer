@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import { pregnancyCountdown, pregnancyWeekGuide, validateSymptomMeasurements } from '../assets/js/pregnancy.js';
+import { pregnancyBabyWeek, pregnancyCountdown, pregnancyWeekGuide, validateSymptomMeasurements } from '../assets/js/pregnancy.js';
 
 test('monta a contagem regressiva com a quantidade exata de dias', () => {
   assert.equal(pregnancyCountdown(66), 'Faltam 66 dias para você conhecer o amor da sua vida!');
@@ -37,6 +37,22 @@ test('apresenta desenvolvimento, mudanças maternas e dica', () => {
   assert.ok(guide.tip.length > 30);
 });
 
+test('detalha sintomas, hormônios e desenvolvimento da barriga por etapa', () => {
+  const inicio = pregnancyWeekGuide(8);
+  const meio = pregnancyWeekGuide(20);
+  const final = pregnancyWeekGuide(38);
+
+  for (const guide of [inicio, meio, final]) {
+    assert.ok(guide.symptoms.length > 40);
+    assert.ok(guide.hormones.length > 40);
+    assert.ok(guide.belly.length > 40);
+  }
+  assert.match(inicio.hormones, /hCG/i);
+  assert.match(meio.belly, /umbigo/i);
+  assert.match(final.belly, /mais baixa/i);
+  assert.notEqual(inicio.symptoms, final.symptoms);
+});
+
 test('indica o acompanhamento correspondente à idade gestacional', () => {
   assert.match(pregnancyWeekGuide(12).nextExam.name, /1º trimestre/);
   assert.match(pregnancyWeekGuide(20).nextExam.name, /morfológico do 2º trimestre/);
@@ -46,6 +62,21 @@ test('indica o acompanhamento correspondente à idade gestacional', () => {
 test('limita a referência de crescimento entre as semanas 4 e 40', () => {
   assert.equal(pregnancyWeekGuide(2).week, 4);
   assert.equal(pregnancyWeekGuide(43).week, 40);
+});
+
+test('oferece desenvolvimento próprio para cada semana de 1 a 40', () => {
+  const weeks = Array.from({ length: 40 }, (_, index) => pregnancyBabyWeek(index + 1));
+
+  assert.equal(new Set(weeks.map((week) => week.title)).size, 40);
+  for (const week of weeks) {
+    assert.ok(week.growth.length > 30, week.week);
+    assert.ok(week.organs.length > 40, week.week);
+    assert.ok(week.ability.length > 30, week.week);
+    assert.ok(week.curiosity.length > 30, week.week);
+  }
+  assert.match(weeks[0].organs, /Ainda não existe embrião/);
+  assert.match(weeks[2].title, /Fecundação/);
+  assert.match(weeks[39].curiosity, /data provável/i);
 });
 
 test('valida as medições do controle de sintomas', () => {

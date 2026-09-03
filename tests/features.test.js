@@ -65,3 +65,12 @@ test('recurso de biblioteca resolve nome e rota conforme a fase', () => {
   assert.equal(featureTarget(library, 'tentante'), 'biblioteca/tentantes');
   assert.equal(featureTarget(library, 'posparto'), 'biblioteca/pos-parto');
 });
+
+test('alimentação do bebê é exclusiva do pós-parto', () => {
+  const feeding = FEATURES.find((item) => item.id === 'baby-feeding');
+  assert.ok(feeding);
+  assert.equal(featureTarget(feeding, 'posparto'), 'alimentacao-bebe');
+  assert.equal(featuresFor('posparto', 'resources').includes(feeding), true);
+  assert.equal(featuresFor('posparto', 'home').includes(feeding), true);
+  assert.equal(featuresFor('gravida', 'resources').includes(feeding), false);
+});
