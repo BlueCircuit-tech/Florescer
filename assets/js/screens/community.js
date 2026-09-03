@@ -120,13 +120,18 @@ export function bindPostActions(root, onChange) {
     b.onclick = async () => {
       const ok = await confirmSheet({ title: 'Excluir publicação?', message: 'Ela sai da comunidade e não pode ser recuperada.', confirmLabel: 'Excluir', danger: true });
       if (!ok) return;
+      let deleted = false;
       update((s) => {
         const post = findAccessiblePost(s, b.dataset.del);
         if (!post?.mine) return;
-        s.posts = s.posts.filter((p) => p.id !== b.dataset.del);
+        const nextPosts = s.posts.filter((p) => p.id !== b.dataset.del);
+        if (nextPosts.length === s.posts.length) return;
+        s.posts = nextPosts;
         delete s.postState[b.dataset.del];
         s.hiddenPosts = (s.hiddenPosts || []).filter((id) => id !== b.dataset.del);
+        deleted = true;
       });
+      if (!deleted) return;
       toast('Publicação excluída.');
       onChange ? onChange() : navigate(communityPath(getState().profile.phase));
     };
