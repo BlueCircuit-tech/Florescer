@@ -19,6 +19,7 @@ import {
 import { navigate } from '../router.js';
 import * as cms from '../cms.js';
 import { TIP_CATEGORIES, CYCLE_PHASE_OPTIONS, PHASE_LABELS } from '../content.js';
+import { LIBRARY_TOPICS } from '../libraries.js';
 import { allPosts } from './community.js';
 import { fmtLong } from '../cycle.js';
 
@@ -54,6 +55,7 @@ const uid = () => `c${Date.now().toString(36)}${Math.floor(performance.now() % 1
 
 const PHASE_OPTIONS = Object.entries(PHASE_LABELS).map(([id, m]) => [id, `${m.emoji} ${m.label}`]);
 const CAT_OPTIONS = Object.entries(TIP_CATEGORIES).map(([id, c]) => [id, c.label]);
+const ARTICLE_TOPIC_OPTIONS = LIBRARY_TOPICS.map((topic) => [topic.id, topic.label]);
 
 /** Corpo do artigo <-> texto simples, para edição confortável. */
 function bodyToText(body = []) {
@@ -100,13 +102,14 @@ const COLLECTIONS = {
     label: (a) => a.title,
     sub: (a) => `${a.cat} · ${a.time} min${a.premium ? ' · Premium' : ''}`,
     blank: () => ({
-      id: uid(), cat: 'Ciclo', title: '', excerpt: '', icon: 'book',
+      id: uid(), cat: 'Ciclo', topic: 'cycle', title: '', excerpt: '', icon: 'book',
       grad: 'var(--grad-rose)', time: 5, premium: false, phases: ['tentante'], body: [],
     }),
     fields: [
       { k: 'title', label: 'Título', type: 'text', required: true },
       { k: 'excerpt', label: 'Resumo (aparece na lista)', type: 'textarea', rows: 2, required: true },
       { k: 'cat', label: 'Categoria', type: 'text', required: true },
+      { k: 'topic', label: 'Tema da biblioteca', type: 'select', options: ARTICLE_TOPIC_OPTIONS, required: true },
       { k: 'time', label: 'Minutos de leitura', type: 'number', min: 1, max: 60 },
       { k: 'premium', label: 'Conteúdo exclusivo do Premium', type: 'bool' },
       { k: 'phases', label: 'Aparece para', type: 'multi', options: PHASE_OPTIONS, required: true },

@@ -7,6 +7,15 @@ import { esc, toast, emptyState, haptic, note, hscrollSection, bindHscroll } fro
 import { navigate } from '../router.js';
 import { cycleInfo, PHASES, toKey, today, plural } from '../cycle.js';
 import { tipsByCategory, TIP_CATEGORIES, categoryLabel, PHASE_LABELS } from '../content.js';
+import {
+  articleTopic,
+  articlesForLibrary,
+  articlesForPhase,
+  canAccessArticle,
+  libraryForPhase,
+  libraryPath,
+  topicsForPhase,
+} from '../libraries.js';
 import * as cms from '../cms.js';
 
 const rerender = () => import('../router.js').then((m) => m.render());
@@ -59,7 +68,7 @@ export default {
         <div class="section pb-24">
           ${note('As sugestões são geradas no seu aparelho a partir da sua fase e dos seus registros. São educativas e não substituem orientação profissional.')}
           ${state.premium ? '' : `<button class="btn btn--lilac mt-16" data-nav="premium">${icon('crown', 19)} Sugestões ilimitadas no Premium</button>`}
-          <button class="btn btn--soft mt-8" data-nav="biblioteca">${icon('book', 19)} Ver a biblioteca completa</button>
+          <button class="btn btn--soft mt-8" data-nav="${libraryPath(state.profile.phase)}">${icon('book', 19)} Ver a biblioteca completa</button>
         </div>`,
       mount(root) {
         bindHscroll(root);
@@ -81,45 +90,72 @@ export default {
 };
 
 /* ---------- tela: biblioteca ---------- */
-let libFilter = 'todos';
-
 export const libraryScreen = {
   id: 'biblioteca',
   tab: 'dicas',
-  render() {
+  render(route) {
     const state = getState();
-    const cats = ['todos', ...new Set(cms.getArticles().map((a) => a.cat))];
-    const list = cms.getArticles()
-      .filter((a) => libFilter === 'todos' || a.cat === libFilter)
-      .sort((a, b) => Number(b.phases.includes(state.profile.phase)) - Number(a.phases.includes(state.profile.phase)));
+    const phase = state.profile.phase;
+    const library = libraryForPhase(phase);
+    const articles = cms.getArticles();
+    const available = articlesForPhase(articles, phase);
+    const topics = topicsForPhase(phase);
+    const requestedTopic = route.params.tema || 'todos';
+    const selectedTopic = topics.some((topic) => topic.id === requestedTopic) ? requestedTopic : 'todos';
+    const list = articlesForLibrary(articles, phase, selectedTopic);
+    const selectedLabel = topics.find((topic) => topic.id === selectedTopic)?.label;
+    const needsCanonicalRoute = route.arg !== library.slug || requestedTopic !== selectedTopic;
 
     return {
-      appbar: { title: 'Biblioteca', sub: `${cms.getArticles().length} conteúdos`, actions: [{ icon: 'bookmark', label: 'Salvos', to: 'salvos' }] },
+      appbar: { title: library.title, sub: `${available.length} conteúdos`, actions: [{ icon: 'bookmark', label: 'Salvos', to: 'salvos' }] },
       html: `
-        <div class="chiprow">
-          ${cats.map((c) => `<button class="chip" data-cat="${esc(c)}" aria-pressed="${libFilter === c}">${c === 'todos' ? 'Todos' : esc(c)}</button>`).join('')}
+        <div class="section">
+          <div class="library-intro library-intro--${phase}">
+            <span class="library-intro__ico">${icon(phase === 'gravida' ? 'pregnant' : phase === 'posparto' ? 'baby' : 'seed', 25)}</span>
+            <div><p class="eyebrow">Conteúdo para a sua fase</p><p>${esc(library.description)}</p></div>
+          </div>
+          <div class="section__head" style="padding:0"><h2>Explore por tema</h2></div>
+          <button class="library-all" data-topic="todos" aria-pressed="${selectedTopic === 'todos'}">
+            <span>${icon('book', 18)} Todos os conteúdos</span><b>${available.length}</b>
+          </button>
+          <div class="library-topics">
+            ${topics.map((topic) => {
+              const count = articlesForLibrary(articles, phase, topic.id).length;
+              return `<button class="library-topic" data-topic="${topic.id}" aria-pressed="${selectedTopic === topic.id}">
+                <span class="library-topic__ico">${icon(topic.icon, 19)}</span>
+                <span><b>${esc(topic.label)}</b><small>${plural(count, 'conteúdo', 'conteúdos')}</small></span>
+              </button>`;
+            }).join('')}
+          </div>
         </div>
         <div class="section pb-24">
+          <div class="section__head" style="padding:0"><h2>${esc(selectedLabel || 'Todos os conteúdos')}</h2><span>${list.length}</span></div>
           <div class="itemlist card card--flush">
-            ${list.map((a) => {
+            ${list.length ? list.map((a) => {
               const locked = a.premium && !state.premium;
               const read = state.readArticles.includes(a.id);
+              const topic = articleTopic(a);
               return `<button class="item" data-nav="artigo/${a.id}">
                 <span class="item__ico" style="background:${locked ? 'var(--lilac-50)' : 'var(--accent-tint)'};color:${locked ? 'var(--lilac-600)' : 'var(--accent-strong)'}">
                   ${icon(locked ? 'lock' : a.icon, 19)}
                 </span>
                 <span class="item__body">
                   <b>${esc(a.title)}</b>
-                  <span>${esc(a.cat)} · ${a.time} min${read ? ' · lido' : ''}${locked ? ' · Premium' : ''}</span>
+                  <span>${esc(topic?.label || a.cat)} · ${a.time} min${read ? ' · lido' : ''}${locked ? ' · Premium' : ''}</span>
                 </span>
                 <span class="item__end">${icon('chevron', 16)}</span>
               </button>`;
-            }).join('')}
+            }).join('') : `<div class="library-empty">${icon('book', 24)}<b>Conteúdo em preparação</b><span>Novos materiais deste tema serão publicados aqui.</span></div>`}
           </div>
+          ${note('Os artigos são educativos e não substituem o acompanhamento individual com profissionais de saúde.')}
         </div>`,
       mount(root) {
-        root.querySelectorAll('[data-cat]').forEach((b) => {
-          b.onclick = () => { libFilter = b.dataset.cat; rerender(); };
+        if (needsCanonicalRoute) {
+          navigate(libraryPath(phase, selectedTopic === 'todos' ? '' : selectedTopic), { replace: true });
+          return;
+        }
+        root.querySelectorAll('[data-topic]').forEach((b) => {
+          b.onclick = () => navigate(libraryPath(phase, b.dataset.topic === 'todos' ? '' : b.dataset.topic));
         });
       },
     };
@@ -133,7 +169,13 @@ export const articleScreen = {
   render(route) {
     const state = getState();
     const a = cms.getArticles().find((x) => x.id === route.arg);
-    if (!a) return { appbar: { title: 'Conteúdo' }, html: emptyState('book', 'Conteúdo não encontrado', 'Ele pode ter sido movido.', { label: 'Ver biblioteca', to: 'biblioteca' }) };
+    if (!a) return { appbar: { title: 'Conteúdo' }, html: emptyState('book', 'Conteúdo não encontrado', 'Ele pode ter sido movido.', { label: 'Ver biblioteca', to: libraryPath(state.profile.phase) }) };
+    if (!canAccessArticle(a, state.profile.phase)) {
+      return {
+        appbar: { title: 'Conteúdo indisponível' },
+        html: emptyState('book', 'Este conteúdo pertence a outra fase', 'Sua biblioteca mostra apenas orientações adequadas ao momento atual.', { label: 'Ver minha biblioteca', to: libraryPath(state.profile.phase) }),
+      };
+    }
 
     const locked = a.premium && !state.premium;
     if (!locked && !state.readArticles.includes(a.id)) update((s) => { s.readArticles.push(a.id); }, { silent: true });
@@ -155,7 +197,7 @@ export const articleScreen = {
       }).join('');
 
     return {
-      appbar: { title: a.cat, actions: [{ icon: 'bookmark', label: saved ? 'Remover dos salvos' : 'Salvar', action: 'save' }] },
+      appbar: { title: articleTopic(a)?.label || a.cat, actions: [{ icon: 'bookmark', label: saved ? 'Remover dos salvos' : 'Salvar', action: 'save' }] },
       html: `<div class="section article pb-24">
         <div class="article__hero" style="background:${a.grad}">${icon(a.icon, 46)}</div>
         <h1>${esc(a.title)}</h1>
@@ -187,7 +229,7 @@ export const savedScreen = {
   tab: 'dicas',
   render() {
     const state = getState();
-    const arts = cms.getArticles().filter((a) => state.savedArticles.includes(a.id));
+    const arts = articlesForPhase(cms.getArticles(), state.profile.phase).filter((a) => state.savedArticles.includes(a.id));
     const tips = state.savedTips;
     const vazio = !arts.length && !tips.length;
 

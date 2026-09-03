@@ -2,7 +2,7 @@ export const COMMUNITIES = {
   tentante: {
     slug: 'tentantes',
     title: 'Comunidade Tentantes',
-    shortLabel: 'Tentantes',
+    shortLabel: 'Comunidade',
     eyebrow: 'Um espaço para quem está tentando',
     description: 'Compartilhe dúvidas, descobertas, expectativas e acolhimento durante a jornada para engravidar.',
     prompt: 'Conte uma vitória, uma dúvida ou como você está vivendo esta jornada...',
@@ -11,7 +11,7 @@ export const COMMUNITIES = {
   gravida: {
     slug: 'gestantes',
     title: 'Comunidade Gestantes',
-    shortLabel: 'Gestantes',
+    shortLabel: 'Comunidade',
     eyebrow: 'Entre gestantes, com acolhimento',
     description: 'Um espaço exclusivo para contar o que você está vivendo, trocar informações e caminhar junto com outras gestantes.',
     prompt: 'Como você está vivendo esta gestação? Compartilhe uma descoberta, uma dúvida ou um desabafo...',
@@ -20,7 +20,7 @@ export const COMMUNITIES = {
   posparto: {
     slug: 'pos-parto',
     title: 'Comunidade Pós-parto',
-    shortLabel: 'Pós-parto',
+    shortLabel: 'Comunidade',
     eyebrow: 'Maternidade real, sem julgamentos',
     description: 'Troque experiências sobre recuperação, rotina, rede de apoio e os primeiros cuidados com o bebê.',
     prompt: 'Conte como estão os seus dias, uma descoberta ou uma dúvida desta fase...',

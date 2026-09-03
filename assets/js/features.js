@@ -69,7 +69,11 @@ export const FEATURES = [
   feature('reminders', ALL_PHASES, 'planning', 'lembretes', 'bell', 'Lembretes', 'Escolha quais avisos deseja receber e quando.', ['resources'], 'amber'),
   feature('missions', ALL_PHASES, 'daily', 'missoes', 'flag', 'Missões diárias', 'Pequenos cuidados para manter uma rotina possível.', ['home', 'resources'], 'amber'),
   feature('tips', ALL_PHASES, 'content', 'dicas', 'sparkle', 'Sugestões', 'Orientações curtas escolhidas para a sua fase.', ['resources'], 'rose'),
-  feature('library', ALL_PHASES, 'content', 'biblioteca', 'book', 'Biblioteca', 'Artigos para acompanhar cada etapa da jornada.', ['home', 'resources'], 'amber'),
+  feature('library', ALL_PHASES, 'content', {
+    tentante: 'biblioteca/tentantes', gravida: 'biblioteca/gestantes', posparto: 'biblioteca/pos-parto',
+  }, 'book', {
+    tentante: 'Biblioteca Tentantes', gravida: 'Biblioteca da Gestante', posparto: 'Biblioteca Pós-parto',
+  }, 'Artigos selecionados para acompanhar a sua fase.', ['home', 'resources'], 'amber'),
   feature('community', ALL_PHASES, 'content', {
     tentante: 'comunidade/tentantes', gravida: 'comunidade/gestantes', posparto: 'comunidade/pos-parto',
   }, 'users', {

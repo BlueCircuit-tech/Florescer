@@ -33,6 +33,7 @@ const SHELL = [
   './assets/js/features.js',
   './assets/js/communities.js',
   './assets/js/missions.js',
+  './assets/js/libraries.js',
   './assets/js/welcome.js',
   './assets/js/content.js',
   './assets/js/cms.js',
