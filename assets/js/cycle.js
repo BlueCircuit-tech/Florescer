@@ -1,4 +1,5 @@
 import { pregnancyCountdown, pregnancyWeekGuide } from './pregnancy.js';
+import { babyPhaseGuide } from './postpartum.js';
 
 /**
  * Motor de datas, ciclo, gestação e pós-parto.
@@ -358,6 +359,7 @@ export function postpartumInfo(state, ref = today()) {
     monthDays: calendar.days,
     age: calendar.age,
     quarantine: totalDays <= 40,
+    guide: babyPhaseGuide(totalDays),
   };
 }
 

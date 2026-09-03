@@ -7,6 +7,7 @@ import { today, toKey, fromKey, fmtFull, diffDays } from '../cycle.js';
 import { babyNamesFromProfile, formatBabyNames } from '../babies.js';
 import { registerBirth } from '../postpartum.js';
 import { notifyAchievements } from '../notify.js';
+import { FEATURE_TONES, featureDescription, featureLabel, featuresFor, groupFeatures } from '../features.js';
 
 const resultOptions = [
   ['positivo', 'Positivo', 'O teste indicou gravidez.'],
@@ -19,82 +20,17 @@ export default {
   tab: null,
   render() {
     const state = getState();
-    const pregnant = state.profile.phase === 'gravida';
-    const postpartum = state.profile.phase === 'posparto';
     const names = babyNamesFromProfile(state.profile);
     const multiple = state.profile.pregnancyType === 'gemelar' || names.length > 1;
     const babies = names.length ? formatBabyNames(names) : multiple ? 'seus bebês' : 'seu bebê';
+    const groups = orderAddGroups(groupFeatures(featuresFor(state.profile.phase, 'add')), state.profile.phase);
 
     return {
       appbar: { title: 'Adicionar' },
       html: `<div class="section pb-24 stagger">
         <div class="section__head" style="padding:0"><h2>O que você deseja adicionar?</h2></div>
-        <div class="card card--flush">
-          <div class="itemlist">
-            ${pregnant ? `<button class="item" data-nav="registro">
-              <span class="item__ico">${icon('note', 20)}</span>
-              <span class="item__body"><b>Adicionar um Registro</b><span>Guarde seu humor, emoções e memórias da gestação.</span></span>
-              <span class="item__end">${icon('chevron', 17)}</span>
-            </button>
-            <button class="item" data-nav="registro?s=sintomas">
-              <span class="item__ico">${icon('thermometer', 20)}</span>
-              <span class="item__body"><b>Adicionar um Sintoma</b><span>Registre sintomas, pressão, peso ou glicemia.</span></span>
-              <span class="item__end">${icon('chevron', 17)}</span>
-            </button>
-            <button class="item" data-register-birth>
-              <span class="item__ico">${icon('baby', 20)}</span>
-              <span class="item__body"><b>Registrar Nascimento</b><span>Inicie o Florescer Baby após o nascimento.</span></span>
-              <span class="item__end">${icon('chevron', 17)}</span>
-            </button>` : postpartum ? `<button class="item" data-nav="status-bebe">
-              <span class="item__ico">${icon('baby', 20)}</span>
-              <span class="item__body"><b>Registrar Status do Bebê</b><span>Peso, altura, próxima vacina e consulta.</span></span>
-              <span class="item__end">${icon('chevron', 17)}</span>
-            </button>
-            <button class="item" data-nav="vacinas-bebe">
-              <span class="item__ico">${icon('shield', 20)}</span>
-              <span class="item__body"><b>Vacinas do Bebê</b><span>Vacinas marcadas, tomadas e próximos lembretes.</span></span>
-              <span class="item__end">${icon('chevron', 17)}</span>
-            </button>
-            <button class="item" data-nav="amamentacao">
-              <span class="item__ico">${icon('heart', 20)}</span>
-              <span class="item__body"><b>Registrar Amamentação</b><span>Cronômetro, lado, extração e estoque de leite.</span></span>
-              <span class="item__end">${icon('chevron', 17)}</span>
-            </button>
-            <button class="item" data-nav="fraldas">
-              <span class="item__ico">${icon('drop', 20)}</span>
-              <span class="item__body"><b>Registrar Fralda</b><span>Urina, fezes e frequência diária.</span></span>
-              <span class="item__end">${icon('chevron', 17)}</span>
-            </button>
-            <button class="item" data-nav="saude-bebe">
-              <span class="item__ico">${icon('shield', 20)}</span>
-              <span class="item__body"><b>Registro de Saúde</b><span>Sintomas, medicamentos, alergias, internações, consultas e exames.</span></span>
-              <span class="item__end">${icon('chevron', 17)}</span>
-            </button>
-            <button class="item" data-nav="registro">
-              <span class="item__ico">${icon('note', 20)}</span>
-              <span class="item__body"><b>Diário da Mamãe</b><span>Emoções, conquistas, gratidão e observações.</span></span>
-              <span class="item__end">${icon('chevron', 17)}</span>
-            </button>` : `<button class="item" data-nav="teste-gravidez">
-              <span class="item__ico">${icon('test', 20)}</span>
-              <span class="item__body"><b>Adicionar um Teste</b><span>Inclua o resultado do seu teste de gravidez.</span></span>
-              <span class="item__end">${icon('chevron', 17)}</span>
-            </button>
-            <button class="item" data-nav="relacao">
-              <span class="item__ico">${icon('heartFill', 20)}</span>
-              <span class="item__body"><b>Registrar Relação</b><span>Marque no calendário sem preencher o registro completo.</span></span>
-              <span class="item__end">${icon('chevron', 17)}</span>
-            </button>
-            <button class="item" data-nav="registro">
-              <span class="item__ico">${icon('note', 20)}</span>
-              <span class="item__body"><b>Fazer um Registro</b><span>Anote seu ciclo, sintomas e como foi o seu dia.</span></span>
-              <span class="item__end">${icon('chevron', 17)}</span>
-            </button>`}
-            <button class="item" data-nav="sono">
-              <span class="item__ico">${icon('moon', 20)}</span>
-              <span class="item__body"><b>Registrar Sono</b><span>Sono noturno, cochilos, total de horas e dicas.</span></span>
-              <span class="item__end">${icon('chevron', 17)}</span>
-            </button>
-          </div>
+        <div class="resource-groups resource-groups--add">
+          ${groups.map((group, index) => addGroup(group, state.profile.phase, index === 0)).join('')}
         </div>
       </div>`,
       mount(root) {
@@ -115,6 +51,36 @@ export default {
     };
   },
 };
+
+function orderAddGroups(groups, phase) {
+  const preferred = phase === 'tentante' ? ['fertility', 'daily']
+    : phase === 'gravida' ? ['daily', 'pregnancy']
+      : ['babyRoutine', 'babyHealth', 'daily'];
+  const rank = (id) => {
+    const index = preferred.indexOf(id);
+    return index < 0 ? preferred.length : index;
+  };
+  return [...groups].sort((a, b) => rank(a.id) - rank(b.id));
+}
+
+function addGroup(group, phase, open) {
+  return `<details class="resource-group" ${open ? 'open' : ''}>
+    <summary class="resource-group__summary"><span>${esc(group.label)}</span><span class="pill pill--gray">${group.features.length}</span>${icon('chevronDown', 17)}</summary>
+    <div class="card card--flush"><div class="itemlist">
+      ${group.features.map((item) => addItem(item, phase)).join('')}
+    </div></div>
+  </details>`;
+}
+
+function addItem(item, phase) {
+  const tone = FEATURE_TONES[item.tone] || FEATURE_TONES.rose;
+  const target = item.action === 'register-birth' ? 'data-register-birth' : `data-nav="${esc(item.to)}"`;
+  return `<button class="item" ${target}>
+    <span class="item__ico" style="background:${tone.bg};color:${tone.fg}">${icon(item.icon, 20)}</span>
+    <span class="item__body"><b>${esc(featureLabel(item, phase, 'add'))}</b><span>${esc(featureDescription(item, phase, 'add'))}</span></span>
+    <span class="item__end">${icon('chevron', 17)}</span>
+  </button>`;
+}
 
 export const relationshipScreen = {
   id: 'relacao',

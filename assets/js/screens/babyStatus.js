@@ -90,8 +90,8 @@ export default {
           addJourney('baby', 'Primeiro status do bebê registrado', 'crescimento e cuidados acompanhados no Florescer Baby');
           scheduleReminders();
           haptic(14);
-          toast('Status salvo no calendário.');
-          navigate('ciclo');
+          toast('Status do bebê salvo.');
+          navigate('crescimento-bebe');
         };
       },
     };

@@ -52,6 +52,10 @@ export default {
         <div class="section__head"><h2>Conteúdo</h2></div>
         <div class="card card--flush">
           ${toggleRow('Sugestões diárias', s.tipsOptIn, 'tipsOptIn', 'geradas no seu aparelho a partir da sua fase')}
+          <button class="kv" data-nav="recursos">
+            <span class="kv__k">Central de Recursos<small>todos os recursos e atalhos da Home</small></span>
+            <span class="kv__v">Abrir ${icon('chevron', 15)}</span>
+          </button>
           <button class="kv" data-nav="lembretes">
             <span class="kv__k">Lembretes<small>${permission() === 'granted' ? 'ativados neste aparelho' : 'não ativados'}</small></span>
             <span class="kv__v">Abrir ${icon('chevron', 15)}</span>

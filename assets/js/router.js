@@ -5,6 +5,7 @@
 import { icon } from './icons.js';
 import { $, closeSheet, esc } from './ui.js';
 import { getState } from './store.js';
+import { featureLabel, featuresFor } from './features.js';
 
 const routes = new Map();
 let current = null;
@@ -76,18 +77,16 @@ function renderAppbar({ title, sub, back: hasBack = true, actions = [] }) {
 const TABS = [
   { id: 'home', to: 'home', label: 'Início', icon: 'home' },
   { id: 'ciclo', to: 'ciclo', label: 'Ciclo', icon: 'calendar' },
-  { id: 'missoes', to: 'missoes', label: 'Missões', icon: 'flag' },
   { id: 'fab', to: 'registro', label: 'Registrar meu dia', icon: 'plus', fab: true },
   { id: 'dicas', to: 'dicas', label: 'Dicas', icon: 'sparkle' },
   { id: 'comunidade', to: 'comunidade', label: 'Comunidade', icon: 'users' },
-  { id: 'perfil', to: 'perfil', label: 'Perfil', icon: 'user' },
 ];
 
 function renderTabbar(active) {
   const phase = getState().profile.phase;
   const fabTarget = 'adicionar';
-  const fabLabel = phase === 'tentante' ? 'Adicionar teste, relação, sono ou registro'
-    : phase === 'gravida' ? 'Adicionar registro, sintoma, sono ou nascimento' : 'Adicionar status, vacina, saúde, amamentação, fralda, sono ou diário';
+  const addLabels = featuresFor(phase, 'add').map((item) => featureLabel(item, phase, 'add').toLocaleLowerCase('pt-BR'));
+  const fabLabel = `Adicionar: ${addLabels.join(', ')}`;
   $('#tabbar').innerHTML = TABS.map((t) => t.fab
     ? `<button class="tab__fab" data-nav="${fabTarget}" aria-label="${fabLabel}">${icon(t.icon, 26, { stroke: 2 })}</button>`
     : `<button class="tab" data-nav="${t.to}" ${active === t.id ? 'aria-current="page"' : ''}>
