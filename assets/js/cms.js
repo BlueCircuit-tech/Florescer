@@ -17,6 +17,7 @@ const DEFAULTS = {
   challenge: () => C.CHALLENGE,
   plans: () => C.PLANS,
   benefits: () => C.PREMIUM_BENEFITS,
+  ebooks: () => C.EBOOKS,
 };
 
 let overrides = load();
@@ -55,6 +56,7 @@ export const getRules = () => get('rules');
 export const getChallenge = () => get('challenge');
 export const getPlans = () => get('plans');
 export const getBenefits = () => get('benefits');
+export const getEbooks = () => get('ebooks');
 
 export function set(name, value) { overrides[name] = value; save(); }
 export function reset(name) { delete overrides[name]; save(); }

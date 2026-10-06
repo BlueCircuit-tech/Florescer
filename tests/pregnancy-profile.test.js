@@ -35,6 +35,8 @@ test('salva tipo de gestação, nome e ultrassonografia no perfil', () => {
     pregnancyType: 'gemelar',
     babyName: 'Lia',
     babyNames: ['Lia', 'Liz'],
+    babySex: null,
+    babySexAt: null,
     ultrasoundPhoto,
   });
 });
@@ -44,4 +46,18 @@ test('descarta imagem que não seja JPEG local válido', () => {
   applyPregnancyProfile(profile, { pregnancyType: 'unica', babyNames: [], ultrasoundPhoto: 'https://example.com/exame.jpg' });
 
   assert.equal(profile.ultrasoundPhoto, null);
+});
+
+test('o sexo do bebê guarda a data em que ela soube, e surpresa não guarda nada', () => {
+  const profile = {};
+  applyPregnancyProfile(profile, { pregnancyType: 'unica', babyNames: ['Alice'], babySex: 'menina' });
+  assert.equal(profile.babySex, 'menina');
+  assert.match(profile.babySexAt, /^\d{4}-\d{2}-\d{2}$/, 'a data da descoberta vira marco na jornada');
+
+  applyPregnancyProfile(profile, { pregnancyType: 'unica', babyNames: ['Alice'], babySex: 'surpresa' });
+  assert.equal(profile.babySex, 'surpresa');
+  assert.equal(profile.babySexAt, null);
+
+  applyPregnancyProfile(profile, { pregnancyType: 'unica', babyNames: ['Alice'], babySex: 'invalido' });
+  assert.equal(profile.babySex, null);
 });

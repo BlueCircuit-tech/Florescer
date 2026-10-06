@@ -111,7 +111,6 @@ export const CHALLENGE = {
   title: '7 dias de autocuidado',
   description: 'Um gesto de carinho por você a cada dia.',
   days: 7,
-  participants: 214,
 };
 
 export const PLANS = [
@@ -547,62 +546,18 @@ export const ARTICLES = [
   },
 ];
 
-/* ---------------- comunidade (conteúdo inicial) ---------------- */
-export const SEED_POSTS = [
-  {
-    id: 'p1', author: 'Camila S.', avatar: '🌻', phase: 'tentante', hoursAgo: 1,
-    text: 'Positivo no teste de ovulação pela primeira vez em 4 meses acompanhando por aqui! Entender o meu ciclo mudou tudo. 🥹🌿',
-    likes: 86,
-    comments: [
-      { author: 'Renata M.', avatar: '🤰', text: 'Que notícia boa, Camila! Torcendo muito por você 💛', hoursAgo: 0.6 },
-      { author: 'Aline B.', avatar: '🌷', text: 'Você usou o teste em qual horário? Ainda me perco nisso.', hoursAgo: 0.3 },
-    ],
-  },
-  {
-    id: 'p2', author: 'Renata M.', avatar: '🤰', phase: 'gravida', hoursAgo: 3,
-    text: 'Meninas, depois de 1 ano e 2 meses de tentativas... estou grávida! Não desistam. Cada ciclo é um recomeço. 💛',
-    likes: 342,
-    comments: [
-      { author: 'Paty L.', avatar: '🍼', text: 'Chorei aqui lendo. Felicidades!! 🫶', hoursAgo: 2 },
-    ],
-  },
-  {
-    id: 'p3', author: 'Aline B.', avatar: '🌷', phase: 'tentante', hoursAgo: 5,
-    text: 'A dica de ontem sobre temperatura basal me fez finalmente entender o meu gráfico. Alguém mais mede todo dia às 6h? 😅',
-    likes: 54, comments: [],
-  },
-  {
-    id: 'p4', author: 'Paty L.', avatar: '🍼', phase: 'posparto', hoursAgo: 8,
-    text: '3 meses da Cecília hoje! Para quem está na madrugada amamentando: passa. E vale cada segundo. 🫶',
-    likes: 198, comments: [],
-  },
-  {
-    id: 'p5', author: 'Júlia R.', avatar: '🌸', phase: 'tentante', hoursAgo: 26,
-    text: 'Ciclo 7 acompanhando aqui. Ainda sem positivo, mas hoje quero registrar outra coisa: aprendi a não me culpar. Isso também é avanço.',
-    likes: 121, comments: [],
-  },
-  {
-    id: 'p6', author: 'Marina C.', avatar: '🤰', phase: 'gravida', hoursAgo: 6,
-    text: 'Hoje ouvi o coração do meu bebê e ainda estou tentando colocar em palavras o que senti. Foi uma mistura linda de alívio, amor e gratidão. Como foi esse momento para vocês?',
-    likes: 174,
-    comments: [
-      { author: 'Bianca T.', avatar: '🌷', text: 'Também chorei muito! Parece que naquele instante tudo fica mais real. 💛', hoursAgo: 4.5 },
-    ],
-  },
-  {
-    id: 'p7', author: 'Bianca T.', avatar: '🌷', phase: 'gravida', hoursAgo: 12,
-    text: 'Estou no segundo trimestre e tenho vivido dias de muita energia e outros de puro cansaço. Estou aprendendo a respeitar o meu ritmo sem culpa.',
-    likes: 97, comments: [],
-  },
-  {
-    id: 'p8', author: 'Nath S.', avatar: '🌼', phase: 'gravida', hoursAgo: 20,
-    text: 'Alguém mais fica ansiosa antes das consultas? O que tem ajudado vocês a chegar mais tranquilas e lembrar das perguntas que querem fazer?',
-    likes: 68,
-    comments: [
-      { author: 'Marina C.', avatar: '🤰', text: 'Eu anoto tudo durante a semana e levo a lista no celular. Tem me ajudado bastante.', hoursAgo: 18 },
-    ],
-  },
-];
+/* ---------------- e-books e materiais ----------------
+   O catálogo começa vazio de propósito: os arquivos ainda não chegaram.
+   Para publicar um material, coloque o PDF em /ebooks/ e cadastre aqui
+   (ou, melhor, pelo Painel da administradora › E-books e materiais):
+
+     { id: 'nomes-meninas', title: '100 nomes de meninas',
+       excerpt: 'Nomes e significados para ajudar na escolha.',
+       file: '100-nomes-de-meninas.pdf', pages: 48,
+       premium: false, phases: ['tentante', 'gravida'] }
+
+   `file` é o nome do arquivo dentro de /ebooks/, servido junto com o app. */
+export const EBOOKS = [];
 
 export const COMMUNITY_RULES = [
   'Acolhimento em primeiro lugar: aqui ninguém julga a jornada de ninguém.',
@@ -613,7 +568,7 @@ export const COMMUNITY_RULES = [
 
 export const FAQ = [
   { q: 'As previsões do app são exatas?', a: 'São estimativas estatísticas com base nos seus registros. Quanto mais ciclos você registrar, mais precisas ficam. Elas não servem como método contraceptivo nem substituem avaliação médica.' },
-  { q: 'Meus dados vão para algum servidor?', a: 'Não. Tudo é salvo apenas no armazenamento deste aparelho. Se você limpar os dados do navegador ou desinstalar o app, as informações são perdidas — por isso existe a exportação em Configurações.' },
+  { q: 'Meus dados vão para algum servidor?', a: 'Os seus registros não. Tudo é salvo apenas no armazenamento deste aparelho — se você limpar os dados do navegador ou desinstalar o app, as informações são perdidas, por isso existe a exportação em Configurações. A única exceção é a IA da Flor: se você ativá-la, a sua pergunta e os números do seu ciclo são enviados para gerar a resposta. Os detalhes estão em Configurações › Privacidade e dados.' },
   { q: 'Como faço backup?', a: 'Em Configurações › Privacidade e dados, use "Exportar meus dados". Um arquivo .json é baixado e pode ser importado depois, inclusive em outro aparelho.' },
   { q: 'Posso usar o Florescer como contraceptivo?', a: 'Não. O app foi feito para quem quer engravidar ou acompanhar o ciclo. Métodos baseados em calendário têm alta taxa de falha para evitar gravidez.' },
   { q: 'Como o app calcula a ovulação?', a: 'Usamos a duração média dos seus últimos ciclos e uma fase lútea de 14 dias (ajustável). A janela fértil vai de 5 dias antes da ovulação até 1 dia depois.' },

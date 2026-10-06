@@ -1,13 +1,17 @@
 /**
- * Comunidade: feed com filtros, curtidas, comentários e criação de posts.
- * Conteúdo inicial é semeado; tudo que a usuária faz fica salvo no aparelho.
+ * Comunidade: feed com curtidas, comentários e criação de posts.
+ *
+ * Enquanto não houver backend, a comunidade mostra apenas as publicações da
+ * própria usuária, guardadas neste aparelho. Não existe conteúdo semeado: um
+ * feed com pessoas inventadas faria ela escrever para ninguém achando que
+ * estava conversando com alguém.
  */
 import { getState, update } from '../store.js';
 import { icon } from '../icons.js';
 import { esc, toast, emptyState, openSheet, closeSheet, confirmSheet, haptic, note } from '../ui.js';
 import { navigate, back } from '../router.js';
 import { relativeTime } from '../cycle.js';
-import { SEED_POSTS, PHASE_LABELS } from '../content.js';
+import { PHASE_LABELS } from '../content.js';
 import * as cms from '../cms.js';
 import {
   canAccessCommunityPost,
@@ -17,29 +21,20 @@ import {
   postsForCommunity,
 } from '../communities.js';
 
-const BOOT = Date.now();
-
-/** Junta posts semeados e os da usuária, aplicando curtidas/comentários salvos. */
+/** As publicações da usuária, com as curtidas e comentários salvos aplicados. */
 export function allPosts(state) {
-  const seeded = SEED_POSTS.map((p) => {
-    const st = state.postState[p.id] || {};
-    return {
-      ...p,
-      ts: BOOT - p.hoursAgo * 3600000,
-      mine: false,
-      likes: p.likes + (st.liked ? 1 : 0),
-      liked: !!st.liked,
-      comments: [
-        ...p.comments.map((c) => ({ ...c, ts: BOOT - c.hoursAgo * 3600000 })),
-        ...(st.comments || []),
-      ],
-    };
-  });
-  const mine = state.posts.map((p) => {
-    const st = state.postState[p.id] || {};
-    return { ...p, mine: true, liked: !!st.liked, likes: (p.likes || 0) + (st.liked ? 1 : 0), comments: st.comments || p.comments || [] };
-  });
-  return [...seeded, ...mine].sort((a, b) => b.ts - a.ts);
+  return (state.posts || [])
+    .map((p) => {
+      const st = state.postState[p.id] || {};
+      return {
+        ...p,
+        mine: true,
+        liked: !!st.liked,
+        likes: (p.likes || 0) + (st.liked ? 1 : 0),
+        comments: st.comments || p.comments || [],
+      };
+    })
+    .sort((a, b) => b.ts - a.ts);
 }
 
 /** Feed visível: exclui o que a moderação ocultou. */
@@ -183,7 +178,7 @@ export default {
                 <b>${esc(ch.title)}</b>
               </div>
             </div>
-            <p>${esc(ch.description)} ${(ch.participants || 0) + done} mulheres participando.</p>
+            <p>${esc(ch.description)}</p>
             <div class="challenge__meter"><i style="width:${Math.round((done / total) * 100)}%"></i></div>
             <div class="challenge__foot">
               <div class="challenge__days">
@@ -197,8 +192,9 @@ export default {
               <span class="challenge__count">${done}/${total}</span>
             </div>
           </section>
+          ${note('As publicações de outras mulheres aparecem aqui quando a comunidade for conectada ao servidor. Por enquanto, este espaço guarda o que você escreve, só neste aparelho.')}
           ${posts.length ? posts.map((p) => postCard(p, state)).join('')
-            : emptyState('users', `A ${community.title} está começando`, 'Seja a primeira a compartilhar o que está vivendo nesta fase.', { label: 'Escrever publicação', to: 'novo-post' })}
+            : emptyState('users', 'Seu espaço ainda está em branco', 'Escreva o que você está vivendo nesta fase. Fica guardado aqui e será a sua primeira publicação quando a comunidade abrir.', { label: 'Escrever publicação', to: 'novo-post' })}
         </div>`,
       mount(root) {
         root.querySelectorAll('[data-day]').forEach((b) => {

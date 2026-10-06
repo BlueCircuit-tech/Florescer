@@ -11,7 +11,7 @@ import {
   fmtMonth, fmtFull, fmtShort, isSameDay, diffDays, relativeDay, plural, cap,
 } from '../cycle.js';
 import { MOODS, FLOWS } from '../content.js';
-import { notifyAchievements } from '../notify.js';
+import { noticeAchievements } from '../notify.js';
 import { babyCareOnDate, babyEvents } from '../babyStatus.js';
 import { CALENDAR_TYPES, scheduledEventsOnDate, upcomingScheduledEvents } from '../planner.js';
 
@@ -83,6 +83,15 @@ export default {
         <button class="btn btn--soft btn--sm mt-12" data-nav="perfil">Ir para o perfil</button>
       </div>` : '';
 
+    const prenatalLink = pregnant ? `<button class="card card--link mt-16" data-nav="pre-natal">
+      <span class="floatcard__ico" style="background:var(--rose-50);color:var(--rose-700)">${icon('calendar', 22)}</span>
+      <span class="grow" style="text-align:left">
+        <b style="display:block;font-size:var(--fs-14)">Calendário inteligente</b>
+        <span class="fs-12 muted" style="display:block;margin-top:3px">Consultas, ultrassons, exames e vacinas já organizados por semana</span>
+      </span>
+      <span style="color:var(--faint);flex:none">${icon('chevron', 18)}</span>
+    </button>` : '';
+
     const agendaSummary = `<div class="card mt-16">
       <div class="row row--between"><b style="font-size:14px">Próximos compromissos</b><button class="btn btn--soft btn--sm btn--auto" data-nav="agenda">${icon('plus', 16)} Agendar</button></div>
       ${upcoming.length ? `<div class="itemlist mt-8">${upcoming.map((event) => {
@@ -121,7 +130,7 @@ export default {
           <span><b class="legend__planner">1</b>Agenda</span>`}
         </div>
         <div class="section pb-24">
-          ${cycleSummary}${agendaSummary}
+          ${cycleSummary}${prenatalLink}${agendaSummary}
           ${!isCurrentMonth ? '<button class="btn btn--soft btn--sm mt-12" data-move="0">Voltar para hoje</button>' : ''}
           <p class="center fs-11 faint mt-16">Toque em um dia para ver e registrar o que aconteceu.</p>
         </div>`,
@@ -189,7 +198,7 @@ function openDay(key) {
       bindPlannerLinks(sheet);
       sheet.querySelector('[data-relationship]')?.addEventListener('click', () => {
         const result = saveIntercourse(key);
-        notifyAchievements(result.achievements);
+        noticeAchievements(result.achievements);
         closeSheet();
         haptic(14);
         toast('Relação registrada no calendário.');

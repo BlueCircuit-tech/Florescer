@@ -20,7 +20,18 @@ test('cada fase possui uma rota canônica própria de comunidade', () => {
   assert.equal(communityPath('posparto'), 'comunidade/pos-parto');
 });
 
-test('Comunidade Gestantes mostra somente publicações da gestação', () => {
+/** O feed não tem mais conteúdo semeado: só existe o que a usuária escreveu. */
+const comMeusPosts = () => update((state) => {
+  state.profile.phase = 'gravida';
+  state.postState = {};
+  state.hiddenPosts = [];
+  state.posts = [
+    { id: 'meu-g', author: 'Ana', avatar: '🌷', phase: 'gravida', text: 'Hoje ouvi o coração do meu bebê.', likes: 0, comments: [], ts: 2000 },
+    { id: 'meu-t', author: 'Ana', avatar: '🌷', phase: 'tentante', text: 'Ciclo novo começando.', likes: 0, comments: [], ts: 1000 },
+  ];
+});
+
+test('o feed não traz nenhuma publicação de gente inventada', () => {
   update((state) => {
     state.profile.phase = 'gravida';
     state.posts = [];
@@ -28,30 +39,42 @@ test('Comunidade Gestantes mostra somente publicações da gestação', () => {
     state.hiddenPosts = [];
   });
 
-  const state = getState();
-  const posts = communityPosts(state);
-  assert.equal(posts.length > 1, true);
+  assert.deepEqual(communityPosts(getState()), []);
+  const output = communityScreen.render({ arg: 'gestantes', params: {} });
+  assert.match(output.html, /Seu espaço ainda está em branco/);
+  assert.match(output.html, /quando a comunidade for conectada ao servidor/i);
+});
+
+test('Comunidade Gestantes mostra somente publicações da gestação', () => {
+  comMeusPosts();
+
+  const posts = communityPosts(getState());
+  assert.equal(posts.length, 1);
   assert.equal(posts.every((post) => post.phase === 'gravida'), true);
 
   const output = communityScreen.render({ arg: 'gestantes', params: {} });
   assert.equal(output.appbar.title, 'Comunidade Gestantes');
   assert.match(output.html, /espaço exclusivo para contar o que você está vivendo/i);
   assert.match(output.html, /Hoje ouvi o coração do meu bebê/);
-  assert.doesNotMatch(output.html, /Todas|data-filter|Positivo no teste de ovulação/);
+  assert.doesNotMatch(output.html, /Todas|data-filter|Ciclo novo começando/);
+});
+
+test('o desafio não anuncia um número de participantes', () => {
+  comMeusPosts();
+  assert.doesNotMatch(communityScreen.render({ arg: 'gestantes', params: {} }).html, /mulheres participando/);
 });
 
 test('post de outra comunidade ou oculto não pode ser acessado', () => {
-  const state = {
-    profile: { phase: 'gravida' }, posts: [], postState: {}, hiddenPosts: ['p6'],
-  };
+  comMeusPosts();
+  update((state) => { state.hiddenPosts = ['meu-g']; });
 
-  assert.equal(findAccessiblePost(state, 'p1'), null);
-  assert.equal(findAccessiblePost(state, 'p6'), null);
-  assert.equal(canAccessCommunityPost(state, { id: 'x', phase: 'gravida' }), true);
+  assert.equal(findAccessiblePost(getState(), 'meu-t'), null, 'outra fase');
+  assert.equal(findAccessiblePost(getState(), 'meu-g'), null, 'ocultado pela moderação');
+  assert.equal(canAccessCommunityPost(getState(), { id: 'x', phase: 'gravida' }), true);
 
-  update((current) => { current.profile.phase = 'gravida'; current.hiddenPosts = []; });
-  assert.match(postScreen.render({ arg: 'p1' }).html, /Publicação não disponível/);
-  assert.match(postScreen.render({ arg: 'p6' }).html, /Comentários/);
+  update((state) => { state.hiddenPosts = []; });
+  assert.match(postScreen.render({ arg: 'meu-t' }).html, /Publicação não disponível/);
+  assert.match(postScreen.render({ arg: 'meu-g' }).html, /Comentários/);
 });
 
 test('nova publicação pertence obrigatoriamente à fase ativa', () => {

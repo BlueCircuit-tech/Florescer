@@ -14,6 +14,8 @@ export function pregnancyDraft(profile = {}) {
     dueDate,
     pregnancyType: profile.pregnancyType || null,
     babyNames: babyNamesFromProfile(profile),
+    babySex: profile.babySex || null,
+    babySexAt: profile.babySexAt || null,
     ultrasoundPhoto: safeUltrasound(profile.ultrasoundPhoto),
   };
 }
@@ -23,6 +25,10 @@ export function applyPregnancyProfile(profile, draft) {
   profile.dueDate = draft.dueDate || null;
   profile.pregnancyType = draft.pregnancyType;
   applyBabyNames(profile, draft.babyNames, { multiple: draft.pregnancyType === 'gemelar' });
+  // a data em que ela soube é o que vira marco na linha do tempo
+  const sexo = ['menina', 'menino', 'surpresa'].includes(draft.babySex) ? draft.babySex : null;
+  if (sexo !== profile.babySex) profile.babySexAt = sexo && sexo !== 'surpresa' ? toKey(today()) : null;
+  profile.babySex = sexo;
   profile.ultrasoundPhoto = safeUltrasound(draft.ultrasoundPhoto);
   return profile;
 }
@@ -82,6 +88,18 @@ export function pregnancyQuizSteps(draft) {
         ${babyNamesEditor(draft, { minimum: draft.pregnancyType === 'gemelar' ? 2 : 1, allowMore: draft.pregnancyType === 'gemelar' })}
       </div>`,
       mount: (root) => bindBabyNamesEditor(root, draft, { minimum: draft.pregnancyType === 'gemelar' ? 2 : 1, allowMore: draft.pregnancyType === 'gemelar' }),
+      valid: () => true,
+    },
+    {
+      key: 'babySex',
+      title: 'Você já sabe o sexo do bebê?',
+      sub: 'Opcional. Se souber, a descoberta entra na sua linha do tempo.',
+      options: [
+        ['heart', 'É uma menina', 'menina'],
+        ['heart', 'É um menino', 'menino'],
+        ['sparkle', 'Prefiro deixar surpresa', 'surpresa'],
+      ],
+      field: 'babySex',
       valid: () => true,
     },
     {

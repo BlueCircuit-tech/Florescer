@@ -16,6 +16,10 @@ import { isUnlocked } from './admin.js';
 import { babyNamesFromProfile, formatBabyNames, postpartumGreeting } from '../babies.js';
 import { FEATURE_TONES, featureLabel, featureTarget, resolveHomeShortcuts } from '../features.js';
 import { cyclePhaseGuide } from '../fertility.js';
+import { diaryOffer } from '../pregnancyDiary.js';
+import { unreadCount } from '../notify.js';
+import { dailyHandled, dailyMessage } from '../florDaily.js';
+import { momentOfDay } from '../florMoments.js';
 
 let tipOffset = 0;
 
@@ -56,12 +60,16 @@ function heroTentante(state, info) {
 function heroGravida(state, preg) {
   if (!preg.known) return `<p style="font-size:15px">Informe a data provável do parto no seu perfil para acompanharmos as semanas.</p>
     <button class="btn btn--light btn--sm btn--auto mt-12" data-nav="perfil">Completar perfil</button>`;
-  return `<div class="bump">
-    <div class="bump__week"><b>${preg.weeks}</b><span>semanas</span></div>
-    <div class="ring__stats">
-      <div class="ring__stat"><div class="k">${preg.trimester}º trimestre</div><div class="v">Faltam ${plural(Math.max(0, preg.daysLeft), 'dia', 'dias')}</div></div>
-      <div class="ring__stat"><div class="k">Data provável do parto</div><div class="v">${fmtFull(preg.due)}</div></div>
+  // uma leitura só: onde você está, quanto falta e para quando.
+  // O progresso vira régua de 40 semanas em vez de repetir o número da semana.
+  const pct = Math.max(2, Math.min(100, Math.round((preg.weeks / 40) * 100)));
+  return `<div class="bumpline">
+    <p class="bumpline__lead">${preg.trimester}º trimestre · parto previsto para ${fmtFull(preg.due)}</p>
+    <div class="bumpline__bar" role="img" aria-label="${preg.weeks} de 40 semanas">
+      <i style="width:${pct}%"></i>
+      <span style="left:${pct}%"></span>
     </div>
+    <div class="bumpline__scale"><span>1</span><span>20</span><span>40 semanas</span></div>
   </div>`;
 }
 
@@ -83,31 +91,24 @@ function pregnancyDashboard(preg) {
   const g = preg.guide;
   return `
     <section class="pregdash" aria-label="Resumo da semana ${preg.weeks} da gestação">
-      <p class="pregdash__countdown">${icon('heartFill', 19)} <span>${esc(preg.countdown)}</span></p>
       <article class="pregdash__baby">
         <div class="pregdash__fruit" aria-hidden="true">${g.emoji}</div>
         <div class="grow">
-          <span class="eyebrow">${preg.multiple ? 'Seus bebês nesta semana' : 'Seu bebê nesta semana'}</span>
-          <h2>${preg.multiple ? 'Cada bebê: tamanho aproximado de' : 'Do tamanho de'} ${esc(g.fruit)}</h2>
-          <p>Valores de referência para a ${g.week}ª semana</p>
-          <button class="pregdash__weeklink" data-nav="semana-a-semana">Ver Semana a Semana ${icon('chevron', 14)}</button>
-        </div>
-        <div class="pregdash__metrics">
-          <div><span>Peso</span><b>${esc(g.weight)}</b></div>
-          <div><span>Comprimento</span><b>${esc(g.length)}</b></div>
+          <h2>${preg.multiple ? 'Cada bebê está do tamanho de' : 'Seu bebê está do tamanho de'} ${esc(g.fruit)}</h2>
+          <p class="pregdash__measure">${esc(g.length)} &middot; ${esc(g.weight)}</p>
         </div>
       </article>
 
       <div class="pregdash__grid">
         <article class="preginfo preginfo--baby">
-          <span class="preginfo__ico">${icon('baby', 19)}</span>
           <div><span>Desenvolvimento dos órgãos</span><p>${esc(g.development)}</p></div>
         </article>
         <article class="preginfo preginfo--mother">
-          <span class="preginfo__ico">${icon('pregnant', 19)}</span>
-          <div><span>Seu corpo esta semana</span><p>${esc(g.mother)}</p></div>
+          <div><span>Seu corpo nesta semana</span><p>${esc(g.mother)}</p></div>
         </article>
       </div>
+
+      <button class="pregdash__weeklink" data-nav="semana-a-semana">Ver a página da ${g.week}ª semana ${icon('chevron', 14)}</button>
 
       <details class="pregdash__more">
         <summary>
@@ -117,30 +118,31 @@ function pregnancyDashboard(preg) {
         <div class="pregdash__morebody">
           <div class="pregdash__grid pregdash__maternal">
             <article class="preginfo preginfo--symptoms">
-              <span class="preginfo__ico">${icon('thermometer', 19)}</span>
               <div><span>Sintomas que podem aparecer</span><p>${esc(g.symptoms)}</p></div>
             </article>
             <article class="preginfo preginfo--hormones">
-              <span class="preginfo__ico">${icon('sparkle', 19)}</span>
               <div><span>Alterações hormonais</span><p>${esc(g.hormones)}</p></div>
             </article>
             <article class="preginfo preginfo--belly">
-              <span class="preginfo__ico">${icon('pregnant', 19)}</span>
               <div><span>Desenvolvimento da barriga</span><p>${esc(g.belly)}</p></div>
+            </article>
+            <article class="preginfo preginfo--emotional">
+              <div><span>Alterações emocionais</span><p>${esc(g.emotional)}</p>
+                <button class="inlinelink" data-nav="corpo-da-mae">Ver todas as mudanças ${icon('chevron', 14)}</button>
+              </div>
             </article>
           </div>
 
           <article class="preginfo preginfo--tip">
-            <span class="preginfo__ico">${icon('sparkle', 19)}</span>
             <div><span>Dica da semana</span><p>${esc(g.tip)}</p></div>
           </article>
 
           <article class="preginfo preginfo--exam">
-            <span class="preginfo__ico">${icon('calendar', 19)}</span>
             <div class="grow">
               <span>Próximo acompanhamento</span>
               <b>${esc(g.nextExam.name)}</b>
               <p>${esc(g.nextExam.when)} · ${esc(g.nextExam.note)}</p>
+              <button class="inlinelink" data-nav="pre-natal">Ver calendário inteligente ${icon('chevron', 14)}</button>
             </div>
           </article>
         </div>
@@ -167,7 +169,6 @@ function postpartumDashboard(state, pp) {
       </article>
 
       <article class="preginfo preginfo--baby">
-        <span class="preginfo__ico">${icon('baby', 19)}</span>
         <div><span>Descobertas desta fase</span><p>${esc(g.detail)}</p></div>
       </article>
 
@@ -200,26 +201,23 @@ function cycleDashboard(info) {
 
       <div class="pregdash__grid">
         <article class="preginfo preginfo--baby">
-          <span class="preginfo__ico">${icon('flower', 19)}</span>
           <div><span>O que acontece por dentro</span><p>${esc(guide.body)}</p></div>
         </article>
         <article class="preginfo preginfo--mother">
-          <span class="preginfo__ico">${icon('heart', 19)}</span>
           <div><span>O que você pode notar</span><p>${esc(guide.notice)}</p></div>
         </article>
       </div>
 
       <article class="preginfo preginfo--tip">
-        <span class="preginfo__ico">${icon('sparkle', 19)}</span>
         <div><span>Para lembrar</span><p>${esc(guide.care)}</p></div>
       </article>
 
       <article class="preginfo preginfo--exam">
-        <span class="preginfo__ico">${icon('calendar', 19)}</span>
         <div><span>Próxima etapa estimada</span><p>${esc(next)}</p></div>
       </article>
 
-      <button class="btn btn--soft" data-nav="ciclo">${icon('calendar', 18)} Ver meu calendário</button>
+      <button class="btn btn--soft" data-nav="linha-do-tempo">${icon('flower', 18)} Ver a linha do tempo do ciclo</button>
+      <button class="btn btn--soft mt-8" data-nav="ciclo">${icon('calendar', 18)} Ver meu calendário</button>
       <p class="pregdash__disclaimer">Fases, datas e sinais são estimativas educativas. Eles variam entre ciclos e não confirmam ovulação ou gravidez.</p>
     </section>`;
 }
@@ -235,6 +233,62 @@ function highlight(state, info, preg, pp) {
   }
   if (p !== 'tentante' || !info.known) return '';
   return cycleDashboard(info);
+}
+
+/**
+ * A pergunta do dia, no topo e antes de qualquer outra coisa.
+ * Some assim que ela responde ou dispensa — não insiste.
+ */
+/**
+ * A carta da Flor, quando há uma. Vem antes de tudo e, no dia em que
+ * aparece, toma o lugar da pergunta diária: duas mensagens no mesmo dia
+ * tiram o peso das duas.
+ */
+function momentCard(state) {
+  const moment = momentOfDay(state);
+  if (!moment) return '';
+  return `<div class="section" style="margin-top:22px">
+    <button class="momentocard" data-nav="momento/${esc(moment.id)}">
+      <span class="momentocard__mark">${icon('flower', 20)}</span>
+      <span class="grow">
+        <span class="momentocard__from">Uma mensagem da Flor</span>
+        <b>${esc(moment.title)}</b>
+      </span>
+      <span class="momentocard__go">${icon('chevron', 18)}</span>
+    </button>
+  </div>`;
+}
+
+function dailyCard(state) {
+  if (momentOfDay(state)) return '';
+  if (!state.settings.notifications.florDaily || dailyHandled(state)) return '';
+  const message = dailyMessage(state);
+  return `<div class="section" style="margin-top:22px">
+    <button class="dailycard" data-nav="como-voce-esta">
+      <span class="dailycard__mark">${icon('flower', 21)}</span>
+      <span class="grow">
+        <b>${esc(message.heading)}</b>
+        <span>${esc(message.text)}</span>
+      </span>
+      <span class="dailycard__go">${icon('chevron', 18)}</span>
+    </button>
+  </div>`;
+}
+
+/** Convite ao Diário Gestacional: só na reta final e no pós-parto. */
+function diaryCard(state) {
+  const offer = diaryOffer(state);
+  if (!offer) return '';
+  return `<div class="section" style="margin-top:22px">
+    <button class="card card--link" data-nav="diario-gestacional">
+      <span class="floatcard__ico" style="background:var(--amber-50);color:var(--amber-600)">${icon('book', 22)}</span>
+      <span class="grow" style="text-align:left">
+        <b style="display:block;font-size:var(--fs-14)">${esc(offer.title)}</b>
+        <span class="fs-12 muted" style="display:block;margin-top:3px">${esc(plural(offer.entries, 'registro reunido', 'registros reunidos'))} — gere o PDF quando quiser</span>
+      </span>
+      <span style="color:var(--faint);flex:none">${icon('chevron', 18)}</span>
+    </button>
+  </div>`;
 }
 
 /* ---------- tela ---------- */
@@ -268,10 +322,12 @@ export default {
 
     const sub = phase === 'tentante' && info.known
       ? `Dia ${info.dayOfCycle} do seu ciclo`
-      : phase === 'gravida' && preg.known ? `${preg.weeks} semanas e ${preg.days} dias`
+      : phase === 'gravida' && preg.known
+        ? `${plural(preg.weeks, 'semana', 'semanas')}${preg.days ? ` e ${plural(preg.days, 'dia', 'dias')}` : ''}`
         : phase === 'posparto' && pp.known ? `Hoje você completa ${pp.age}` : 'Bem-vinda ao Florescer';
 
     const shortcuts = resolveHomeShortcuts(state.settings, phase);
+    const novos = unreadCount(state);
 
     return {
       appbar: null,
@@ -284,18 +340,22 @@ export default {
               <b>${esc(sub)}</b>
             </div>
             <div class="hero__actions">
-              <button class="iconbtn iconbtn--onbrand" data-nav="lembretes" aria-label="Lembretes" style="position:relative">
-                ${icon('bell', 20)}${state.settings.notifications.fertile ? '<i class="iconbtn__dot"></i>' : ''}
-              </button>
-              <button class="iconbtn iconbtn--onbrand" data-nav="missoes" aria-label="Missões diárias">
-                ${icon('flag', 20)}
+              <button class="iconbtn iconbtn--onbrand" data-nav="avisos" style="position:relative"
+                aria-label="${novos ? `Avisos: ${esc(plural(novos, 'novo', 'novos'))}` : 'Avisos'}">
+                ${icon('bell', 20)}${novos ? `<i class="iconbtn__count">${novos > 9 ? '9+' : novos}</i>` : ''}
               </button>
             </div>
           </div>
           ${hero}
         </header>
 
+        ${momentCard(state)}
+
+        ${dailyCard(state)}
+
         ${highlight(state, info, preg, pp)}
+
+        ${diaryCard(state)}
 
         <div class="section stagger" style="margin-top:26px">
           <article class="tipcard">

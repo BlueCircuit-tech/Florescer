@@ -41,7 +41,6 @@ test('curso Florescer no Tempo de Deus aparece para todas as fases e assinantes'
     const output = home.render();
     assert.match(output.html, /data-tempo-de-deus/);
     assert.match(output.html, /Florescer no Tempo de Deus/);
-    assert.match(output.html, /data-nav="missoes" aria-label="Missões diárias"/);
     assert.match(output.html, /data-nav="premium"/);
     assert.match(output.html, /Gerenciar Florescer Premium/);
   }
@@ -85,10 +84,10 @@ test('Home detalha mudanças semanais no corpo da gestante', () => {
   });
 
   const output = home.render();
-  assert.match(output.html, /data-nav="semana-a-semana"[\s\S]*Ver Semana a Semana/);
+  assert.match(output.html, /data-nav="semana-a-semana"[\s\S]*Ver a página da \d+ª semana/);
   assert.match(output.html, /<details class="pregdash__more">[\s\S]*<summary>[\s\S]*Expandir informações/);
   assert.doesNotMatch(output.html, /<details class="pregdash__more" open/);
-  assert.match(output.html, /Desenvolvimento dos órgãos[\s\S]*Seu corpo esta semana[\s\S]*<details class="pregdash__more">/);
+  assert.match(output.html, /Desenvolvimento dos órgãos[\s\S]*Seu corpo nesta semana[\s\S]*<details class="pregdash__more">/);
   assert.match(output.html, /Sintomas que podem aparecer/);
   assert.match(output.html, /Alterações hormonais/);
   assert.match(output.html, /Desenvolvimento da barriga/);

@@ -38,19 +38,19 @@ export const DEFAULTS = () => ({
       period: true,
       dailyLog: true,
       tip: true,
-      missions: true,
       achievements: true,
       babyVaccines: true,
       babyAppointments: true,
       calendarEvents: true,
-      community: false,
-      time: '09:00',
+      florDaily: true,
     },
     tipsOptIn: true,
+    florAI: null,                // null = ainda não escolheu; true/false = decisão da usuária
     analytics: false,
     homeShortcuts: normalizeAllHomeShortcuts(),
   },
   logs: {},                     // 'YYYY-MM-DD' -> registro do dia
+  florChat: [],                 // conversa com a IA Flor, guardada só neste aparelho
   pregnancyTests: [],           // testes de gravidez registrados pela tentante
   babyStatus: [],               // medidas e próximos cuidados dos bebês
   breastfeedingLogs: [],        // mamadas, extrações e estoque de leite
@@ -67,10 +67,11 @@ export const DEFAULTS = () => ({
   postState: {},                // id -> { liked, likes, comments:[] }
   hiddenPosts: [],              // publicações ocultadas pela moderação
   challengeDays: [],            // dias marcados no desafio da semana
-  missionDays: {},              // 'YYYY-MM-DD' -> ids das missões concluídas
   journey: [],                  // marcos da jornada
   achievements: [],             // conquistas desbloqueadas, com deduplicação permanente
-  notifyLog: {},                // controle de lembretes já enviados
+  notices: [],                  // avisos da central do sininho (sem push, sem servidor)
+  florDaily: { answers: {}, dismissed: [] }, // check-in diário: o que ela respondeu e o que dispensou
+  florMoments: { seen: [] },    // cartas da Flor já entregues — cada uma, uma vez só
   lastSeen: Date.now(),
 });
 
@@ -96,6 +97,20 @@ function load() {
 
 function migrate(s) {
   s.settings.homeShortcuts = normalizeAllHomeShortcuts(s.settings.homeShortcuts);
+  // sobras do tempo em que o app usava notificação do sistema
+  delete s.notifyLog;
+  delete s.settings.notifications.time;
+  delete s.settings.notifications.community;
+  // missões diárias saíram do app
+  delete s.settings.notifications.missions;
+  delete s.missionDays;
+  // avisos já guardados de recursos removidos apontariam para telas que não existem mais
+  if (Array.isArray(s.notices)) s.notices = s.notices.filter((n) => n?.kind !== 'missions');
+  if (!Array.isArray(s.notices)) s.notices = [];
+  if (!s.florDaily || typeof s.florDaily !== 'object') s.florDaily = { answers: {}, dismissed: [] };
+  if (!s.florDaily.answers) s.florDaily.answers = {};
+  if (!Array.isArray(s.florDaily.dismissed)) s.florDaily.dismissed = [];
+  if (!s.florMoments || !Array.isArray(s.florMoments.seen)) s.florMoments = { seen: [] };
   s.schema = SCHEMA;
   return s;
 }

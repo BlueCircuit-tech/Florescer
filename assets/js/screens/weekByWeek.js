@@ -23,6 +23,7 @@ function weekCard(week, currentWeek) {
       ${row('baby', 'Formação e desenvolvimento', detail.organs, 'weekstory__row--organs')}
       ${row('sparkle', week <= 2 ? 'O que acontece agora' : 'O que já consegue fazer', detail.ability, 'weekstory__row--ability')}
       ${row('info', 'Curiosidade da semana', detail.curiosity, 'weekstory__row--curiosity')}
+      <button class="weekstory__open" data-nav="semana/${week}">${icon('book', 15)} Abrir a página da ${week}ª semana</button>
     </div>
   </details>`;
 }

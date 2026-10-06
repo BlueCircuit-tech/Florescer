@@ -2,13 +2,13 @@
  * Configurações, lembretes, privacidade (LGPD), ajuda e sobre.
  */
 import { getState, update, applyTheme, exportData, importData, resetAll } from '../store.js';
-import { icon, markSvg } from '../icons.js';
+import { icon } from '../icons.js';
 import { esc, toast, note, confirmSheet, openSheet, closeSheet, downloadFile, toggleRow, haptic } from '../ui.js';
 import { navigate } from '../router.js';
 import { cycleInfo, isFertileReminderEligible, fmtShort, fmtLong, fmtFull, fmtWeekday, cap, today, toKey, plural } from '../cycle.js';
 import * as cms from '../cms.js';
 import { changePhase } from './profile.js';
-import { permission, requestPermission, scheduleReminders, sendTestNotification, supported } from '../notify.js';
+import { syncNotices, unreadCount } from '../notify.js';
 
 const rerender = () => import('../router.js').then((m) => m.render());
 export const APP_VERSION = '1.0.0';
@@ -52,12 +52,13 @@ export default {
         <div class="section__head"><h2>Conteúdo</h2></div>
         <div class="card card--flush">
           ${toggleRow('Sugestões diárias', s.tipsOptIn, 'tipsOptIn', 'geradas no seu aparelho a partir da sua fase')}
+          ${toggleRow('Respostas da IA na Flor', s.florAI === true, 'florAI', 'envia a sua pergunta e os números do ciclo ao servidor; desligado, ela responde pelo guia do app')}
           <button class="kv" data-nav="recursos">
             <span class="kv__k">Central de Recursos<small>todos os recursos e atalhos da Home</small></span>
             <span class="kv__v">Abrir ${icon('chevron', 15)}</span>
           </button>
           <button class="kv" data-nav="lembretes">
-            <span class="kv__k">Lembretes<small>${permission() === 'granted' ? 'ativados neste aparelho' : 'não ativados'}</small></span>
+            <span class="kv__k">Avisos<small>o que aparece no sininho da Home</small></span>
             <span class="kv__v">Abrir ${icon('chevron', 15)}</span>
           </button>
         </div>
@@ -160,60 +161,32 @@ export const remindersScreen = {
   render() {
     const state = getState();
     const n = state.settings.notifications;
-    const perm = permission();
     const info = cycleInfo(state);
-
-    const statusCard = !supported()
-      ? note('Este navegador não permite notificações. Instale o app na tela inicial para receber lembretes.')
-      : perm === 'granted'
-        ? `<div class="card" style="display:flex;gap:13px;align-items:center">
-            <span class="floatcard__ico" style="background:var(--leaf-50);color:var(--leaf-600)">${icon('check', 22)}</span>
-            <div class="grow"><b class="fs-14">Lembretes ativados</b>
-              <div class="fs-12 muted mt-4">Enviados às ${n.time} enquanto o app estiver instalado neste aparelho.</div></div>
-            ${isFertileReminderEligible(state) ? '<button class="btn btn--soft btn--sm btn--auto" data-test>Testar</button>' : ''}
-          </div>`
-        : `<div class="card" style="display:flex;gap:13px;align-items:center">
-            <span class="floatcard__ico" style="background:var(--amber-50);color:var(--amber-600)">${icon('bell', 22)}</span>
-            <div class="grow"><b class="fs-14">Ativar lembretes</b>
-              <div class="fs-12 muted mt-4">${perm === 'denied' ? 'Você bloqueou as notificações. Libere nas configurações do navegador.' : 'Avisamos sobre janela fértil, menstruação e registro do dia.'}</div></div>
-            ${perm === 'denied' ? '' : '<button class="btn btn--sm btn--auto" data-ask>Ativar</button>'}
-          </div>`;
+    const pendentes = unreadCount(state);
 
     return {
-      appbar: { title: 'Lembretes' },
+      appbar: { title: 'Avisos' },
       html: `<div class="section pb-24">
-        ${statusCard}
+        <button class="card card--link" data-nav="avisos">
+          <span class="floatcard__ico" style="background:var(--amber-50);color:var(--amber-600)" aria-hidden="true">${icon('bell', 22)}</span>
+          <span class="grow" style="text-align:left">
+            <b style="display:block;font-size:var(--fs-14)">Seus avisos ficam no sininho</b>
+            <span class="fs-12 muted" style="display:block;margin-top:3px">${pendentes ? `${plural(pendentes, 'aviso novo', 'avisos novos')} esperando por você` : 'Nenhum aviso novo agora'}</span>
+          </span>
+          <span style="color:var(--faint);flex:none">${icon('chevron', 18)}</span>
+        </button>
 
-        <div class="section__head"><h2>O que você quer receber</h2></div>
+        <div class="section__head"><h2>O que você quer ver</h2></div>
         <div class="card card--flush">
+          ${toggleRow('Mensagem diária da Flor', n.florDaily, 'florDaily', 'uma pergunta por dia sobre como VOCÊ está')}
           ${toggleRow('Período fértil', n.fertile, 'fertile', 'somente enquanto você estiver na janela fértil')}
           ${toggleRow('Menstruação prevista', n.period, 'period', 'um dia antes da data estimada')}
           ${toggleRow('Registro diário', n.dailyLog, 'dailyLog', 'só se você ainda não registrou o dia')}
           ${toggleRow('Sugestão do dia', n.tip, 'tip', 'conteúdo escolhido para a sua fase')}
-          ${toggleRow('Missões diárias', n.missions, 'missions', 'somente quando ainda houver missões pendentes')}
           ${toggleRow('Pequenas conquistas', n.achievements, 'achievements', 'celebrações de registros, ciclos e outros marcos')}
           ${toggleRow('Vacinas dos bebês', n.babyVaccines, 'babyVaccines', 'no dia anterior e no dia da vacina')}
           ${toggleRow('Consultas dos bebês', n.babyAppointments, 'babyAppointments', 'no dia anterior e no dia da consulta')}
           ${toggleRow('Agenda e tratamentos', n.calendarEvents, 'calendarEvents', 'consultas, exames, vacinas, medicamentos e vitaminas')}
-          ${toggleRow('Atividade da comunidade', n.community, 'community', 'respostas às suas publicações')}
-          <div class="kv">
-            <span class="kv__k">Horário<small>quando os lembretes do dia chegam</small></span>
-            <input class="input input--inline" type="time" id="n-time" value="${n.time}" style="width:auto">
-          </div>
-        </div>
-
-        <div class="section__head"><h2>Como fica no seu celular</h2></div>
-        <div class="lockscreen">
-          <div class="lockscreen__time">${String(new Date().getHours()).padStart(2, '0')}:${String(new Date().getMinutes()).padStart(2, '0')}</div>
-          <div class="lockscreen__date">${cap(fmtWeekday(today()))}, ${fmtFull(today())}</div>
-          <div class="push">
-            <span class="push__ico">${markSvg(22, '#fff', '#FFD34D')}</span>
-            <div class="grow">
-              <b>Florescer 🌸</b>
-              <p>${esc((state.profile.name || '').split(' ')[0] || 'Oi')}, você está na janela fértil. Um bom momento para o casal aproveitar junto, com leveza e sem pressão. 💛</p>
-            </div>
-            <time>agora</time>
-          </div>
         </div>
 
         ${info.known ? `<div class="card mt-16 card--flush">
@@ -221,34 +194,19 @@ export const remindersScreen = {
           <div class="kv"><span class="kv__k">Próximo aviso de menstruação</span><span class="kv__v">${fmtShort(info.nextPeriod)}</span></div>
         </div>` : ''}
 
-        ${note('Os lembretes são locais: ficam agendados no seu aparelho. Se o app for fechado pelo sistema por muito tempo, o aviso pode chegar na próxima abertura.')}
+        ${note('O Florescer não envia notificação para a tela do seu celular e não pede permissão para isso. Os avisos são calculados no aparelho e esperam por você no sininho — nenhum depende de internet.')}
       </div>`,
 
       mount(root) {
-        root.querySelector('[data-ask]')?.addEventListener('click', async () => {
-          const res = await requestPermission();
-          if (res === 'granted') { scheduleReminders(); toast('Lembretes ativados 🌸'); }
-          else toast('Sem problema — você pode ativar depois.');
-          rerender();
-        });
-        root.querySelector('[data-test]')?.addEventListener('click', async () => {
-          const ok = await sendTestNotification();
-          toast(ok ? 'Enviamos uma notificação de teste 🌸' : 'Não foi possível enviar agora.');
-        });
         root.querySelectorAll('[data-toggle]').forEach((b) => {
           b.onclick = () => {
             const k = b.dataset.toggle;
             update((s) => { s.settings.notifications[k] = !s.settings.notifications[k]; });
             b.setAttribute('aria-checked', String(getState().settings.notifications[k]));
             haptic();
-            scheduleReminders();
+            syncNotices();
           };
         });
-        root.querySelector('#n-time').onchange = (e) => {
-          update((s) => { s.settings.notifications.time = e.target.value || '09:00'; });
-          scheduleReminders();
-          toast(`Lembretes às ${e.target.value}`);
-        };
       },
     };
   },
@@ -265,13 +223,17 @@ export const privacyScreen = {
       html: `<div class="section article pb-24">
         <div class="article__body">
           <h2>Onde ficam os seus dados</h2>
-          <p>Tudo o que você registra no Florescer — ciclo, sintomas, humor, observações, publicações — é gravado apenas no armazenamento local deste aparelho. Não enviamos nada para servidores e não há criação de conta.</p>
+          <p>Tudo o que você registra no Florescer — ciclo, sintomas, humor, observações, publicações — é gravado apenas no armazenamento local deste aparelho. Não há criação de conta.</p>
+          <h2>A única exceção: a IA da Flor</h2>
+          <p>Se você ativar as respostas da IA, a sua pergunta e um resumo em números do seu ciclo (dia do ciclo, média, datas estimadas) são enviados ao servidor do Florescer, que usa o serviço de IA da OpenAI para gerar a resposta. Nome, diário, sintomas e fotos nunca são enviados, e perguntas com sinal de alerta são respondidas no próprio aparelho.</p>
+          <p>Nem o Florescer nem a OpenAI guardam essa conversa para treinar modelos: o histórico da Flor fica só neste aparelho.</p>
+          <p>Com a IA desligada, nada sai daqui: a Flor responde pelo guia escrito do app. Você liga e desliga quando quiser em Configurações.</p>
           <h2>O que isso significa na prática</h2>
           <li>Ninguém além de quem usa este aparelho tem acesso aos seus registros.</li>
           <li>Se você limpar os dados do navegador ou desinstalar o app, as informações são apagadas.</li>
           <li>Para trocar de aparelho, use a exportação e depois a importação do arquivo.</li>
           <h2>Seus direitos (LGPD)</h2>
-          <p>Como os dados não saem do aparelho, você exerce diretamente os direitos de acesso, portabilidade e eliminação: exportar gera uma cópia completa e legível; apagar remove tudo de forma definitiva.</p>
+          <p>Como os seus registros não saem do aparelho, você exerce diretamente os direitos de acesso, portabilidade e eliminação: exportar gera uma cópia completa e legível; apagar remove tudo de forma definitiva — inclusive a conversa com a Flor.</p>
           <h2>Saúde é dado sensível</h2>
           <p>Informações sobre ciclo e fertilidade são dados pessoais sensíveis. Recomendamos proteger o aparelho com senha ou biometria e evitar registrar dados em dispositivos compartilhados.</p>
         </div>

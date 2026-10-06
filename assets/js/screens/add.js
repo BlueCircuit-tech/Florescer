@@ -6,7 +6,7 @@ import { navigate } from '../router.js';
 import { today, toKey, fromKey, fmtFull, diffDays } from '../cycle.js';
 import { babyNamesFromProfile, formatBabyNames } from '../babies.js';
 import { registerBirth } from '../postpartum.js';
-import { notifyAchievements } from '../notify.js';
+import { noticeAchievements } from '../notify.js';
 import { FEATURE_TONES, featureDescription, featureLabel, featuresFor, groupFeatures } from '../features.js';
 
 const resultOptions = [
@@ -119,7 +119,7 @@ export const relationshipScreen = {
           if (!date) { toast('Informe a data da relação.'); return; }
           if (diffDays(fromKey(date), today()) > 0) { toast('A data não pode estar no futuro.'); return; }
           const result = saveIntercourse(date, { protected: protectedValue });
-          notifyAchievements(result.achievements);
+          noticeAchievements(result.achievements);
           haptic(14);
           toast('Relação registrada no calendário.');
           navigate('ciclo');
@@ -162,10 +162,16 @@ export const pregnancyTestScreen = {
         <button class="btn mt-16" data-save disabled>${icon('check', 19)} Salvar resultado</button>
 
         ${tests.length ? `<div class="section__head" style="padding:0"><h2>Testes recentes</h2></div>
-          <div class="card card--flush"><div class="itemlist">${tests.map((test) => `<div class="item">
-            <span class="item__ico">${icon('test', 19)}</span>
+          <div class="card card--flush"><div class="itemlist">${tests.map((test) => {
+            // um negativo antigo continua doendo: deixa o acolhimento a um toque
+            const open = test.result === 'negativo';
+            const corpo = `<span class="item__ico">${icon('test', 19)}</span>
             <span class="item__body"><b>${esc(PREGNANCY_TEST_RESULTS[test.result] || test.result)}</b><span>${esc(fmtFull(fromKey(test.date)))}</span></span>
-          </div>`).join('')}</div></div>` : ''}
+            ${open ? `<span class="item__end">${icon('flower', 17)}</span>` : ''}`;
+            return open
+              ? `<button class="item" data-nav="acolhimento" aria-label="Falar com a Flor sobre o resultado de ${esc(fmtFull(fromKey(test.date)))}">${corpo}</button>`
+              : `<div class="item">${corpo}</div>`;
+          }).join('')}</div></div>` : ''}
       </div>`,
       mount(root) {
         const save = root.querySelector('[data-save]');
@@ -195,6 +201,9 @@ export const pregnancyTestScreen = {
             addJourney('pregnant', 'Descobri que estou grávida', 'teste de gravidez positivo registrado');
             toast('Resultado salvo. Bem-vinda ao Florescer Gestação!');
             navigate('gestacao-inicio', { replace: true });
+          } else if (result === 'negativo') {
+            // negativo não volta para a home com um toast: a Flor acolhe antes
+            navigate('acolhimento', { replace: true });
           } else {
             toast('Resultado do teste salvo.');
             navigate('home');

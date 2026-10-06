@@ -6,17 +6,29 @@ import { getState, applyTheme, subscribe } from './store.js';
 import { register, initRouter, render, navigate } from './router.js';
 import { $, toast, esc } from './ui.js';
 import { icon } from './icons.js';
-import { scheduleReminders, pruneNotifyLog } from './notify.js';
+import { syncNotices } from './notify.js';
 import { today, toKey } from './cycle.js';
 
 import onboarding from './screens/onboarding.js';
 import welcome from './screens/welcome.js';
 import home from './screens/home.js';
 import weekByWeek from './screens/weekByWeek.js';
+import weekDetail from './screens/weekDetail.js';
+import maternalBody from './screens/maternalBody.js';
+import cycleTimeline from './screens/cycleTimeline.js';
+import flor from './screens/flor.js';
+import comfort from './screens/comfort.js';
+import notices from './screens/notices.js';
+import florDaily from './screens/florDaily.js';
+import florMoment from './screens/florMoment.js';
+import journeyTimelineScreen from './screens/timeline.js';
+import ebooks from './screens/ebooks.js';
+import pregnancyNutrition from './screens/pregnancyNutrition.js';
 import calendar from './screens/calendar.js';
 import log from './screens/log.js';
 import add, { pregnancyTestScreen, relationshipScreen } from './screens/add.js';
 import pregnancySetup from './screens/pregnancySetup.js';
+import pregnancyDiaryScreen from './screens/pregnancyDiary.js';
 import babyStatus from './screens/babyStatus.js';
 import babyGrowth from './screens/babyGrowth.js';
 import babyFeeding from './screens/babyFeeding.js';
@@ -28,7 +40,7 @@ import vaccines from './screens/vaccines.js';
 import development from './screens/development.js';
 import resources from './screens/resources.js';
 import schedule from './screens/schedule.js';
-import missions from './screens/missions.js';
+import prenatal from './screens/prenatal.js';
 import tips, { libraryScreen, articleScreen, savedScreen } from './screens/tips.js';
 import community, { postScreen, newPostScreen } from './screens/community.js';
 import insights from './screens/insights.js';
@@ -39,9 +51,9 @@ import admin from './screens/admin.js';
 
 /* ---------- telas ---------- */
 [
-  onboarding, welcome, home, weekByWeek, calendar, log, add, pregnancyTestScreen, relationshipScreen, pregnancySetup, babyStatus, babyGrowth, babyFeeding, breastfeeding, babyHealth, diapers, sleep, vaccines, development, resources, schedule, missions, tips, libraryScreen, articleScreen, savedScreen,
+  onboarding, welcome, home, weekByWeek, weekDetail, maternalBody, cycleTimeline, pregnancyNutrition, flor, comfort, florDaily, florMoment, journeyTimelineScreen, ebooks, calendar, log, add, pregnancyTestScreen, relationshipScreen, pregnancySetup, pregnancyDiaryScreen, babyStatus, babyGrowth, babyFeeding, breastfeeding, babyHealth, diapers, sleep, vaccines, development, resources, schedule, prenatal, tips, libraryScreen, articleScreen, savedScreen,
   community, postScreen, newPostScreen, insights, profile, premium,
-  settings, remindersScreen, privacyScreen, helpScreen, aboutScreen, admin,
+  settings, remindersScreen, notices, privacyScreen, helpScreen, aboutScreen, admin,
 ].forEach(register);
 
 /* ---------- service worker + instalação ---------- */
@@ -144,20 +156,23 @@ function boot() {
     history.replaceState(null, '', '#/inicio');
   }
 
+  // os avisos do dia são calculados antes do primeiro render: o sininho
+  // já aparece com a contagem certa
+  syncNotices();
+
   render();
   initServiceWorker();
   initInstallPrompt();
   initConnectivity();
   scheduleDailyRefresh();
-  pruneNotifyLog();
-  scheduleReminders();
 
   // reagenda lembretes ao voltar para o app
+  // voltar ao app conta como "abrir": é aqui que novos avisos entram
   document.addEventListener('visibilitychange', () => {
     if (!document.hidden) {
       refreshForNewDay();
       scheduleDailyRefresh();
-      scheduleReminders();
+      if (syncNotices()) render();
     }
   });
 

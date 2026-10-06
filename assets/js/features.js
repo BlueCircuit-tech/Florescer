@@ -38,8 +38,16 @@ export const FEATURES = [
     addLabel: 'Adicionar um Teste',
   }),
   feature('relationship', ['tentante'], 'fertility', 'relacao', 'heartFill', 'Registrar relação', 'Um registro simples e privado no calendário.', ['add', 'resources'], 'rose'),
+  feature('journey', ALL_PHASES, 'planning', 'jornada', 'sparkle', 'Minha jornada', 'Seus marcos reunidos sozinhos, do começo até aqui.', ['home', 'resources'], 'lilac'),
   feature('reports', ['tentante', 'gravida'], 'planning', 'relatorios', 'chart', 'Relatórios', 'Visualize ciclos, sintomas e informações para consultas.', ['home', 'resources'], 'leaf'),
+  feature('prenatal-plan', ['gravida'], 'pregnancy', 'pre-natal', 'calendar', 'Calendário inteligente', 'Consultas, ultrassons, exames e vacinas organizados por semana.', ['home', 'resources'], 'leaf'),
+  feature('week-by-week', ['gravida'], 'pregnancy', 'semana-a-semana', 'book', 'Semana a Semana', 'Uma página para cada semana da gestação do seu bebê.', ['home', 'resources'], 'lilac'),
+  feature('maternal-body', ['gravida'], 'pregnancy', 'corpo-da-mae', 'pregnant', 'Mudanças no corpo', 'Sintomas, hormônios, barriga e emoções em cada fase.', ['resources'], 'rose'),
+  feature('pregnancy-nutrition', ['gravida'], 'pregnancy', 'alimentacao-gestante', 'leaf', 'Alimentação na gestação', 'Alimentos liberados, proibidos, suplementos e receitas fáceis.', ['resources'], 'leaf'),
+  feature('cycle-timeline', ['tentante'], 'fertility', 'linha-do-tempo', 'flower', 'Linha do tempo do ciclo', 'As fases do seu ciclo e o que acontece no corpo em cada uma.', ['home', 'resources'], 'lilac'),
   feature('pregnancy-profile', ['gravida'], 'pregnancy', 'perfil', 'pregnant', 'Dados da gestação', 'DUM, DPP, tipo de gestação, nomes e ultrassonografia.', ['resources'], 'rose'),
+  // continua no pós-parto: é depois do nascimento que ela mais quer reler
+  feature('pregnancy-diary', ['gravida', 'posparto'], 'pregnancy', 'diario-gestacional', 'book', 'Diário Gestacional', 'Reúna tudo o que você registrou na gestação em um PDF.', ['resources'], 'amber'),
   {
     id: 'birth', phases: ['gravida'], group: 'pregnancy', action: 'register-birth', icon: 'baby',
     label: 'Registrar nascimento', description: 'Inicie o Florescer Baby após o nascimento.', surfaces: ['add'], tone: 'rose',
@@ -68,7 +76,7 @@ export const FEATURES = [
   }),
   feature('schedule', ALL_PHASES, 'planning', 'agenda', 'calendar', 'Agenda', 'Consultas, exames, tratamentos e lembretes.', ['home', 'resources'], 'leaf'),
   feature('reminders', ALL_PHASES, 'planning', 'lembretes', 'bell', 'Lembretes', 'Escolha quais avisos deseja receber e quando.', ['resources'], 'amber'),
-  feature('missions', ALL_PHASES, 'daily', 'missoes', 'flag', 'Missões diárias', 'Pequenos cuidados para manter uma rotina possível.', ['home', 'resources'], 'amber'),
+  feature('flor', ALL_PHASES, 'content', 'flor', 'flower', 'IA Flor', 'Tire dúvidas sobre ciclo, menstruação, hormônios e fertilidade.', ['home', 'resources'], 'lilac'),
   feature('tips', ALL_PHASES, 'content', 'dicas', 'sparkle', 'Sugestões', 'Orientações curtas escolhidas para a sua fase.', ['resources'], 'rose'),
   feature('library', ALL_PHASES, 'content', {
     tentante: 'biblioteca/tentantes', gravida: 'biblioteca/gestantes', posparto: 'biblioteca/pos-parto',
@@ -84,6 +92,7 @@ export const FEATURES = [
     gravida: 'Relatos, dúvidas e trocas exclusivas entre gestantes.',
     posparto: 'Maternidade real, apoio e experiências do pós-parto.',
   }, ['home', 'resources'], 'lilac'),
+  feature('ebooks', ALL_PHASES, 'content', 'materiais', 'book', 'E-books e materiais', 'Guias completos para ler e guardar no seu aparelho.', ['resources'], 'amber'),
   feature('premium', ALL_PHASES, 'content', 'premium', 'crown', 'Florescer Premium', 'Conheça conteúdos e recursos exclusivos.', ['resources'], 'lilac'),
 ];
 

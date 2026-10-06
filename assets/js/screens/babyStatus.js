@@ -5,7 +5,7 @@ import { icon } from '../icons.js';
 import { esc, haptic, toast } from '../ui.js';
 import { navigate } from '../router.js';
 import { diffDays, fmtFull, fromKey, today, toKey } from '../cycle.js';
-import { scheduleReminders } from '../notify.js';
+import { syncNotices } from '../notify.js';
 
 export default {
   id: 'status-bebe',
@@ -88,7 +88,7 @@ export default {
             return;
           }
           addJourney('baby', 'Primeiro status do bebê registrado', 'crescimento e cuidados acompanhados no Florescer Baby');
-          scheduleReminders();
+          syncNotices();
           haptic(14);
           toast('Status do bebê salvo.');
           navigate('crescimento-bebe');

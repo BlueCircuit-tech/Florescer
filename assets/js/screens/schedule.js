@@ -5,7 +5,7 @@ import { icon } from '../icons.js';
 import { confirmSheet, esc, haptic, toast } from '../ui.js';
 import { navigate } from '../router.js';
 import { addDays, fromKey, today, toKey } from '../cycle.js';
-import { permission, requestPermission, scheduleReminders } from '../notify.js';
+import { syncNotices } from '../notify.js';
 
 const PHASE_COPY = {
   tentante: ['Organize seu cuidado', 'Agende consultas, exames, medicamentos e vitaminas.'],
@@ -96,6 +96,8 @@ export default {
           try {
             update((current) => saveScheduledEvent(current, {
               id: existing?.id,
+              // mantém o vínculo com a etapa do plano de pré-natal ao editar
+              planId: existing?.planId,
               phase,
               type: typeInput.value,
               title: root.querySelector('#event-title').value,
@@ -112,8 +114,7 @@ export default {
             return;
           }
           addJourney(CALENDAR_TYPES[typeInput.value].icon, 'Primeiro compromisso agendado', 'um cuidado importante organizado no calendário');
-          if (reminderInput.value !== '-1' && permission() === 'default') await requestPermission();
-          scheduleReminders();
+          syncNotices();
           haptic(14);
           toast(existing ? 'Compromisso atualizado.' : 'Compromisso adicionado ao calendário.');
           navigate('ciclo');
@@ -128,7 +129,7 @@ export default {
           });
           if (!confirmed) return;
           update((current) => deleteScheduledEvent(current, existing.id));
-          scheduleReminders();
+          syncNotices();
           toast('Compromisso excluído.');
           navigate('ciclo');
         });

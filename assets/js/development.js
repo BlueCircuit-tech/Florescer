@@ -1,6 +1,7 @@
 import { diffDays, fromKey, today } from './cycle.js';
 
 export const DEVELOPMENT_MILESTONES = [
+  { id: 'first_bath', label: 'Primeiro banho', emoji: '🛁' },
   { id: 'first_smile', label: 'Primeiro sorriso', emoji: '😊' },
   { id: 'holds_head', label: 'Sustentou a cabeça', emoji: '🧸' },
   { id: 'first_roll', label: 'Rolou pela primeira vez', emoji: '🔄' },

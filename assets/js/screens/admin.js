@@ -94,6 +94,24 @@ const COLLECTIONS = {
     ],
   },
 
+  materiais: {
+    key: 'ebooks',
+    title: 'E-books e materiais',
+    icon: 'book',
+    describe: (list) => (list.length ? `${list.length} materiais publicados` : 'nenhum material publicado'),
+    label: (e) => e.title,
+    sub: (e) => `${e.file || 'sem arquivo'}${e.premium ? ' · Premium' : ''}`,
+    blank: () => ({ id: uid(), title: '', excerpt: '', file: '', pages: null, premium: false, phases: ['tentante', 'gravida', 'posparto'] }),
+    fields: [
+      { k: 'title', label: 'Título', type: 'text', required: true },
+      { k: 'excerpt', label: 'Resumo (aparece na lista)', type: 'textarea', rows: 2 },
+      { k: 'file', label: 'Nome do arquivo (coloque o PDF na pasta /ebooks/ do projeto)', type: 'text', required: true },
+      { k: 'pages', label: 'Páginas', type: 'number', min: 1, max: 2000 },
+      { k: 'premium', label: 'Exclusivo do Premium', type: 'bool' },
+      { k: 'phases', label: 'Aparece para', type: 'multi', options: PHASE_OPTIONS, required: true },
+    ],
+  },
+
   artigos: {
     key: 'articles',
     title: 'Artigos da biblioteca',
@@ -448,10 +466,7 @@ function challengeScreen() {
     html: `<div class="section pb-24">
       <div class="field"><label for="ch-title">Título</label><input id="ch-title" type="text" value="${esc(ch.title)}"></div>
       <div class="field"><label for="ch-desc">Descrição</label><textarea id="ch-desc" rows="3">${esc(ch.description)}</textarea></div>
-      <div class="row" style="gap:12px">
-        <div class="field grow"><label for="ch-days">Dias</label><input id="ch-days" type="number" min="1" max="31" value="${ch.days}"></div>
-        <div class="field grow"><label for="ch-part">Participantes</label><input id="ch-part" type="number" min="0" value="${ch.participants}"></div>
-      </div>
+      <div class="field"><label for="ch-days">Dias</label><input id="ch-days" type="number" min="1" max="31" value="${ch.days}"></div>
       <button class="btn" data-save>${icon('check', 18)} Salvar</button>
       ${cms.isCustom('challenge') ? '<button class="btn btn--ghost mt-8" data-restore>Restaurar padrão</button>' : ''}
     </div>`,
@@ -461,7 +476,6 @@ function challengeScreen() {
           title: root.querySelector('#ch-title').value.trim() || ch.title,
           description: root.querySelector('#ch-desc').value.trim(),
           days: Math.min(31, Math.max(1, +root.querySelector('#ch-days').value || 7)),
-          participants: Math.max(0, +root.querySelector('#ch-part').value || 0),
         });
         toast('Desafio atualizado 🌸');
         navigate('admin');
@@ -475,9 +489,26 @@ function challengeScreen() {
 
 function plansScreen() {
   const plans = cms.getPlans();
+  const state = getState();
+  const interesse = state.premiumInterest;
   return {
     appbar: { title: 'Planos e preços' },
     html: `<div class="section pb-24">
+      ${note('As assinaturas ainda não estão abertas: a tela de Premium apresenta os planos mas não cobra nem libera nada. Estes valores já ficam prontos para quando a cobrança for ligada.')}
+
+      <div class="section__head"><h2>Acesso Premium neste aparelho</h2></div>
+      <div class="card card--flush">
+        <div class="kv">
+          <span class="kv__k">Premium liberado<small>para testar os recursos pagos sem cobrança</small></span>
+          <button class="toggle" role="switch" aria-checked="${state.premium}" data-premium aria-label="Liberar o Premium neste aparelho"></button>
+        </div>
+        <div class="kv">
+          <span class="kv__k">Interesse registrado<small>quando a usuária toca em “Avise-me quando abrir”</small></span>
+          <span class="kv__v">${interesse ? `${esc(plans.find((p) => p.id === interesse.plan)?.label || interesse.plan)} · ${esc(fmtLong(new Date(interesse.at)))}` : 'nenhum'}</span>
+        </div>
+      </div>
+
+      <div class="section__head"><h2>Valores</h2></div>
       ${plans.map((p, i) => `
         <div class="card mb-12">
           <span class="eyebrow">${esc(p.label)}</span>
@@ -489,6 +520,15 @@ function plansScreen() {
       ${cms.isCustom('plans') ? '<button class="btn btn--ghost mt-8" data-restore>Restaurar padrão</button>' : ''}
     </div>`,
     mount(root) {
+      root.querySelector('[data-premium]').onclick = () => {
+        update((s) => {
+          s.premium = !s.premium;
+          s.premiumSince = s.premium ? Date.now() : null;
+        });
+        haptic();
+        toast(getState().premium ? 'Premium liberado neste aparelho.' : 'Premium desligado.');
+        rerender();
+      };
       root.querySelector('[data-save]').onclick = () => {
         cms.set('plans', plans.map((p, i) => ({
           ...p,

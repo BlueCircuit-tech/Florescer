@@ -5,7 +5,7 @@ import { icon } from '../icons.js';
 import { confirmSheet, esc, haptic, toast } from '../ui.js';
 import { navigate } from '../router.js';
 import { fmtFull, fromKey, today, toKey } from '../cycle.js';
-import { permission, requestPermission, scheduleReminders } from '../notify.js';
+import { syncNotices } from '../notify.js';
 
 export default {
   id: 'vacinas-bebe',
@@ -58,9 +58,8 @@ export default {
               notes: root.querySelector('#vaccine-notes').value,
             }));
           } catch (error) { toast(error.message); return; }
-          if (statusInput.value === 'scheduled' && permission() === 'default') await requestPermission();
           addJourney('shield', 'Primeira vacina registrada', 'cuidados de vacinação acompanhados no Florescer Baby');
-          scheduleReminders();
+          syncNotices();
           haptic(14);
           toast('Vacina salva no histórico.');
           navigate(`vacinas-bebe?b=${encodeURIComponent(selected)}`, { replace: true });
@@ -69,7 +68,7 @@ export default {
         root.querySelectorAll('[data-take-vaccine]').forEach((button) => {
           button.onclick = () => {
             update((current) => markVaccineTaken(current, button.dataset.takeVaccine, todayKey));
-            scheduleReminders();
+            syncNotices();
             haptic(14);
             toast('Vacina marcada como tomada hoje.');
             navigate(`vacinas-bebe?b=${encodeURIComponent(selected)}`, { replace: true });
@@ -79,7 +78,7 @@ export default {
           const confirmed = await confirmSheet({ title: 'Excluir vacina?', message: 'Este registro será removido do histórico e do calendário.', confirmLabel: 'Excluir', danger: true });
           if (!confirmed) return;
           update((current) => deleteBabyVaccine(current, existing.id));
-          scheduleReminders();
+          syncNotices();
           toast('Vacina excluída.');
           navigate(`vacinas-bebe?b=${encodeURIComponent(selected)}`, { replace: true });
         });

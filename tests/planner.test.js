@@ -17,7 +17,9 @@ test('oferece categorias específicas para tentante, gestante e pós-parto', () 
   assert.equal(trying.includes('ultrasound'), false);
   assert.equal(pregnant.includes('ultrasound'), true);
   assert.equal(postpartum.includes('vaccine'), true);
-  assert.equal(pregnant.includes('vaccine'), false);
+  // gestantes também recebem vacinas (dTpa, influenza, hepatite B)
+  assert.equal(pregnant.includes('vaccine'), true);
+  assert.equal(trying.includes('vaccine'), false);
 });
 
 test('salva, edita e exclui um compromisso', () => {

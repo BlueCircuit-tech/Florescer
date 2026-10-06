@@ -1,13 +1,20 @@
 /**
- * Paywall e gestão da assinatura.
- * A cobrança real depende de integração com loja/gateway — aqui o estado
- * é local e serve para liberar os recursos dentro do app.
+ * Vitrine do Premium e gestão da assinatura.
+ *
+ * A cobrança ainda não existe: não há loja nem gateway integrado. Por isso
+ * esta tela NÃO libera o Premium — um botão que entrega a assinatura de graça
+ * é uma compra falsa, e uma usuária real passaria a usar o app achando que
+ * pagou. A tela apresenta planos e benefícios e registra o interesse; a
+ * liberação para testes fica no painel da administradora.
+ *
+ * Para ligar a cobrança de verdade depois, basta trocar `data-notify` por uma
+ * chamada ao gateway e marcar `premium` quando o pagamento for confirmado.
  */
-import { getState, update, addJourney } from '../store.js';
+import { getState, update } from '../store.js';
 import { icon, markSvg } from '../icons.js';
 import { esc, toast, confirmSheet, note } from '../ui.js';
 import { navigate } from '../router.js';
-import { fmtLong, addDays, today } from '../cycle.js';
+import { fmtLong } from '../cycle.js';
 import * as cms from '../cms.js';
 
 let plan = 'anual';
@@ -52,11 +59,11 @@ export default {
               </button>`).join('')}
           </div>
 
-          <button class="btn btn--grad mt-16" data-sub>${icon('crown', 19)} Quero florescer</button>
+          ${note('As assinaturas ainda não estão abertas. Avise-me e eu te chamo assim que o Premium começar — nada é cobrado agora.')}
+          <button class="btn btn--grad mt-16" data-notify>${icon('bell', 19)} ${state.premiumInterest ? 'Você está na lista 💛' : 'Avise-me quando abrir'}</button>
           <button class="btn btn--soft mt-8" data-free>Continuar na versão gratuita</button>
           <p class="center fs-11 faint mt-12" style="line-height:1.6">
-            Inclui os e-books “100 nomes de meninas” e “100 nomes de meninos”, com significados.<br>
-            Renovação automática · cancele a qualquer momento nas configurações.
+            Vai incluir os e-books “100 nomes de meninas” e “100 nomes de meninos”, com significados.
           </p>
         </div>
       </div>`,
@@ -67,10 +74,10 @@ export default {
             root.querySelectorAll('[data-plan]').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
           };
         });
-        root.querySelector('[data-sub]').onclick = () => {
-          update((s) => { s.premium = true; s.premiumSince = Date.now(); s.plan = plan; });
-          addJourney('crown', 'Assinei o Florescer Premium', cms.getPlans().find((p) => p.id === plan).label.toLowerCase());
-          toast('Bem-vinda ao Premium! Conteúdos e análises liberados 🌸');
+        root.querySelector('[data-notify]').onclick = () => {
+          // registra o interesse no aparelho; nenhuma cobrança acontece aqui
+          update((s) => { s.premiumInterest = { plan, at: Date.now() }; });
+          toast('Anotado! Te avisamos aqui mesmo quando as assinaturas abrirem 💛');
           navigate('home');
         };
         root.querySelector('[data-free]').onclick = () => {
@@ -82,23 +89,17 @@ export default {
   },
 };
 
+/** Premium ativo. Hoje só chega aqui quem foi liberada pelo painel. */
 function manageView(state) {
-  const p = cms.getPlans().find((x) => x.id === (state.plan || 'anual'));
-  const renew = addDays(new Date(state.premiumSince || Date.now()), p.id === 'anual' ? 365 : 30);
   return {
-    appbar: { title: 'Minha assinatura' },
+    appbar: { title: 'Meu Premium' },
     html: `<div class="section pb-24">
       <div class="card center" style="background:var(--grad-lilac);color:#fff;border:0">
         <div style="width:56px;height:56px;border-radius:18px;background:rgba(255,255,255,.18);display:grid;place-items:center;margin:4px auto 12px">${icon('crown', 26)}</div>
         <b style="font-family:var(--font-display);font-size:18px">Florescer Premium ativo</b>
-        <p class="fs-13" style="color:rgba(255,255,255,.85);margin-top:4px">Plano ${p.label.toLowerCase()} · ${p.price}${p.per}</p>
+        <p class="fs-13" style="color:rgba(255,255,255,.85);margin-top:4px">Acesso liberado${state.premiumSince ? ` em ${fmtLong(new Date(state.premiumSince))}` : ''}</p>
       </div>
-      <div class="card card--flush mt-16">
-        <div class="kv"><span class="kv__k">Assinante desde</span><span class="kv__v">${fmtLong(new Date(state.premiumSince))}</span></div>
-        <div class="kv"><span class="kv__k">Próxima renovação</span><span class="kv__v">${fmtLong(renew)}</span></div>
-        <div class="kv"><span class="kv__k">Forma de pagamento</span><span class="kv__v">A definir na loja</span></div>
-      </div>
-      <div class="section__head"><h2>Incluído no seu plano</h2></div>
+      <div class="section__head"><h2>O que está liberado</h2></div>
       <div class="card card--flush">
         ${cms.getBenefits().map((b) => `
           <div class="item"><span class="item__ico">${icon(b.icon, 19)}</span>
@@ -106,20 +107,20 @@ function manageView(state) {
             <span class="item__end" style="color:var(--leaf-500)">${icon('check', 18)}</span>
           </div>`).join('')}
       </div>
-      ${note('A cobrança é processada pela loja de aplicativos. O cancelamento mantém o acesso até o fim do período pago.')}
-      <button class="btn btn--danger mt-16" data-cancel>Cancelar assinatura</button>
+      ${note('As assinaturas pagas ainda não abriram: este acesso foi liberado pela administradora e não gera cobrança nenhuma.')}
+      <button class="btn btn--danger mt-16" data-cancel>Voltar para a versão gratuita</button>
     </div>`,
     mount(root) {
       root.querySelector('[data-cancel]').onclick = async () => {
         const ok = await confirmSheet({
-          title: 'Cancelar o Premium?',
+          title: 'Voltar para a versão gratuita?',
           message: 'Você perde as análises avançadas, os conteúdos completos e os relatórios. Seus registros continuam salvos.',
-          confirmLabel: 'Cancelar assinatura',
+          confirmLabel: 'Voltar ao gratuito',
           danger: true,
         });
         if (!ok) return;
         update((s) => { s.premium = false; s.premiumSince = null; });
-        toast('Assinatura cancelada. Você continua com o plano gratuito 💛');
+        toast('Pronto. Você continua com o plano gratuito 💛');
         navigate('perfil');
       };
     },

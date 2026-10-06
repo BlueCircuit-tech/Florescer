@@ -5,7 +5,7 @@ export const CALENDAR_TYPES = {
   prenatal: { label: 'Consulta pré-natal', icon: 'pregnant', phases: ['gravida'] },
   ultrasound: { label: 'Ultrassom', icon: 'baby', phases: ['gravida'] },
   lab: { label: 'Exame laboratorial', icon: 'test', phases: ['tentante', 'gravida', 'posparto'] },
-  vaccine: { label: 'Vacina', icon: 'shield', phases: ['posparto'] },
+  vaccine: { label: 'Vacina', icon: 'shield', phases: ['gravida', 'posparto'] },
   medication: { label: 'Medicamento', icon: 'bottle', phases: ['tentante', 'gravida', 'posparto'] },
   vitamin: { label: 'Vitamina', icon: 'leaf', phases: ['tentante', 'gravida', 'posparto'] },
 };
@@ -37,6 +37,8 @@ export function saveScheduledEvent(state, input, now = Date.now()) {
   const id = input.id || `calendar:${now}`;
   const event = {
     id,
+    // liga o compromisso à etapa do plano de pré-natal que o originou
+    planId: input.planId || null,
     phase,
     type: input.type,
     title,

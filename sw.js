@@ -3,7 +3,7 @@
  * Estratégia: cache-first para a casca do app (funciona 100% offline),
  * network-first para o HTML (para pegar atualizações quando houver rede).
  */
-const VERSION = 'florescer-v1.30.0';
+const VERSION = 'florescer-v1.43.0';
 const SHELL = [
   './',
   './index.html',
@@ -16,6 +16,18 @@ const SHELL = [
   './assets/js/icons.js',
   './assets/js/cycle.js',
   './assets/js/pregnancy.js',
+  './assets/js/pregnancyNutrition.js',
+  './assets/js/pregnancyDiary.js',
+  './assets/js/florAssistant.js',
+  './assets/js/florPregnancy.js',
+  './assets/js/florProfile.js',
+  './assets/js/florVoice.js',
+  './assets/js/florDaily.js',
+  './assets/js/florMoments.js',
+  './assets/js/timeline.js',
+  './assets/js/florClient.js',
+  './assets/js/comfort.js',
+  './assets/js/prenatal.js',
   './assets/js/fertility.js',
   './assets/js/pregnancyTest.js',
   './assets/js/pregnancyProfile.js',
@@ -34,32 +46,43 @@ const SHELL = [
   './assets/js/development.js',
   './assets/js/features.js',
   './assets/js/communities.js',
-  './assets/js/missions.js',
   './assets/js/libraries.js',
   './assets/js/welcome.js',
   './assets/js/content.js',
   './assets/js/cms.js',
   './assets/js/notify.js',
+  './assets/js/screens/notices.js',
   './assets/js/screens/onboarding.js',
   './assets/js/screens/welcome.js',
   './assets/js/screens/home.js',
   './assets/js/screens/weekByWeek.js',
+  './assets/js/screens/weekDetail.js',
+  './assets/js/screens/maternalBody.js',
+  './assets/js/screens/cycleTimeline.js',
+  './assets/js/screens/pregnancyNutrition.js',
+  './assets/js/screens/flor.js',
+  './assets/js/screens/comfort.js',
+  './assets/js/screens/florDaily.js',
+  './assets/js/screens/florMoment.js',
+  './assets/js/screens/timeline.js',
+  './assets/js/screens/ebooks.js',
   './assets/js/screens/calendar.js',
   './assets/js/screens/log.js',
   './assets/js/screens/add.js',
   './assets/js/screens/pregnancySetup.js',
+  './assets/js/screens/pregnancyDiary.js',
   './assets/js/screens/babyStatus.js',
   './assets/js/screens/babyGrowth.js',
   './assets/js/screens/babyFeeding.js',
   './assets/js/screens/breastfeeding.js',
   './assets/js/screens/babyHealth.js',
   './assets/js/screens/schedule.js',
+  './assets/js/screens/prenatal.js',
   './assets/js/screens/diapers.js',
   './assets/js/screens/sleep.js',
   './assets/js/screens/vaccines.js',
   './assets/js/screens/development.js',
   './assets/js/screens/resources.js',
-  './assets/js/screens/missions.js',
   './assets/js/screens/tips.js',
   './assets/js/screens/community.js',
   './assets/js/screens/insights.js',
@@ -105,6 +128,9 @@ self.addEventListener('fetch', (event) => {
   const url = new URL(request.url);
   if (url.origin !== location.origin) return;
 
+  // a API nunca é cacheada: resposta de IA guardada viraria resposta errada depois
+  if (url.pathname.startsWith('/api/')) return;
+
   // HTML: rede primeiro, cache como reserva (offline)
   if (request.mode === 'navigate' || request.headers.get('accept')?.includes('text/html')) {
     event.respondWith(
@@ -134,16 +160,6 @@ self.addEventListener('fetch', (event) => {
   );
 });
 
-/* Abrir o app ao tocar em uma notificação */
-self.addEventListener('notificationclick', (event) => {
-  event.notification.close();
-  const target = event.notification.data?.url || './';
-  event.waitUntil(
-    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((list) => {
-      for (const client of list) {
-        if ('focus' in client) { client.navigate?.(target); return client.focus(); }
-      }
-      return self.clients.openWindow(target);
-    }),
-  );
-});
+/* O Florescer não usa push nem notificação do sistema: os avisos ficam
+   dentro do app, no sininho da Home (assets/js/notify.js). Por isso não há
+   handler de 'push' nem de 'notificationclick' aqui. */

@@ -14,7 +14,10 @@
     "start": "npx --yes serve . -l 4173",
     "icons": "node tools/make-icons.mjs",
     "icons:docker": "docker run --rm -v \"%cd%:/work\" -w /work node:20-alpine sh -c \"npm i --no-save --no-audit --no-fund --loglevel=error sharp && node tools/make-icons.mjs\"",
-    "deploy": "vercel --prod"
+    "deploy": "vercel --prod",
+    "dev:api": "npx --yes vercel dev --listen 4173"
   },
-  "dependencies": {}
+  "dependencies": {
+    "openai": "^7.28.0"
+  }
 }
