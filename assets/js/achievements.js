@@ -45,7 +45,7 @@ export function achievementNotification(state, achievements) {
   const privateAchievement = achievements.some((item) => item.private);
   const phaseCopy = {
     tentante: {
-      title: 'Uma conquista na sua jornada tentante ✨',
+      title: 'Uma conquista na sua jornada tentante',
       multiple: 'Seu acompanhamento do ciclo ganhou novos marcos.',
       first: 'Seu primeiro registro começou uma rotina de conhecimento e cuidado.',
       seven: 'Você já reuniu 7 registros para compreender melhor o seu ciclo.',
@@ -53,7 +53,7 @@ export function achievementNotification(state, achievements) {
       private: 'Um novo marco privado foi adicionado à sua jornada.',
     },
     gravida: {
-      title: 'Uma conquista na sua gestação ✨',
+      title: 'Uma conquista na sua gestação',
       multiple: 'Novas memórias desta fase foram adicionadas à sua jornada.',
       first: 'Você guardou o primeiro registro desta fase tão especial.',
       seven: 'Você já guardou 7 registros da sua jornada gestacional.',
@@ -61,7 +61,7 @@ export function achievementNotification(state, achievements) {
       private: 'Uma nova conquista foi adicionada à sua jornada.',
     },
     posparto: {
-      title: 'Uma conquista no Florescer Baby ✨',
+      title: 'Uma conquista no Florescer Baby',
       multiple: 'Novos marcos da sua rotina de cuidado foram guardados.',
       first: 'Você fez o primeiro registro da sua rotina no Florescer Baby.',
       seven: 'Você já guardou 7 registros de cuidado e acolhimento no pós-parto.',

@@ -16,6 +16,7 @@ export const DEFAULTS = () => ({
   premiumSince: null,
   profile: {
     name: '',
+    avatarPhoto: null,          // foto de perfil, quadrada e reduzida no aparelho
     phase: 'tentante',          // tentante | gravida | posparto
     tryingFor: null,            // nao_comecei | ate_6m | 6m_1a | mais_1a
     regularity: null,           // regular | irregular | nao_sei

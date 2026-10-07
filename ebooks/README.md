@@ -13,11 +13,21 @@ lê os PDFs.
    do Premium e para quais fases aparece.
 3. Pronto — ele aparece na Central de Recursos das usuárias dessas fases.
 
-## Por que não há arquivos aqui ainda
+## O que já está publicado
 
-Os e-books foram enviados por WhatsApp e ainda não entraram no repositório.
-Enquanto a pasta estiver vazia, a tela mostra um aviso honesto de que nada
-foi publicado, em vez de uma estante falsa.
+| Arquivo | Material | Fases |
+| --- | --- | --- |
+| `100-nomes-de-meninas.pdf` | 100 nomes de meninas (8 págs) | todas |
+| `100-nomes-de-meninos.pdf` | 100 nomes de meninos (8 págs) | todas |
+| `guia-de-ansiedade.pdf` | Guia Florescer: gestão da ansiedade e a espera (5 págs) | tentantes |
+
+Os três são **gratuitos**. O catálogo padrão fica em `EBOOKS`, no
+`assets/js/content.js`; o painel pode sobrescrever sem mexer em código.
+
+O guia de ansiedade foi entregue em `.docx` e convertido para PDF
+(`tools/` não guarda o script porque foi uma conversão única — o original
+em Word continua com a cliente). O conteúdo foi conferido parágrafo a
+parágrafo contra o documento original.
 
 ## Limites
 

@@ -14,7 +14,7 @@ import { journeyTimeline, TIMELINE_GROUPS } from '../timeline.js';
 function marco(item) {
   const group = TIMELINE_GROUPS[item.group] || TIMELINE_GROUPS.tentativa;
   return `<li class="tl__item tl__item--${esc(item.group)}">
-    <span class="tl__dot" aria-hidden="true"><em>${item.emoji}</em></span>
+    <span class="tl__dot" aria-hidden="true">${icon(item.icon, 17)}</span>
     <div class="tl__body">
       <span class="tl__when">${esc(item.label)} · ${esc(group.label)}</span>
       <b class="tl__title">${esc(item.title)}</b>

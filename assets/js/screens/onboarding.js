@@ -9,6 +9,7 @@ import { navigate } from '../router.js';
 import { toKey, today, addDays, fromKey, diffDays } from '../cycle.js';
 import { applyPregnancyProfile, pregnancyDraft, pregnancyQuizSteps } from '../pregnancyProfile.js';
 import { applyBabyNames, babyNamesEditor, babyNamesFromProfile, bindBabyNamesEditor } from '../babies.js';
+import { compressAvatar } from '../media.js';
 
 let step = 0;
 let draft = null;
@@ -32,9 +33,49 @@ const initDraft = () => {
     birthDate: initialBirthDate(p.birthDate),
     babyName: p.babyName || '',
     babyNames: babyNamesFromProfile(p),
+    avatarPhoto: p.avatarPhoto || null,
     tips: true,
   };
 };
+
+/* --------- foto de perfil --------- */
+function avatarPreview(draft) {
+  return draft.avatarPhoto
+    ? `<img src="${draft.avatarPhoto}" alt="Sua foto de perfil">`
+    : `<span class="avatarpick__empty">${icon('user', 30)}</span>`;
+}
+
+function bindAvatar(root) {
+  const input = root.querySelector('#q-avatar');
+  const preview = root.querySelector('[data-avatar-preview]');
+
+  const pintar = () => {
+    preview.innerHTML = avatarPreview(draft);
+    const remover = root.querySelector('[data-avatar-remove]');
+    if (remover) remover.hidden = !draft.avatarPhoto;
+  };
+
+  input.onchange = async () => {
+    const file = input.files?.[0];
+    input.value = '';
+    if (!file) return;
+    try {
+      draft.avatarPhoto = await compressAvatar(file);
+      pintar();
+      haptic(12);
+      toast('Foto adicionada.');
+    } catch (err) {
+      toast(err.message || 'Não foi possível usar esta foto.');
+    }
+  };
+
+  root.querySelector('[data-avatar-remove]')?.addEventListener('click', () => {
+    draft.avatarPhoto = null;
+    pintar();
+  });
+
+  pintar();
+}
 
 /* --------- definição dos passos --------- */
 function steps() {
@@ -54,7 +95,23 @@ function steps() {
         el.oninput = () => { draft.name = el.value; };
         el.onkeydown = (e) => { if (e.key === 'Enter') next(); };
       },
-      valid: () => draft.name.trim().length >= 2 || 'Escreva ao menos 2 letras 💛',
+      valid: () => draft.name.trim().length >= 2 || 'Escreva ao menos 2 letras',
+    },
+    {
+      key: 'avatar',
+      title: 'Quer colocar uma foto sua?',
+      sub: 'Opcional. Ela aparece só para você, no topo do app, e fica guardada neste aparelho.',
+      render: () => `<div class="quiz__opts">
+        <div class="avatarpick">
+          <div class="avatarpick__preview" data-avatar-preview>${avatarPreview(draft)}</div>
+          <label class="btn btn--soft btn--sm btn--auto" for="q-avatar">${icon('upload', 17)} Escolher foto</label>
+          <input class="sr-only" id="q-avatar" type="file" accept="image/*">
+          ${draft.avatarPhoto ? '<button class="link" type="button" data-avatar-remove>Remover foto</button>' : ''}
+        </div>
+        <p class="field__hint">A foto é recortada em quadrado e reduzida no próprio aparelho. Nenhuma imagem sai daqui.</p>
+      </div>`,
+      mount: (root) => bindAvatar(root),
+      valid: () => true,
     },
     {
       key: 'phase',
@@ -182,8 +239,8 @@ function steps() {
 function next() {
   const list = steps();
   const s = list[step - 1];
-  const check = s.valid ? s.valid() : (draft[s.field] !== null && draft[s.field] !== undefined) || 'Escolha uma opção para continuar 💛';
-  if (check !== true) { toast(typeof check === 'string' ? check : 'Escolha uma opção 💛'); return; }
+  const check = s.valid ? s.valid() : (draft[s.field] !== null && draft[s.field] !== undefined) || 'Escolha uma opção para continuar';
+  if (check !== true) { toast(typeof check === 'string' ? check : 'Escolha uma opção'); return; }
   haptic();
   if (step - 1 < list.length - 1) { step++; paint(); return; }
   finish();
@@ -199,6 +256,7 @@ function finish() {
     s.onboarded = true;
     Object.assign(s.profile, {
       name: draft.name.trim(),
+      avatarPhoto: draft.avatarPhoto || null,
       phase: draft.phase,
       tryingFor: draft.tryingFor,
       regularity: draft.regularity,
@@ -282,7 +340,7 @@ const screen = {
             <span class="opt__check">${icon('check', 18)}</span>
           </button>`).join('')}</div>` : s.render()}
         <div class="section" style="padding-top:22px;padding-bottom:28px">
-          <button class="btn" data-next>${step === list.length ? 'Ver meu Florescer 🌸' : 'Continuar'}</button>
+          <button class="btn" data-next>${step === list.length ? 'Ver meu Florescer' : 'Continuar'}</button>
         </div>`,
       mount(root) {
         root.querySelector('[data-prev]').onclick = prev;

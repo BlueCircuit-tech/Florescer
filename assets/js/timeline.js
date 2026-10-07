@@ -26,11 +26,11 @@ export const TIMELINE_GROUPS = {
 const SEX_LABEL = { menina: 'É uma menina', menino: 'É um menino' };
 
 /** Um marco só entra se tiver data de verdade. */
-function entry(list, { id, date, group, emoji, title, note, photo = null, aliases = [] }) {
+function entry(list, { id, date, group, icon, title, note, photo = null, aliases = [] }) {
   if (!date || !/^\d{4}-\d{2}-\d{2}$/.test(date)) return;
   const parsed = fromKey(date);
   if (Number.isNaN(parsed.getTime())) return;
-  list.push({ id, date, at: parsed.getTime(), label: fmtLong(parsed), group, emoji, title, note, photo, aliases });
+  list.push({ id, date, at: parsed.getTime(), label: fmtLong(parsed), group, icon, title, note, photo, aliases });
 }
 
 /**
@@ -48,7 +48,7 @@ export function journeyTimeline(state, ref = today()) {
     || (state?.createdAt ? toKey(new Date(state.createdAt)) : null);
   if (inicio && !futuro(inicio)) {
     entry(items, {
-      id: 'inicio', date: inicio, group: 'tentativa', emoji: '🌱',
+      id: 'inicio', date: inicio, group: 'tentativa', icon: 'seed',
       title: 'O começo desta jornada',
       note: profile.startedTryingAt ? 'quando você começou a tentar' : 'seu primeiro dia no Florescer',
     });
@@ -58,7 +58,7 @@ export function journeyTimeline(state, ref = today()) {
   const positivo = testes.filter((t) => t.result === 'positivo').sort((a, b) => a.date.localeCompare(b.date))[0];
   if (positivo) {
     entry(items, {
-      id: 'teste-positivo', date: positivo.date, group: 'tentativa', emoji: '🤍',
+      id: 'teste-positivo', date: positivo.date, group: 'tentativa', icon: 'test',
       title: 'Teste positivo', note: 'o dia em que você descobriu',
     });
   }
@@ -73,7 +73,7 @@ export function journeyTimeline(state, ref = today()) {
     if (event?.phase !== 'gravida' || event.type !== 'ultrasound') continue;
     if (!event.date || futuro(event.date)) continue;
     entry(items, {
-      id: `usg-${event.id}`, date: event.date, group: 'gestacao', emoji: '🩺',
+      id: `usg-${event.id}`, date: event.date, group: 'gestacao', icon: 'heartFill',
       title: event.title || CALENDAR_TYPES.ultrasound.label,
       note: preg.known ? `${semanaEm(preg, event.date)} de gestação` : 'ultrassom realizado',
     });
@@ -81,7 +81,7 @@ export function journeyTimeline(state, ref = today()) {
 
   if (profile.babySex && SEX_LABEL[profile.babySex] && profile.babySexAt && !futuro(profile.babySexAt)) {
     entry(items, {
-      id: 'sexo', date: profile.babySexAt, group: 'gestacao', emoji: profile.babySex === 'menina' ? '🎀' : '💙',
+      id: 'sexo', date: profile.babySexAt, group: 'gestacao', icon: 'sparkle',
       title: SEX_LABEL[profile.babySex], note: 'o dia em que vocês souberam',
     });
   }
@@ -91,7 +91,7 @@ export function journeyTimeline(state, ref = today()) {
     const fotos = Array.isArray(log?.bumpPhotos) ? log.bumpPhotos : [];
     if (!fotos.length || futuro(key)) continue;
     entry(items, {
-      id: `barriga-${key}`, date: key, group: 'gestacao', emoji: '📸',
+      id: `barriga-${key}`, date: key, group: 'gestacao', icon: 'pregnant',
       title: 'Foto da barriga',
       note: preg.known ? `${semanaEm(preg, key)} de gestação` : 'guardada no diário',
       photo: fotos[0],
@@ -101,7 +101,7 @@ export function journeyTimeline(state, ref = today()) {
   /* ---------- bebê ---------- */
   if (profile.birthDate && !futuro(profile.birthDate)) {
     entry(items, {
-      id: 'nascimento', date: profile.birthDate, group: 'bebe', emoji: '👶',
+      id: 'nascimento', date: profile.birthDate, group: 'bebe', icon: 'baby',
       title: nomes.length ? `${bebe} nasceu` : 'O nascimento',
       note: 'e também nasceu uma mãe',
       // o app registra "Meu bebê nasceu" na jornada; é o mesmo fato
@@ -116,7 +116,7 @@ export function journeyTimeline(state, ref = today()) {
     if (!titulo) continue;
     entry(items, {
       id: `dev-${record.id}`, date: record.happenedOn, group: 'bebe',
-      emoji: milestone?.emoji || '✨', title: titulo,
+      icon: milestone?.icon || 'bookmark', title: titulo,
       note: record.babyName && nomes.length > 1 ? record.babyName : (record.note || ''),
     });
   }
@@ -135,7 +135,7 @@ export function journeyTimeline(state, ref = today()) {
     if (repetido) continue;
     entry(items, {
       id: `jornada-${marco.at}`, date, group: grupoDoMarco(marco, profile),
-      emoji: '🌸', title: marco.title, note: marco.note || '',
+      icon: 'flower', title: marco.title, note: marco.note || '',
     });
   }
 

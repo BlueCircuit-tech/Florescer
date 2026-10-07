@@ -12,6 +12,8 @@ import {
 import { PHASE_LABELS } from '../content.js';
 import { restartQuiz } from './onboarding.js';
 import { applyBabyNames, babyNamesFromProfile, formatBabyNames } from '../babies.js';
+import { avatarContent, hasAvatarPhoto } from '../avatar.js';
+import { compressAvatar } from '../media.js';
 
 const rerender = () => import('../router.js').then((m) => m.render());
 
@@ -73,11 +75,15 @@ export default {
             <button class="iconbtn iconbtn--onbrand" data-nav="configuracoes" aria-label="Configurações">${icon('settings', 20)}</button>
           </div>
           <div style="position:relative;z-index:1;padding-top:6px">
-            <div class="hero__avatar" style="width:78px;height:78px;border-radius:26px;margin:0 auto 12px;font-size:34px">${meta.emoji}</div>
+            <button class="hero__avatar hero__avatar--big" data-avatar-edit aria-label="Trocar a foto de perfil">
+              ${avatarContent(p, 32)}
+              <span class="hero__avatar__edit">${icon('edit', 14)}</span>
+            </button>
+            <input class="sr-only" id="p-avatar" type="file" accept="image/*">
             <h1 style="font-family:var(--font-display);font-size:21px;font-weight:600">${esc(p.name || 'Sua jornada')}</h1>
             <p class="fs-12" style="color:rgba(255,255,255,.78);margin-top:4px">
               ${meta.label} · desde ${fmtShort(new Date(state.createdAt))}
-              ${state.premium ? ' · <b style="color:#FFE08A">Premium 🌸</b>' : ''}
+              ${state.premium ? ' · <b style="color:#FFE08A">Premium</b>' : ''}
             </p>
             <div class="row" style="justify-content:center;gap:8px;margin-top:14px">
               <span class="pill pill--onbrand">${plural(st.total, 'registro', 'registros')}</span>
@@ -92,7 +98,7 @@ export default {
             <button class="link" data-edit>Editar ${icon('edit', 14)}</button>
           </div>
           <div class="card card--flush">
-            ${kv('Fase', `${meta.emoji} ${meta.label}`)}
+            ${kv('Fase', meta.label)}
             ${dadosFase}
           </div>
 
@@ -125,10 +131,56 @@ export default {
       mount(root) {
         root.querySelector('[data-edit]').onclick = () => (p.phase === 'tentante' ? editCycle() : editPhaseData());
         root.querySelector('[data-requiz]').onclick = () => { restartQuiz(); navigate('inicio'); };
+        bindAvatarEdit(root, p);
       },
     };
   },
 };
+
+/** Trocar ou remover a foto de perfil, direto no avatar do topo. */
+function bindAvatarEdit(root, profile) {
+  const botao = root.querySelector('[data-avatar-edit]');
+  const input = root.querySelector('#p-avatar');
+  if (!botao || !input) return;
+
+  const salvar = async (file) => {
+    try {
+      const foto = await compressAvatar(file);
+      update((s) => { s.profile.avatarPhoto = foto; });
+      haptic(12);
+      toast('Foto de perfil atualizada.');
+      rerender();
+    } catch (err) {
+      toast(err.message || 'Não foi possível usar esta foto.');
+    }
+  };
+
+  input.onchange = () => {
+    const file = input.files?.[0];
+    input.value = '';
+    if (file) salvar(file);
+  };
+
+  botao.onclick = () => {
+    // já tem foto: oferece trocar ou remover em vez de abrir o seletor direto
+    if (!hasAvatarPhoto(profile)) { input.click(); return; }
+    openSheet({
+      title: 'Sua foto de perfil',
+      subtitle: 'Ela aparece só para você e fica guardada neste aparelho.',
+      body: `<button class="btn" data-trocar>${icon('upload', 18)} Escolher outra foto</button>
+        <button class="btn btn--ghost mt-8" data-remover>Remover a foto</button>`,
+      onMount(sheet) {
+        sheet.querySelector('[data-trocar]').onclick = () => { closeSheet(); input.click(); };
+        sheet.querySelector('[data-remover]').onclick = () => {
+          update((s) => { s.profile.avatarPhoto = null; });
+          closeSheet();
+          toast('Foto removida.');
+          rerender();
+        };
+      },
+    });
+  };
+}
 
 const kv = (k, v) => `<div class="kv"><span class="kv__k">${esc(k)}</span><span class="kv__v">${esc(v)}</span></div>`;
 const link = (ic, title, sub, to) => `
@@ -167,7 +219,7 @@ export function editCycle() {
           s.profile.name = sheet.querySelector('#e-name').value.trim();
         });
         closeSheet();
-        toast('Dados atualizados 🌸');
+        toast('Dados atualizados');
         rerender();
       };
     },
@@ -212,7 +264,7 @@ function editPhaseData() {
           s.profile.name = sheet.querySelector('#e-name2').value.trim();
         });
         closeSheet();
-        toast('Dados atualizados 🌸');
+        toast('Dados atualizados');
         rerender();
       };
     },
@@ -229,7 +281,7 @@ export function changePhase() {
       ${Object.entries(PHASE_LABELS).map(([id, m]) => `
         <button class="item" data-phase="${id}">
           <span class="item__ico">${icon(m.icon, 19)}</span>
-          <span class="item__body"><b>${m.emoji} ${m.label}</b></span>
+          <span class="item__ico">${icon(m.icon, 19)}</span><span class="item__body"><b>${m.label}</b></span>
           ${state.profile.phase === id ? icon('check', 18) : icon('chevron', 16)}
         </button>`).join('')}
     </div>`,
@@ -242,7 +294,7 @@ export function changePhase() {
           addJourney(marco[0], marco[1], 'mudança de fase');
           closeSheet();
           haptic(14);
-          toast('Fase atualizada — sua tela inicial mudou 🌷');
+          toast('Fase atualizada — sua tela inicial mudou');
           if (phase !== 'tentante') setTimeout(editPhaseData, 400);
           navigate('home');
         };

@@ -102,7 +102,7 @@ export default {
         ${next.length ? `
           <div class="section__head" style="padding:0"><h2>Para resolver agora</h2></div>
           <div class="stack-12">${next.map(stepRow).join('')}</div>` : `
-          ${note('Tudo que já era para acontecer até a ' + preg.weeks + 'ª semana está no seu calendário. 🌿')}`}
+          ${note('Tudo que já era para acontecer até a ' + preg.weeks + 'ª semana está no seu calendário.')}`}
 
         <div class="section__head" style="padding:0"><h2>Plano completo</h2></div>
         <div class="plangroups">${groups}</div>

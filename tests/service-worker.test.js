@@ -5,7 +5,7 @@ import { readFile } from 'node:fs/promises';
 const source = await readFile(new URL('../sw.js', import.meta.url), 'utf8');
 
 test('service worker inclui o catálogo e a Central de Recursos no shell offline', () => {
-  assert.match(source, /florescer-v1\.43\.0/);
+  assert.match(source, /florescer-v1\.45\.0/);
   assert.match(source, /\.\/assets\/js\/pregnancyDiary\.js/);
   assert.match(source, /\.\/assets\/js\/screens\/notices\.js/);
   assert.match(source, /\.\/assets\/js\/screens\/pregnancyDiary\.js/);

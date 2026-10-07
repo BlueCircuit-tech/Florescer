@@ -60,7 +60,6 @@ export function createCommunityPost(state, input, now = Date.now()) {
   const post = {
     id: `u${now}`,
     author: state.profile.name || 'Você',
-    avatar: '🌷',
     phase: expectedPhase,
     text,
     likes: 0,

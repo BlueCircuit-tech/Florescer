@@ -60,10 +60,11 @@ export default {
           </div>
 
           ${note('As assinaturas ainda não estão abertas. Avise-me e eu te chamo assim que o Premium começar — nada é cobrado agora.')}
-          <button class="btn btn--grad mt-16" data-notify>${icon('bell', 19)} ${state.premiumInterest ? 'Você está na lista 💛' : 'Avise-me quando abrir'}</button>
+          <button class="btn btn--grad mt-16" data-notify>${icon('bell', 19)} ${state.premiumInterest ? 'Você está na lista' : 'Avise-me quando abrir'}</button>
           <button class="btn btn--soft mt-8" data-free>Continuar na versão gratuita</button>
           <p class="center fs-11 faint mt-12" style="line-height:1.6">
-            Vai incluir os e-books “100 nomes de meninas” e “100 nomes de meninos”, com significados.
+            Os e-books de nomes e o Guia de ansiedade são gratuitos e já estão em
+            <b>Central de Recursos › E-books e materiais</b>.
           </p>
         </div>
       </div>`,
@@ -77,11 +78,11 @@ export default {
         root.querySelector('[data-notify]').onclick = () => {
           // registra o interesse no aparelho; nenhuma cobrança acontece aqui
           update((s) => { s.premiumInterest = { plan, at: Date.now() }; });
-          toast('Anotado! Te avisamos aqui mesmo quando as assinaturas abrirem 💛');
+          toast('Anotado! Te avisamos aqui mesmo quando as assinaturas abrirem.');
           navigate('home');
         };
         root.querySelector('[data-free]').onclick = () => {
-          toast('Sem pressa. O plano gratuito continua com você 💛');
+          toast('Sem pressa. O plano gratuito continua com você.');
           navigate('home');
         };
       },
@@ -120,7 +121,7 @@ function manageView(state) {
         });
         if (!ok) return;
         update((s) => { s.premium = false; s.premiumSince = null; });
-        toast('Pronto. Você continua com o plano gratuito 💛');
+        toast('Pronto. Você continua com o plano gratuito');
         navigate('perfil');
       };
     },

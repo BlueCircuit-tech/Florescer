@@ -1,18 +1,20 @@
 import { diffDays, fromKey, today } from './cycle.js';
 
+/* O ícone vem do conjunto SVG do app: emoji muda de desenho em cada sistema
+   e, numa lista de doze, vira ruído visual. O rótulo é que carrega o sentido. */
 export const DEVELOPMENT_MILESTONES = [
-  { id: 'first_bath', label: 'Primeiro banho', emoji: '🛁' },
-  { id: 'first_smile', label: 'Primeiro sorriso', emoji: '😊' },
-  { id: 'holds_head', label: 'Sustentou a cabeça', emoji: '🧸' },
-  { id: 'first_roll', label: 'Rolou pela primeira vez', emoji: '🔄' },
-  { id: 'sits_alone', label: 'Sentou sem apoio', emoji: '🪑' },
-  { id: 'first_tooth', label: 'Primeiro dentinho', emoji: '🦷' },
-  { id: 'first_crawl', label: 'Engatinhou pela primeira vez', emoji: '🐾' },
-  { id: 'stands_alone', label: 'Ficou de pé sem apoio', emoji: '🧍' },
-  { id: 'first_word', label: 'Primeira palavra', emoji: '💬' },
-  { id: 'first_steps', label: 'Primeiros passos', emoji: '👣' },
-  { id: 'first_birthday', label: 'Primeiro aniversário', emoji: '🎂' },
-  { id: 'custom', label: 'Outro marco especial', emoji: '✨' },
+  { id: 'first_bath', label: 'Primeiro banho', icon: 'drop' },
+  { id: 'first_smile', label: 'Primeiro sorriso', icon: 'heart' },
+  { id: 'holds_head', label: 'Sustentou a cabeça', icon: 'baby' },
+  { id: 'first_roll', label: 'Rolou pela primeira vez', icon: 'refresh' },
+  { id: 'sits_alone', label: 'Sentou sem apoio', icon: 'seed' },
+  { id: 'first_tooth', label: 'Primeiro dentinho', icon: 'sparkle' },
+  { id: 'first_crawl', label: 'Engatinhou pela primeira vez', icon: 'leaf' },
+  { id: 'stands_alone', label: 'Ficou de pé sem apoio', icon: 'flower' },
+  { id: 'first_word', label: 'Primeira palavra', icon: 'message' },
+  { id: 'first_steps', label: 'Primeiros passos', icon: 'flag' },
+  { id: 'first_birthday', label: 'Primeiro aniversário', icon: 'crown' },
+  { id: 'custom', label: 'Outro marco especial', icon: 'bookmark' },
 ];
 
 export function developmentMilestone(type) {

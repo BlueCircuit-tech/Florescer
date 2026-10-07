@@ -127,7 +127,7 @@ Cada tela exporta `{ id, tab?, render(rota) }` e devolve `{ appbar, html, mount(
 | `#/configuracoes` | Configurações | Tema, fase lútea, mudança de fase, backup e exclusão de dados |
 | `#/avisos` | Avisos | Central do sininho: o que está esperando por ela, com dispensar e limpar |
 | `#/lembretes` | Preferências de avisos | Escolhe quais avisos aparecem no sininho |
-| `#/privacidade`, `#/ajuda`, `#/sobre` | Institucionais | LGPD, FAQ e informações do app |
+| `#/privacidade`, `#/termos`, `#/ajuda`, `#/sobre` | Institucionais | LGPD, termos de uso, FAQ e informações do app |
 | `#/admin` | Painel da administradora | Edita sugestões, artigos, FAQ, diretrizes, benefícios, desafio e preços; modera a comunidade; exporta o conteúdo em JSON e em SQL |
 
 ---
@@ -264,6 +264,20 @@ Um ciclo é considerado completo quando um novo início de menstruação confirm
 
 ---
 
+## Tela inicial
+
+A Home segue uma hierarquia fixa: **hero** (quem ela é e onde está) → **mensagem da Flor** (carta do momento ou pergunta do dia) → **painel da fase** → **sugestão do dia** → **atalhos** → **catálogo completo** → rodapé.
+
+**Nada fica escondido atrás de um link.** Antes a Home mostrava 4 atalhos e escondia o resto em "Ver todos os recursos" — no pós-parto isso significava 18 de 22 recursos invisíveis. Agora os 4 favoritos continuam em destaque e o catálogo inteiro vem logo abaixo, agrupado por categoria. Um teste percorre as três fases e exige que **todo recurso tenha caminho visível na Home**; recurso novo sem lugar quebra a suíte.
+
+Os grupos são ordenados por relevância da fase e, dentro da mesma faixa, do maior para o menor — um grupo de um item só abrindo a lista deixaria dois buracos na linha de três colunas. "Gestação" vira "Da sua gestação" no pós-parto.
+
+### O que o cartão da fase precisa respeitar
+
+O fundo branco do painel é desenhado pelo grid interno e **fechado por uma linha de ação**. Blocos de texto fora desse intervalo flutuam sobre o fundo da página — foi o que acontecia na tentante e no pós-parto. Um teste verifica, nas três fases, que nenhum bloco fica antes da abertura nem depois do fecho.
+
+O encaixe do painel sob a curva do hero (`margin-top:-16px`) vale **apenas** quando ele é vizinho direto do hero: com um cartão no meio, ele subia por cima.
+
 ## Minha jornada
 
 A linha do tempo não pede que ela registre nada de novo: [`assets/js/timeline.js`](assets/js/timeline.js) **reúne sozinho** o que já está espalhado pelo app — início da tentativa, teste positivo, ultrassons já realizados, descoberta do sexo, fotos da barriga (com a semana gestacional de cada uma), nascimento, primeiro banho, sorriso, passos e os demais marcos do bebê.
@@ -278,9 +292,34 @@ Dois marcos novos entraram para fechar a lista pedida: **primeiro banho**, em `D
 
 Os PDFs ficam em [`ebooks/`](ebooks/README.md) e são servidos junto com o app em `/ebooks/<arquivo>`. O catálogo — título, resumo, arquivo, páginas, se é exclusivo do Premium e para quais fases aparece — é editado em **Painel da administradora › E-books e materiais**, sem mexer em código.
 
-**O catálogo está vazio de propósito.** Os arquivos foram enviados por WhatsApp e ainda não entraram no repositório; enquanto não entrarem, a tela diz que nada foi publicado em vez de mostrar uma estante falsa. Para publicar: colocar o PDF na pasta, cadastrar no painel, pronto.
+**Três materiais já publicados, todos gratuitos:** *100 nomes de meninas*, *100 nomes de meninos* (8 páginas cada, para todas as fases) e o *Guia Florescer: gestão da ansiedade e a espera* (5 páginas, para tentantes). Um teste confirma que cada item do catálogo tem arquivo de verdade na pasta — catálogo apontando para PDF inexistente quebra a suíte.
+
+O guia de ansiedade chegou em `.docx` e foi convertido para PDF, com o conteúdo conferido parágrafo a parágrafo contra o original. Como esses e-books deixaram de ser isca do Premium, a vitrine foi corrigida: um teste garante que nenhum material gratuito apareça listado como benefício exclusivo.
 
 Limites conhecidos: o material não entra no cache offline do service worker (precisa de internet na primeira abertura) e ainda não é exportado pelo `cms.toSql()`, porque a tabela correspondente não existe no schema do Supabase.
+
+## Biblioteca
+
+28 artigos, e **nenhum tema vazio** em nenhuma fase — um teste percorre cada tema de cada fase e quebra se algum ficar sem conteúdo. O acervo por fase: 7 para tentantes, 17 para gestantes e 8 no pós-parto (era 3).
+
+Duas coisas tornam o acervo navegável em vez de uma parede de temas:
+
+- **Por onde começar** — [`suggestedArticle`](assets/js/libraries.js) escolhe um artigo para o momento dela (semana da gestação, dias do bebê, ou há quanto tempo tenta), pula o que ela já leu e diz por que escolheu aquele. Com tudo lido, não sugere nada em vez de repetir.
+- **Progresso de leitura** — "2 de 17 conteúdos lidos", contando só os artigos da fase dela.
+
+Todo artigo passa pela mesma trava de voz do resto do app: um teste varre título, resumo e corpo procurando promessa, julgamento, minimização e prescrição.
+
+## Visual: emoji só onde ele é o conteúdo
+
+O app tinha 157 emojis. Ficaram 73, e quase todos em comentários de código ou em lugares onde o emoji **é** a informação: as frutas da comparação de tamanho do bebê, o guia de fases e as cinco carinhas do seletor de humor — sempre um de cada vez, nunca em lista.
+
+Saíram: os enfeites de toast ("Salvo 🌸", "Obrigada por contar 💛"), os títulos com ✨, o 🔒 do Premium, e todos os emojis usados **como ícone** — os doze marcos do bebê, os marcos da linha do tempo e os avatares da comunidade passaram para o conjunto SVG do app, que tem peso e cor consistentes e não muda de desenho conforme o sistema.
+
+## Foto de perfil
+
+No cadastro há um passo opcional para escolher uma foto, e o avatar do topo da Home e do Perfil passou a mostrá-la — antes era um emoji por fase (🤰 / 🍼 / 🌷). Sem foto, aparece o ícone da fase.
+
+A foto é **recortada em quadrado e reduzida para 256px** por [`compressAvatar`](assets/js/media.js), não pelo mesmo caminho das fotos do diário: um JPEG de 1280px num avatar de 46px desperdiçaria o armazenamento local, que é pequeno e já disputado com as fotos da barriga. Tocar no avatar do Perfil abre trocar ou remover. Nada sai do aparelho.
 
 ## Avisos
 

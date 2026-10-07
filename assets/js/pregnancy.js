@@ -222,7 +222,8 @@ export function pregnancyBabyWeek(inputWeek) {
     ability: detail[3],
     curiosity: detail[4],
     growth,
-    emoji: guide?.emoji || (week === 3 ? '✨' : '🌱'),
+    // nas primeiras semanas não há fruta de comparação; a semente serve aos dois casos
+    emoji: guide?.emoji || '🌱',
   };
 }
 

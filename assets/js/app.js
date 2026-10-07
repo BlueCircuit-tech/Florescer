@@ -46,14 +46,14 @@ import community, { postScreen, newPostScreen } from './screens/community.js';
 import insights from './screens/insights.js';
 import profile from './screens/profile.js';
 import premium from './screens/premium.js';
-import settings, { remindersScreen, privacyScreen, helpScreen, aboutScreen } from './screens/settings.js';
+import settings, { remindersScreen, privacyScreen, helpScreen, aboutScreen, termsScreen } from './screens/settings.js';
 import admin from './screens/admin.js';
 
 /* ---------- telas ---------- */
 [
   onboarding, welcome, home, weekByWeek, weekDetail, maternalBody, cycleTimeline, pregnancyNutrition, flor, comfort, florDaily, florMoment, journeyTimelineScreen, ebooks, calendar, log, add, pregnancyTestScreen, relationshipScreen, pregnancySetup, pregnancyDiaryScreen, babyStatus, babyGrowth, babyFeeding, breastfeeding, babyHealth, diapers, sleep, vaccines, development, resources, schedule, prenatal, tips, libraryScreen, articleScreen, savedScreen,
   community, postScreen, newPostScreen, insights, profile, premium,
-  settings, remindersScreen, notices, privacyScreen, helpScreen, aboutScreen, admin,
+  settings, remindersScreen, notices, privacyScreen, helpScreen, aboutScreen, termsScreen, admin,
 ].forEach(register);
 
 /* ---------- service worker + instalação ---------- */
@@ -91,7 +91,7 @@ function initInstallPrompt() {
     deferredPrompt = e;
     maybeShowInstallBanner();
   });
-  addEventListener('appinstalled', () => { deferredPrompt = null; toast('Florescer instalado 🌸'); });
+  addEventListener('appinstalled', () => { deferredPrompt = null; toast('Florescer instalado'); });
 }
 
 function maybeShowInstallBanner() {
@@ -121,7 +121,7 @@ function maybeShowInstallBanner() {
 
 /* ---------- estado offline ---------- */
 function initConnectivity() {
-  addEventListener('offline', () => toast('Você está offline — o Florescer continua funcionando 🌿'));
+  addEventListener('offline', () => toast('Você está offline — o Florescer continua funcionando'));
 }
 
 /* ---------- atualização diária ---------- */

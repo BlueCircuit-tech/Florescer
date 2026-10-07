@@ -96,13 +96,13 @@ export function babyReminder(state, type, ref = today()) {
   const when = todayEvents.length ? 'hoje' : 'amanhã';
   if (events.length > 1) {
     return type === 'vaccine'
-      ? ['Vacinas dos bebês 💉', `${events.length} vacinas estão marcadas para ${when}. Confira o calendário do Florescer Baby.`]
-      : ['Consultas dos bebês 🩺', `${events.length} consultas estão marcadas para ${when}. Confira o calendário do Florescer Baby.`];
+      ? ['Vacinas dos bebês', `${events.length} vacinas estão marcadas para ${when}. Confira o calendário do Florescer Baby.`]
+      : ['Consultas dos bebês', `${events.length} consultas estão marcadas para ${when}. Confira o calendário do Florescer Baby.`];
   }
   const event = events[0];
   return type === 'vaccine'
-    ? ['Vacina do bebê 💉', `${event.label} de ${event.babyName} está marcada para ${when}.`]
-    : ['Consulta do bebê 🩺', `${event.label} de ${event.babyName} está marcada para ${when}.`];
+    ? ['Vacina do bebê', `${event.label} de ${event.babyName} está marcada para ${when}.`]
+    : ['Consulta do bebê', `${event.label} de ${event.babyName} está marcada para ${when}.`];
 }
 
 function optionalNumber(value, min, max, label) {

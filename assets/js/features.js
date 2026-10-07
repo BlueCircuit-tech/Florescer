@@ -1,6 +1,6 @@
 export const FEATURE_GROUPS = {
   fertility: { label: 'Ciclo e tentativas', order: 10 },
-  pregnancy: { label: 'Gestação', order: 10 },
+  pregnancy: { label: 'Gestação', order: 10, labels: { posparto: 'Da sua gestação' } },
   babyRoutine: { label: 'Rotina do bebê', order: 10 },
   daily: { label: 'Meu cuidado', order: 20 },
   babyHealth: { label: 'Saúde e desenvolvimento', order: 20 },
@@ -82,7 +82,9 @@ export const FEATURES = [
     tentante: 'biblioteca/tentantes', gravida: 'biblioteca/gestantes', posparto: 'biblioteca/pos-parto',
   }, 'book', {
     tentante: 'Biblioteca Tentantes', gravida: 'Biblioteca da Gestante', posparto: 'Biblioteca Pós-parto',
-  }, 'Artigos selecionados para acompanhar a sua fase.', ['home', 'resources'], 'amber'),
+  }, 'Artigos selecionados para acompanhar a sua fase.', ['home', 'resources'], 'amber', {
+    homeLabel: 'Biblioteca',
+  }),
   feature('community', ALL_PHASES, 'content', {
     tentante: 'comunidade/tentantes', gravida: 'comunidade/gestantes', posparto: 'comunidade/pos-parto',
   }, 'users', {
@@ -141,7 +143,12 @@ export function groupFeatures(items) {
   }
   return [...groups.entries()]
     .map(([id, features]) => ({ id, ...FEATURE_GROUPS[id], features }))
-    .sort((a, b) => a.order - b.order);
+    .sort((a, b) => a.order - b.order || b.features.length - a.features.length);
+}
+
+/** O nome do grupo na fase dela. */
+export function groupLabel(group, phase) {
+  return group?.labels?.[phase] || group?.label || '';
 }
 
 export function normalizeHomeShortcutIds(value, phase) {

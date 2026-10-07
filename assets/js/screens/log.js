@@ -202,7 +202,7 @@ export default {
         <div class="section__head" style="padding:0"><h2>Fertilidade</h2></div>
         <div class="card card--flush">
           <div class="kv">
-            <span class="kv__k">Relação hoje<small>marca 💗 no calendário</small></span>
+            <span class="kv__k">Relação hoje<small>aparece como um coração no calendário</small></span>
             <button class="toggle" role="switch" aria-checked="${draft.intercourse}" data-t="intercourse" aria-label="Relação hoje"></button>
           </div>
           <div class="kv" data-only-sex hidden>
@@ -371,7 +371,7 @@ export default {
           if (postpartum && !symptomControl) addJourney('heart', 'Primeiro Diário da Mamãe no Florescer Baby', 'sentimentos e conquistas do puerpério acolhidos');
           if (symptomControl) addJourney('thermometer', 'Primeiro controle de sintomas', 'sintomas e medições registrados');
           haptic(14);
-          toast(symptomControl ? 'Controle de sintomas salvo.' : pregnant || postpartum ? 'Diário da Mamãe salvo com carinho 🌸' : s2.current > 1 ? `Dia salvo! Sequência de ${plural(s2.current, 'dia', 'dias')} 🌸` : 'Dia salvo com carinho 🌸');
+          toast(symptomControl ? 'Controle de sintomas salvo.' : pregnant || postpartum ? 'Diário da Mamãe salvo com carinho' : s2.current > 1 ? `Dia salvo! Sequência de ${plural(s2.current, 'dia', 'dias')}` : 'Dia salvo com carinho');
           navigate('home');
         };
 

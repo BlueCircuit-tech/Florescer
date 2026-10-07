@@ -85,6 +85,10 @@ export default {
 
         <div class="section__head"><h2>Sobre</h2></div>
         <div class="card card--flush">
+          <button class="kv" data-nav="termos">
+            <span class="kv__k">Termos de uso<small>o que o app é, e o que ele não é</small></span>
+            <span class="kv__v">Abrir ${icon('chevron', 15)}</span>
+          </button>
           <button class="kv" data-nav="ajuda"><span class="kv__k">Ajuda e perguntas frequentes</span><span class="kv__v">${icon('chevron', 15)}</span></button>
           <button class="kv" data-nav="sobre"><span class="kv__k">Sobre o Florescer</span><span class="kv__v">v${APP_VERSION} ${icon('chevron', 15)}</span></button>
         </div>
@@ -109,7 +113,7 @@ export default {
         });
         root.querySelector('[data-export]').onclick = () => {
           downloadFile(`florescer-backup-${toKey(today())}.json`, exportData());
-          toast('Backup baixado. Guarde em um lugar seguro 💛');
+          toast('Backup baixado. Guarde em um lugar seguro.');
         };
         root.querySelector('[data-import]').onclick = () => importSheet();
         root.querySelector('[data-reset]').onclick = async () => {
@@ -144,7 +148,7 @@ function importSheet() {
           importData(await file.text());
           applyTheme();
           closeSheet();
-          toast('Backup restaurado 🌸');
+          toast('Backup restaurado');
           navigate('home');
           rerender();
         } catch (err) {
@@ -248,7 +252,7 @@ export const privacyScreen = {
       mount(root) {
         root.querySelector('[data-exp]').onclick = () => {
           downloadFile(`florescer-backup-${toKey(today())}.json`, exportData());
-          toast('Backup baixado 💛');
+          toast('Backup baixado');
         };
       },
     };
@@ -312,8 +316,60 @@ export const aboutScreen = {
         </div>
         <div class="card card--flush mt-16" style="text-align:left">
           <button class="kv" data-nav="privacidade"><span class="kv__k">Privacidade e dados</span><span class="kv__v">${icon('chevron', 15)}</span></button>
+          <button class="kv" data-nav="termos"><span class="kv__k">Termos de uso</span><span class="kv__v">${icon('chevron', 15)}</span></button>
           <button class="kv" data-nav="ajuda"><span class="kv__k">Ajuda</span><span class="kv__v">${icon('chevron', 15)}</span></button>
           <div class="kv"><span class="kv__k">Conteúdo</span><span class="kv__v">Revisado por profissionais parceiros</span></div>
+        </div>
+        ${note('O Florescer é uma ferramenta de acompanhamento e educação em saúde. Não realiza diagnóstico, não substitui consulta médica e não deve ser usado como método contraceptivo.')}
+      </div>`,
+    };
+  },
+};
+
+/* ---------- termos de uso ---------- */
+export const termsScreen = {
+  id: 'termos',
+  render() {
+    return {
+      appbar: { title: 'Termos de uso' },
+      html: `<div class="section article pb-24">
+        <div class="article__body">
+          <p class="fs-12 muted">Última atualização: outubro de 2026.</p>
+
+          <h2>O que o Florescer é</h2>
+          <p>O Florescer é um aplicativo de <b>acompanhamento e educação em saúde</b> para mulheres que tentam engravidar, estão grávidas ou vivem o pós-parto. Ele organiza os seus registros, faz estimativas a partir deles e oferece conteúdo informativo.</p>
+
+          <h2>O que o Florescer não é</h2>
+          <p>Ele <b>não faz diagnóstico, não substitui consulta e não indica tratamento ou medicamento</b>. Nenhuma informação do app — incluindo as respostas da IA Flor — deve ser usada no lugar da avaliação da sua equipe de saúde.</p>
+          <li>As datas de ovulação, janela fértil e menstruação são <b>estimativas estatísticas</b> calculadas a partir do que você registra. Elas podem errar.</li>
+          <li>O app <b>não serve como método contraceptivo</b>. Métodos baseados em calendário têm alta taxa de falha para evitar gravidez.</li>
+          <li>Em caso de sangramento intenso, perda de líquido, dor forte, febre alta, desmaio ou redução dos movimentos do bebê, procure atendimento médico no mesmo dia.</li>
+
+          <h2>A IA Flor</h2>
+          <p>A Flor responde dúvidas gerais sobre ciclo, gestação e pós-parto. Ela é orientada a não diagnosticar, não interpretar exames e não indicar dose de nada. Perguntas com sinal de alerta são respondidas no próprio aparelho e encaminham para atendimento.</p>
+          <p>Quando você autoriza as respostas da IA, a sua pergunta e um resumo em números do seu ciclo são enviados ao servidor. Nome, diário, sintomas e fotos nunca são enviados. Você liga e desliga isso quando quiser.</p>
+
+          <h2>Seus dados</h2>
+          <p>Tudo o que você registra fica no armazenamento deste aparelho. Não há criação de conta nem envio dos seus registros para servidores. <b>Se você limpar os dados do navegador ou desinstalar o app, as informações são perdidas</b> — por isso existe a exportação em Configurações.</p>
+          <p>Dados sobre ciclo, fertilidade e gestação são <b>dados pessoais sensíveis</b> (LGPD, art. 11). Os detalhes estão em Privacidade e dados.</p>
+
+          <h2>Uso responsável</h2>
+          <li>Use o app apenas para você. Ele não foi feito para registrar dados de terceiros sem o consentimento deles.</li>
+          <li>Na comunidade, não publique dados pessoais seus ou de outras pessoas, nem indique medicamentos, dosagens ou tratamentos.</li>
+          <li>O conteúdo editorial do app é de uso pessoal e não pode ser redistribuído comercialmente.</li>
+
+          <h2>Conteúdo pago</h2>
+          <p>As assinaturas ainda não estão abertas. Quando estiverem, os valores, a forma de cobrança e as condições de cancelamento serão informados antes de qualquer pagamento. Nada é cobrado sem a sua confirmação expressa.</p>
+
+          <h2>Mudanças nestes termos</h2>
+          <p>Se estes termos mudarem de forma relevante, avisaremos dentro do app. Continuar usando depois do aviso significa que você concorda com a nova versão.</p>
+
+          <h2>Contato</h2>
+          <p>Dúvidas, correções de conteúdo ou pedidos sobre os seus dados: fale com a gente pela tela de Ajuda.</p>
+        </div>
+        <div class="card card--flush mt-16">
+          <button class="kv" data-nav="privacidade"><span class="kv__k">Privacidade e dados</span><span class="kv__v">${icon('chevron', 15)}</span></button>
+          <button class="kv" data-nav="ajuda"><span class="kv__k">Ajuda</span><span class="kv__v">${icon('chevron', 15)}</span></button>
         </div>
         ${note('O Florescer é uma ferramenta de acompanhamento e educação em saúde. Não realiza diagnóstico, não substitui consulta médica e não deve ser usado como método contraceptivo.')}
       </div>`,

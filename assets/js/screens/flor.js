@@ -98,7 +98,7 @@ function consentSheet() {
       const decide = (value) => {
         update((state) => { state.settings.florAI = value; });
         closeSheet();
-        toast(value ? 'IA ativada. Pode perguntar 🌸' : 'Beleza: só respostas do app.');
+        toast(value ? 'IA ativada. Pode perguntar.' : 'Beleza: só respostas do app.');
         rerender();
       };
       sheet.querySelector('[data-sim]').onclick = () => decide(true);

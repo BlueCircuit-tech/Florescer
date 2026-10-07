@@ -79,7 +79,7 @@ export default {
       html: `<div class="section pb-24 stagger">
         <div class="stats">
           ${stat('Ciclo médio', info.avgLength ? `${info.avgLength}d` : '—', cycles.length ? `${plural(cycles.length, 'ciclo', 'ciclos')} analisados` : 'valor informado no cadastro')}
-          ${stat('Variação', variacao === null ? '—' : `${variacao}d`, variacao === null ? 'precisa de 2 ciclos' : variacao <= 4 ? 'ciclo regular 🌿' : 'ciclo irregular')}
+          ${stat('Variação', variacao === null ? '—' : `${variacao}d`, variacao === null ? 'precisa de 2 ciclos' : variacao <= 4 ? 'ciclo regular' : 'ciclo irregular')}
           ${stat('Menstruação', periodLen ? `${periodLen}d` : '—', 'duração média registrada')}
           ${stat('Sequência', `${st.current}d`, `recorde de ${plural(st.best, 'dia', 'dias')}`)}
         </div>
@@ -128,9 +128,9 @@ export default {
 
       mount(root) {
         const doExport = () => {
-          if (!state.premium) { toast('Relatório completo disponível no Premium ✨'); return; }
+          if (!state.premium) { toast('Relatório completo disponível no Premium.'); return; }
           downloadFile(`florescer-relatorio-${toKey(today())}.txt`, buildReport(state, info, cycles, periods, topSym), 'text/plain');
-          toast('Relatório baixado 💛');
+          toast('Relatório baixado');
         };
         root.querySelector('[data-export2]')?.addEventListener('click', doExport);
         document.querySelector('#appbar [data-action="export"]')?.addEventListener('click', doExport);

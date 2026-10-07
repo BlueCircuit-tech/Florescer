@@ -53,7 +53,7 @@ const lock = () => sessionStorage.removeItem(K_SESSION);
    --------------------------------------------------------------- */
 const uid = () => `c${Date.now().toString(36)}${Math.floor(performance.now() % 1000)}`;
 
-const PHASE_OPTIONS = Object.entries(PHASE_LABELS).map(([id, m]) => [id, `${m.emoji} ${m.label}`]);
+const PHASE_OPTIONS = Object.entries(PHASE_LABELS).map(([id, m]) => [id, m.label]);
 const CAT_OPTIONS = Object.entries(TIP_CATEGORIES).map(([id, c]) => [id, c.label]);
 const ARTICLE_TOPIC_OPTIONS = LIBRARY_TOPICS.map((topic) => [topic.id, topic.label]);
 
@@ -222,7 +222,7 @@ function loginScreen() {
         if (!ok) { toast('E-mail ou senha incorretos.'); pass.value = ''; return; }
         unlock();
         haptic(14);
-        toast('Bem-vinda ao painel 🌸');
+        toast('Bem-vinda ao painel');
         rerender();
       };
       root.querySelector('[data-login]').onclick = submit;
@@ -418,7 +418,7 @@ function openForm(col, draft, index) {
           if (!v) { toast(`Preencha: ${col.fields[0].label}`); return; }
           cms.set(col.key, applyAt(cms.get(col.key), index, v));
           closeSheet();
-          toast('Salvo 🌸');
+          toast('Salvo');
           rerender();
           return;
         }
@@ -443,7 +443,7 @@ function openForm(col, draft, index) {
         }
         cms.set(col.key, applyAt(cms.get(col.key), index, next));
         closeSheet();
-        toast('Salvo 🌸');
+        toast('Salvo');
         rerender();
       };
     },
@@ -477,7 +477,7 @@ function challengeScreen() {
           description: root.querySelector('#ch-desc').value.trim(),
           days: Math.min(31, Math.max(1, +root.querySelector('#ch-days').value || 7)),
         });
-        toast('Desafio atualizado 🌸');
+        toast('Desafio atualizado');
         navigate('admin');
       };
       root.querySelector('[data-restore]')?.addEventListener('click', () => {
@@ -530,13 +530,20 @@ function plansScreen() {
         rerender();
       };
       root.querySelector('[data-save]').onclick = () => {
-        cms.set('plans', plans.map((p, i) => ({
-          ...p,
-          price: root.querySelector(`#p-price-${i}`).value.trim() || p.price,
-          per: root.querySelector(`#p-per-${i}`).value.trim() || p.per,
-          note: root.querySelector(`#p-note-${i}`).value.trim(),
-        })));
-        toast('Planos atualizados 🌸');
+        cms.set('plans', plans.map((p, i) => {
+          const price = root.querySelector(`#p-price-${i}`).value.trim() || p.price;
+          // `amount` acompanha o texto: se ficarem diferentes, a conta da
+          // economia anunciada passa a mentir
+          const amount = Number(price.replace(/[^\d,]/g, '').replace(',', '.'));
+          return {
+            ...p,
+            price,
+            amount: Number.isFinite(amount) && amount > 0 ? amount : p.amount,
+            per: root.querySelector(`#p-per-${i}`).value.trim() || p.per,
+            note: root.querySelector(`#p-note-${i}`).value.trim(),
+          };
+        }));
+        toast('Planos atualizados');
         navigate('admin');
       };
       root.querySelector('[data-restore]')?.addEventListener('click', () => {
@@ -556,7 +563,7 @@ function moderationScreen() {
       <div class="card card--flush mt-16">
         ${posts.map((p) => `
           <div class="item">
-            <span class="post__av" style="width:38px;height:38px;font-size:17px">${p.avatar}</span>
+            <span class="post__av" style="width:38px;height:38px">${icon('user', 17)}</span>
             <span class="item__body">
               <b style="font-weight:600">${esc(p.author)} · ${esc(PHASE_LABELS[p.phase]?.label || 'Sem comunidade')}</b>
               <span>${esc(p.text.slice(0, 70))}${p.text.length > 70 ? '…' : ''}</span>
@@ -619,7 +626,7 @@ function dataScreen() {
       };
       root.querySelector('[data-json]').onclick = () => {
         downloadFile(`florescer-conteudo-${stamp}.json`, cms.exportJson());
-        toast('Conteúdo exportado 💛');
+        toast('Conteúdo exportado');
       };
       root.querySelector('[data-import]').onclick = () => openSheet({
         title: 'Importar conteúdo',
@@ -633,7 +640,7 @@ function dataScreen() {
             try {
               cms.importJson(await file.text());
               closeSheet();
-              toast('Conteúdo importado 🌸');
+              toast('Conteúdo importado');
               rerender();
             } catch {
               toast('Arquivo inválido.');
@@ -689,7 +696,7 @@ function securityScreen() {
 
         localStorage.setItem(K_EMAIL, mail);
         localStorage.setItem(K_HASH, await hash(mail, neu));
-        toast('Credenciais atualizadas 🔒');
+        toast('Credenciais atualizadas');
         navigate('admin');
       };
     },

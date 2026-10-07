@@ -61,7 +61,7 @@ export default {
 
         root.querySelector('[data-close]').onclick = () => {
           haptic();
-          if (!jaVista) toast('Guardei na sua jornada 💛');
+          if (!jaVista) toast('Guardei na sua jornada');
           navigate('home', { replace: true });
         };
       },

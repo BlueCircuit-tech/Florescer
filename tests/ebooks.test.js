@@ -18,9 +18,33 @@ const material = (patch = {}) => ({
   phases: ['tentante', 'gravida'], ...patch,
 });
 
-test('o catálogo nasce vazio: nada de estante falsa', () => {
-  assert.deepEqual(EBOOKS, []);
-  assert.deepEqual(cms.getEbooks(), []);
+test('todo material do catálogo tem arquivo de verdade em /ebooks/', async () => {
+  const { existsSync } = await import('node:fs');
+  assert.ok(EBOOKS.length >= 3, 'os materiais entregues pela cliente estão publicados');
+  for (const item of EBOOKS) {
+    const caminho = new URL(`../ebooks/${item.file}`, import.meta.url);
+    assert.ok(existsSync(caminho), `${item.title}: falta o arquivo ${item.file}`);
+    assert.ok(item.title && item.excerpt, `${item.file} precisa de título e resumo`);
+    assert.ok(Array.isArray(item.phases) && item.phases.length, `${item.file} precisa de fase`);
+  }
+});
+
+test('os e-books de nomes são gratuitos, como a cliente pediu', () => {
+  const nomes = EBOOKS.filter((e) => e.id.startsWith('nomes-'));
+  assert.equal(nomes.length, 2);
+  assert.ok(nomes.every((e) => e.premium === false));
+});
+
+test('o Premium não anuncia como exclusivo o que é gratuito', async () => {
+  const { PREMIUM_BENEFITS } = await import('../assets/js/content.js');
+  const vitrine = PREMIUM_BENEFITS.map((b) => `${b.title} ${b.text}`).join(' ').toLowerCase();
+
+  for (const item of EBOOKS.filter((e) => !e.premium)) {
+    // compara pelo começo do título, que é o que apareceria na vitrine
+    const marca = item.title.slice(0, 18).toLowerCase();
+    assert.ok(!vitrine.includes(marca),
+      `"${item.title}" é gratuito e não pode aparecer como benefício do Premium`);
+  }
 });
 
 test('material sem arquivo não aparece', () => {
@@ -58,9 +82,11 @@ test('entrada quebrada não derruba a estante', () => {
 });
 
 test('o painel publica no mesmo lugar que a tela lê', () => {
-  cms.set('ebooks', [material()]);
+  cms.set('ebooks', [material({ id: 'novo', title: 'Material novo' })]);
   assert.equal(cms.getEbooks().length, 1);
-  assert.equal(ebooksForPhase(cms.getEbooks(), 'gravida', false)[0].title, '100 nomes de meninas');
+  assert.equal(ebooksForPhase(cms.getEbooks(), 'gravida', false)[0].title, 'Material novo');
+
+  // restaurar o padrão devolve o catálogo que vem no código
   cms.reset('ebooks');
-  assert.deepEqual(cms.getEbooks(), []);
+  assert.deepEqual(cms.getEbooks(), EBOOKS);
 });

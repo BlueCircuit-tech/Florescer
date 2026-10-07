@@ -11,6 +11,7 @@ import { icon } from '../icons.js';
 import { esc, toast, emptyState, openSheet, closeSheet, confirmSheet, haptic, note } from '../ui.js';
 import { navigate, back } from '../router.js';
 import { relativeTime } from '../cycle.js';
+import { avatarContent } from '../avatar.js';
 import { PHASE_LABELS } from '../content.js';
 import * as cms from '../cms.js';
 import {
@@ -60,12 +61,12 @@ export function postCard(p, state, { full = false } = {}) {
   const tone = p.phase === 'tentante' ? 'leaf' : p.phase === 'gravida' ? 'rose' : 'amber';
   return `<article class="post" data-post="${p.id}">
     <header class="post__head">
-      <div class="post__av">${p.avatar || '🌸'}</div>
+      <div class="post__av">${p.mine ? avatarContent(state.profile, 18) : icon('user', 18)}</div>
       <div class="grow">
         <b>${esc(p.author)}${p.mine ? ' <span class="fs-11 muted">(você)</span>' : ''}</b>
         <span>${meta.label} · ${relativeTime(p.ts)}</span>
       </div>
-      <span class="pill pill--${tone}">${meta.emoji} ${meta.label.toLowerCase()}</span>
+      <span class="pill pill--${tone}">${meta.label.toLowerCase()}</span>
     </header>
     <div class="post__txt">${esc(p.text)}</div>
     <div class="post__acts">
@@ -247,7 +248,7 @@ export const postScreen = {
           <h2 class="fs-14" style="font-weight:700;margin-bottom:6px">Comentários</h2>
           ${p.comments.length ? p.comments.map((c) => `
             <div class="comment">
-              <div class="comment__av">${c.avatar || '🌸'}</div>
+              <div class="comment__av">${c.mine ? avatarContent(getState().profile, 15) : icon('user', 15)}</div>
               <div class="grow"><b>${esc(c.author)}</b><time>${relativeTime(c.ts)}</time><p>${esc(c.text)}</p></div>
             </div>`).join('')
             : '<p class="fs-13 muted" style="padding:8px 0">Ninguém comentou ainda. Que tal deixar uma palavra de apoio?</p>'}
@@ -263,15 +264,15 @@ export const postScreen = {
         root.querySelector('[data-send]').onclick = () => {
           const ta = root.querySelector('#c-text');
           const text = ta.value.trim();
-          if (text.length < 2) { toast('Escreva o seu comentário 💛'); return; }
+          if (text.length < 2) { toast('Escreva o seu comentário'); return; }
           const current = getState();
           if (!findAccessiblePost(current, p.id)) { toast('Esta publicação não está disponível nesta comunidade.'); return; }
           const author = current.profile.name || 'Você';
           update((s) => {
             const st = s.postState[p.id] || (s.postState[p.id] = {});
-            (st.comments || (st.comments = [])).push({ author, avatar: '🌷', text, ts: Date.now(), mine: true });
+            (st.comments || (st.comments = [])).push({ author, text, ts: Date.now(), mine: true });
           });
-          toast('Comentário publicado 💛');
+          toast('Comentário publicado');
           rerender();
         };
       },
@@ -311,7 +312,7 @@ export const newPostScreen = {
         ta.focus();
         root.querySelector('[data-publish]').onclick = () => {
           const text = ta.value.trim();
-          if (text.length < 5) { toast('Escreva um pouco mais para publicar 💛'); return; }
+          if (text.length < 5) { toast('Escreva um pouco mais para publicar'); return; }
           if (!root.querySelector('#np-ok').checked) { toast('Confirme as diretrizes da comunidade para publicar'); return; }
           let post;
           try {
@@ -321,7 +322,7 @@ export const newPostScreen = {
             if (getState().profile.phase !== phase) navigate(communityPath(getState().profile.phase), { replace: true });
             return;
           }
-          toast('Publicado! Obrigada por compartilhar 🌸');
+          toast('Publicado! Obrigada por compartilhar');
           navigate(`post/${post.id}`, { replace: true });
         };
       },

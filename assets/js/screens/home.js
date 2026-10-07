@@ -14,10 +14,11 @@ import { tipOfDay, categoryLabel } from '../content.js';
 import * as cms from '../cms.js';
 import { isUnlocked } from './admin.js';
 import { babyNamesFromProfile, formatBabyNames, postpartumGreeting } from '../babies.js';
-import { FEATURE_TONES, featureLabel, featureTarget, resolveHomeShortcuts } from '../features.js';
+import { featureLabel, featureTarget, featuresFor, groupFeatures, groupLabel, resolveHomeShortcuts } from '../features.js';
 import { cyclePhaseGuide } from '../fertility.js';
 import { diaryOffer } from '../pregnancyDiary.js';
 import { unreadCount } from '../notify.js';
+import { avatarContent } from '../avatar.js';
 import { dailyHandled, dailyMessage } from '../florDaily.js';
 import { momentOfDay } from '../florMoments.js';
 
@@ -69,7 +70,6 @@ function heroGravida(state, preg) {
       <i style="width:${pct}%"></i>
       <span style="left:${pct}%"></span>
     </div>
-    <div class="bumpline__scale"><span>1</span><span>20</span><span>40 semanas</span></div>
   </div>`;
 }
 
@@ -82,7 +82,7 @@ function heroPosparto(state, pp) {
     <div class="bump__week"><b>${pp.weeks}</b><span>semanas</span></div>
     <div class="ring__stats">
       <div class="ring__stat"><div class="k">${nome}</div><div class="v">${pp.age} de vida</div></div>
-      <div class="ring__stat"><div class="k">Sua recuperação</div><div class="v">${pp.quarantine ? 'Puerpério — vá com calma 💛' : 'Consulta de revisão em dia?'}</div></div>
+      <div class="ring__stat"><div class="k">Sua recuperação</div><div class="v">${pp.quarantine ? 'Puerpério — vá com calma' : 'Consulta de revisão em dia?'}</div></div>
     </div>
   </div>`;
 }
@@ -148,7 +148,7 @@ function pregnancyDashboard(preg) {
         </div>
       </details>
 
-      <p class="pregdash__disclaimer">Peso, comprimento, sintomas e mudanças da barriga são referências educativas e variam em cada gestação. Sangramento, perda de líquido, dor forte, desmaio, falta de ar intensa, dor de cabeça forte com alteração visual ou redução dos movimentos do bebê precisam de avaliação.</p>
+      <p class="pregdash__disclaimer">${icon('info', 15)}<span>Medidas e sintomas são referências e variam em cada gestação. Sangramento, perda de líquido, dor forte, desmaio, falta de ar intensa, dor de cabeça com alteração visual ou redução dos movimentos do bebê precisam de avaliação no mesmo dia.</span></p>
     </section>`;
 }
 
@@ -168,14 +168,17 @@ function postpartumDashboard(state, pp) {
         </div>
       </article>
 
-      <article class="preginfo preginfo--baby">
-        <div><span>Descobertas desta fase</span><p>${esc(g.detail)}</p></div>
-      </article>
+      <div class="pregdash__grid">
+        <article class="preginfo preginfo--baby">
+          <div><span>Descobertas desta fase</span><p>${esc(g.detail)}</p></div>
+        </article>
+      </div>
 
-      <button class="btn btn--soft" data-nav="desenvolvimento-bebe">${icon('sparkle', 18)} Registrar uma descoberta</button>
-      <button class="btn btn--soft" data-nav="alimentacao-bebe">${icon('leaf', 18)} Alimentação do bebê</button>
+      <button class="pregdash__weeklink" data-nav="desenvolvimento-bebe">Registrar uma descoberta ${icon('chevron', 14)}</button>
 
-      <p class="pregdash__disclaimer">Marcos são referências, não prazos. Cada bebê se desenvolve no próprio ritmo; converse com o pediatra se tiver dúvidas.</p>
+      <button class="btn btn--soft mt-12" data-nav="alimentacao-bebe">${icon('leaf', 18)} Alimentação do bebê</button>
+
+      <p class="pregdash__disclaimer">${icon('info', 15)}<span>Marcos são referências, não prazos. Cada bebê se desenvolve no próprio ritmo; converse com o pediatra se tiver dúvidas.</span></p>
     </section>`;
 }
 
@@ -206,20 +209,53 @@ function cycleDashboard(info) {
         <article class="preginfo preginfo--mother">
           <div><span>O que você pode notar</span><p>${esc(guide.notice)}</p></div>
         </article>
+        <article class="preginfo preginfo--tip">
+          <div><span>Para lembrar</span><p>${esc(guide.care)}</p></div>
+        </article>
+        <article class="preginfo preginfo--exam">
+          <div><span>Próxima etapa estimada</span><p>${esc(next)}</p></div>
+        </article>
       </div>
 
-      <article class="preginfo preginfo--tip">
-        <div><span>Para lembrar</span><p>${esc(guide.care)}</p></div>
-      </article>
-
-      <article class="preginfo preginfo--exam">
-        <div><span>Próxima etapa estimada</span><p>${esc(next)}</p></div>
-      </article>
-
-      <button class="btn btn--soft" data-nav="linha-do-tempo">${icon('flower', 18)} Ver a linha do tempo do ciclo</button>
-      <button class="btn btn--soft mt-8" data-nav="ciclo">${icon('calendar', 18)} Ver meu calendário</button>
-      <p class="pregdash__disclaimer">Fases, datas e sinais são estimativas educativas. Eles variam entre ciclos e não confirmam ovulação ou gravidez.</p>
+      <button class="pregdash__weeklink" data-nav="linha-do-tempo">Ver a linha do tempo do ciclo ${icon('chevron', 14)}</button>
+      <p class="pregdash__disclaimer">${icon('info', 15)}<span>Fases, datas e sinais são estimativas educativas. Eles variam entre ciclos e não confirmam ovulação ou gravidez.</span></p>
     </section>`;
+}
+
+/**
+ * Tudo o que ela pode fazer, agrupado e visível.
+ *
+ * Antes a Home mostrava 4 atalhos e escondia o resto atrás de "Ver todos os
+ * recursos" — no pós-parto isso significava 18 de 22 recursos invisíveis.
+ * Agora os 4 favoritos continuam em destaque no topo e o catálogo inteiro
+ * vem logo abaixo, separado por grupo.
+ */
+function allFeatures(phase) {
+  const grupos = groupFeatures(featuresFor(phase, 'resources'));
+  if (!grupos.length) return '';
+
+  return `<div class="section__head" style="padding:0;margin-top:26px">
+      <h2>Tudo o que você pode fazer</h2>
+    </div>
+    ${grupos.map((grupo) => `<section class="featgroup">
+      <h3 class="featgroup__title">${esc(groupLabel(grupo, phase))}</h3>
+      <div class="feattiles">
+        ${grupo.features.map((item) => `<button class="feattile" data-nav="${featureTarget(item, phase)}">
+          <span class="feattile__ico">${icon(item.icon, 18)}</span>
+          <span class="feattile__label">${esc(featureLabel(item, phase, 'resources'))}</span>
+        </button>`).join('')}
+      </div>
+    </section>`).join('')}`;
+}
+
+/** Uma linha do rodapé da Home. Mesma forma para recursos, painel e Premium. */
+function homeLink(ic, title, sub, { to = null, action = null }) {
+  const alvo = to ? `data-nav="${esc(to)}"` : `data-${esc(action)}`;
+  return `<button class="homelink" ${alvo}>
+    <span class="homelink__ico">${icon(ic, 19)}</span>
+    <span class="grow"><b>${esc(title)}</b><span>${esc(sub)}</span></span>
+    <span class="homelink__go">${icon('chevron', 17)}</span>
+  </button>`;
 }
 
 /* ---------- cartão de destaque ---------- */
@@ -334,7 +370,7 @@ export default {
       html: `
         <header class="hero">
           <div class="hero__row">
-            <button class="hero__avatar" data-nav="perfil" aria-label="Meu perfil">${state.profile.phase === 'gravida' ? '🤰' : state.profile.phase === 'posparto' ? '🍼' : '🌷'}</button>
+            <button class="hero__avatar" data-nav="perfil" aria-label="Meu perfil">${avatarContent(state.profile, 22)}</button>
             <div class="hero__hello">
               <span>${esc(hello)}</span>
               <b>${esc(sub)}</b>
@@ -375,33 +411,20 @@ export default {
             </div>
           </article>
 
-          <div class="section__head" style="padding:0"><h2>Seus atalhos</h2><button class="link" data-nav="recursos?modo=atalhos">Personalizar</button></div>
+          <div class="section__head" style="padding:0"><h2>Seus atalhos</h2><button class="link" data-nav="recursos?modo=atalhos">Escolher</button></div>
             <div class="shortcuts">
-              ${shortcuts.map((item) => {
-                const tone = FEATURE_TONES[item.tone] || FEATURE_TONES.rose;
-                return `<button class="shortcut" data-nav="${featureTarget(item, phase)}">
-                  <span class="shortcut__ico" style="background:${tone.bg};color:${tone.fg}">${icon(item.icon, 19)}</span>${esc(featureLabel(item, phase, 'home'))}
-                </button>`;
-              }).join('')}
+              ${shortcuts.map((item) => `<button class="shortcut" data-nav="${featureTarget(item, phase)}">
+                <span class="shortcut__ico">${icon(item.icon, 19)}</span>${esc(featureLabel(item, phase, 'home'))}
+              </button>`).join('')}
             </div>
-          <button class="link center" style="width:100%;margin-top:12px" data-nav="recursos">Ver todos os recursos</button>
 
-          ${isUnlocked() ? `
-            <button class="card card--link mt-8" data-nav="admin">
-              <span class="floatcard__ico" style="background:var(--lilac-50);color:var(--lilac-600)">${icon('settings', 22)}</span>
-              <span class="grow" style="text-align:left">
-                <b style="display:block;font-size:var(--fs-14)">Painel da administradora</b>
-                <span class="fs-12 muted" style="display:block;margin-top:3px">Conteúdo, comunidade e publicação</span>
-              </span>
-              <span style="color:var(--faint);flex:none">${icon('chevron', 18)}</span>
-            </button>` : ''}
+          ${allFeatures(phase)}
 
-          <button class="btn btn--lilac mt-8" data-nav="premium">
-            ${icon('crown', 19)} ${state.premium ? 'Gerenciar Florescer Premium' : 'Conhecer o Florescer Premium'}
-          </button>
-          <button class="btn btn--soft mt-8" data-tempo-de-deus>
-            ${icon('book', 19)} Florescer no Tempo de Deus
-          </button>
+          <div class="homelinks">
+            ${isUnlocked() ? homeLink('settings', 'Painel da administradora', 'Conteúdo, comunidade e publicação', { to: 'admin' }) : ''}
+            ${homeLink('book', 'Florescer no Tempo de Deus', 'Uma palavra para a sua espera', { action: 'tempo-de-deus' })}
+            ${homeLink('crown', state.premium ? 'Meu Florescer Premium' : 'Conhecer o Florescer Premium', state.premium ? 'Gerencie o seu acesso' : 'Conteúdos e análises completas', { to: 'premium' })}
+          </div>
 
           <p class="center fs-11 faint mt-16" style="line-height:1.6">
             As previsões são estimativas com base nos seus registros.<br>O Florescer não substitui acompanhamento médico.
@@ -432,7 +455,7 @@ export default {
           root.querySelector('#tip-text').textContent = t.txt;
           root.querySelector('#tip-cat').textContent = categoryLabel(t.c, phase);
           syncSave(t.txt);
-          if (tipOffset === 3 && !state.premium) toast('No plano gratuito são 3 sugestões por dia — ilimitadas no Premium ✨');
+          if (tipOffset === 3 && !state.premium) toast('No plano gratuito são 3 sugestões por dia — ilimitadas no Premium');
         });
 
         saveBtn?.addEventListener('click', () => {
@@ -442,7 +465,7 @@ export default {
             if (i >= 0) s.savedTips.splice(i, 1); else s.savedTips.push(t.txt);
           });
           syncSave(t.txt);
-          toast(getState().savedTips.includes(t.txt) ? 'Sugestão salva nas suas favoritas 💛' : 'Removida das favoritas');
+          toast(getState().savedTips.includes(t.txt) ? 'Sugestão salva nas suas favoritas' : 'Removida das favoritas');
         });
       },
     };

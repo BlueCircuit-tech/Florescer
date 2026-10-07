@@ -1,3 +1,39 @@
+/**
+ * Recorta e reduz uma foto de perfil para um quadrado de 256px.
+ *
+ * O avatar é mostrado em 40–78px, então guardar o mesmo JPEG de 1280px das
+ * fotos do diário desperdiça o armazenamento local — que é pequeno e já é
+ * disputado com as fotos da barriga. O recorte é central, que é onde o rosto
+ * costuma estar.
+ */
+export function compressAvatar(file, lado = 256) {
+  if (!file?.type.startsWith('image/')) return Promise.reject(new Error('Escolha um arquivo de imagem.'));
+  if (file.size > 12 * 1024 * 1024) return Promise.reject(new Error('A foto deve ter no máximo 12 MB.'));
+
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = () => reject(new Error('Não foi possível ler esta foto.'));
+    reader.onload = () => {
+      const img = new Image();
+      img.onerror = () => reject(new Error('Esta imagem não pôde ser aberta.'));
+      img.onload = () => {
+        const corte = Math.min(img.width, img.height);
+        const canvas = document.createElement('canvas');
+        canvas.width = lado;
+        canvas.height = lado;
+        canvas.getContext('2d').drawImage(
+          img,
+          (img.width - corte) / 2, (img.height - corte) / 2, corte, corte,
+          0, 0, lado, lado,
+        );
+        resolve(canvas.toDataURL('image/jpeg', 0.82));
+      };
+      img.src = reader.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
 /** Reduz uma imagem para armazenamento local como JPEG. */
 export function compressPhoto(file) {
   if (!file?.type.startsWith('image/')) return Promise.reject(new Error('Escolha um arquivo de imagem.'));

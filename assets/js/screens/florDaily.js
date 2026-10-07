@@ -157,6 +157,6 @@ function responder(mood, texto) {
     return;
   }
 
-  toast('Obrigada por contar 💛');
+  toast('Obrigada por contar');
   rerender();
 }

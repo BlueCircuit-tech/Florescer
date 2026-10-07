@@ -5,10 +5,12 @@ import { getState, update } from '../store.js';
 import { icon } from '../icons.js';
 import { esc, toast, emptyState, haptic, note, hscrollSection, bindHscroll } from '../ui.js';
 import { navigate } from '../router.js';
-import { cycleInfo, PHASES, toKey, today, plural } from '../cycle.js';
+import { cycleInfo, PHASES, toKey, today, plural, pregnancyInfo, postpartumInfo } from '../cycle.js';
 import { tipsByCategory, TIP_CATEGORIES, categoryLabel, PHASE_LABELS } from '../content.js';
 import {
   articleTopic,
+  readingProgress,
+  suggestedArticle,
   articlesForLibrary,
   articlesForPhase,
   canAccessArticle,
@@ -44,11 +46,11 @@ export default {
           ${locked ? 'Conteúdo exclusivo do Florescer Premium — guias completos e análises da sua fase.' : esc(t.txt)}
         </p>
         <div class="tile__foot">
-          <span class="pill ${locked ? 'pill--lilac' : 'pill--gray'}">${locked ? '🔒 Premium' : esc(categoryLabel(cat, state.profile.phase).split(' ')[0])}</span>
+          <span class="pill ${locked ? 'pill--lilac' : 'pill--gray'}">${locked ? 'Premium' : esc(categoryLabel(cat, state.profile.phase).split(' ')[0])}</span>
           ${locked
             ? `<button class="fs-12" style="font-weight:800;color:var(--lilac-500)" data-nav="premium">Desbloquear</button>`
             : `<button class="fs-12" style="font-weight:800;color:${saved ? 'var(--accent)' : 'var(--muted)'}" data-save="${encodeURIComponent(t.txt)}">
-                 ${saved ? 'Salva ♥' : '♡ Salvar'}</button>`}
+                 ${saved ? 'Salva' : 'Salvar'}</button>`}
         </div>
       </article>`;
     };
@@ -80,7 +82,7 @@ export default {
               if (i >= 0) s.savedTips.splice(i, 1); else s.savedTips.push(txt);
             });
             haptic();
-            toast(getState().savedTips.includes(txt) ? 'Salva nas suas favoritas 💛' : 'Removida das favoritas');
+            toast(getState().savedTips.includes(txt) ? 'Salva nas suas favoritas' : 'Removida das favoritas');
             rerender();
           };
         });
@@ -106,6 +108,17 @@ export const libraryScreen = {
     const selectedLabel = topics.find((topic) => topic.id === selectedTopic)?.label;
     const needsCanonicalRoute = route.arg !== library.slug || requestedTopic !== selectedTopic;
 
+    const preg = pregnancyInfo(state);
+    const pp = postpartumInfo(state);
+    const sugestao = suggestedArticle(articles, {
+      phase,
+      weeks: phase === 'gravida' && preg.known ? preg.weeks : null,
+      babyDays: phase === 'posparto' && pp.known ? pp.days : null,
+      longTrying: state.profile.tryingFor === 'mais_1a',
+      read: state.readArticles,
+    });
+    const progresso = readingProgress(articles, phase, state.readArticles);
+
     return {
       appbar: { title: library.title, sub: `${available.length} conteúdos`, actions: [{ icon: 'bookmark', label: 'Salvos', to: 'salvos' }] },
       html: `
@@ -114,6 +127,23 @@ export const libraryScreen = {
             <span class="library-intro__ico">${icon(phase === 'gravida' ? 'pregnant' : phase === 'posparto' ? 'baby' : 'seed', 25)}</span>
             <div><p class="eyebrow">Conteúdo para a sua fase</p><p>${esc(library.description)}</p></div>
           </div>
+          ${sugestao ? `
+            <button class="librarypick" data-nav="artigo/${sugestao.article.id}">
+              <span class="librarypick__tag">${esc(sugestao.reason)}</span>
+              <b>${esc(sugestao.article.title)}</b>
+              <span class="librarypick__sub">${esc(sugestao.article.excerpt)}</span>
+              <span class="librarypick__go">${icon('book', 15)} Começar a ler · ${sugestao.article.time} min</span>
+            </button>` : ''}
+
+          ${progresso.total ? `
+            <div class="libraryprogress">
+              <div class="libraryprogress__top">
+                <span>${progresso.read} de ${progresso.total} conteúdos lidos</span>
+                <b>${progresso.percent}%</b>
+              </div>
+              <div class="libraryprogress__bar"><i style="width:${progresso.percent}%"></i></div>
+            </div>` : ''}
+
           <div class="section__head" style="padding:0"><h2>Explore por tema</h2></div>
           <button class="library-all" data-topic="todos" aria-pressed="${selectedTopic === 'todos'}">
             <span>${icon('book', 18)} Todos os conteúdos</span><b>${available.length}</b>
@@ -215,7 +245,7 @@ export const articleScreen = {
             const i = s.savedArticles.indexOf(a.id);
             if (i >= 0) s.savedArticles.splice(i, 1); else s.savedArticles.push(a.id);
           });
-          toast(getState().savedArticles.includes(a.id) ? 'Salvo na sua lista 💛' : 'Removido dos salvos');
+          toast(getState().savedArticles.includes(a.id) ? 'Salvo na sua lista' : 'Removido dos salvos');
           rerender();
         });
       },
@@ -236,7 +266,7 @@ export const savedScreen = {
     return {
       appbar: { title: 'Meus salvos', sub: `${plural(arts.length + tips.length, 'item', 'itens')}` },
       html: vazio
-        ? emptyState('bookmark', 'Nada salvo ainda', 'Toque em ♡ nas sugestões ou no marcador dos artigos para guardar aqui.', { label: 'Ver dicas', to: 'dicas' })
+        ? emptyState('bookmark', 'Nada salvo ainda', 'Toque no marcador nas sugestões ou nos artigos para guardar aqui.', { label: 'Ver dicas', to: 'dicas' })
         : `<div class="section pb-24">
             ${arts.length ? `<div class="section__head" style="padding:0"><h2>Artigos</h2></div>
               <div class="itemlist card card--flush">

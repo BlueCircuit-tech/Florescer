@@ -100,7 +100,7 @@ function developmentCard(record, birthDate) {
   const milestone = developmentMilestone(record.milestoneType);
   const age = birthDate ? calendarAge(fromKey(birthDate), fromKey(record.happenedOn)).age : '';
   return `<article class="card vaccinecard">
-    <span class="vaccinecard__ico" aria-hidden="true">${milestone?.emoji || '✨'}</span>
+    <span class="vaccinecard__ico" aria-hidden="true">${icon(milestone?.icon || 'bookmark', 19)}</span>
     <div class="grow"><b>${esc(record.title)}</b><span>${esc(fmtFull(fromKey(record.happenedOn)))}${age ? ` · ${esc(age)} de vida` : ''}${record.notes ? ` · ${esc(record.notes)}` : ''}</span></div>
     <div class="vaccinecard__actions"><button class="iconbtn iconbtn--ghost" data-edit-development="${esc(record.id)}" aria-label="Editar ${esc(record.title)}">${icon('edit', 17)}</button></div>
   </article>`;
